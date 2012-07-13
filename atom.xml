@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[My Octopress Blog]]></title>
+  <link href="http://zxdy.github.com/atom.xml" rel="self"/>
+  <link href="http://zxdy.github.com/"/>
+  <updated>2012-07-13T19:35:36+08:00</updated>
+  <id>http://zxdy.github.com/</id>
+  <author>
+    <name><![CDATA[Your Name]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[THE FIRST ONE]]></title>
+    <link href="http://zxdy.github.com/blog/2012/07/13/the-first-one/"/>
+    <updated>2012-07-13T19:30:00+08:00</updated>
+    <id>http://zxdy.github.com/blog/2012/07/13/the-first-one</id>
+    <content type="html"><![CDATA[<h1>aa</h1>
+
+<p> -ad
+ -bd</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[post title]]></title>
+    <link href="http://zxdy.github.com/blog/2012/07/13/post-title/"/>
+    <updated>2012-07-13T18:42:00+08:00</updated>
+    <id>http://zxdy.github.com/blog/2012/07/13/post-title</id>
+    <content type="html"><![CDATA[
+]]></content>
+  </entry>
+  
+</feed>
