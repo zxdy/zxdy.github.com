@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[My Octopress Blog]]></title>
+  <title><![CDATA[ZxDy]]></title>
   <link href="http://zxdy.github.com/atom.xml" rel="self"/>
   <link href="http://zxdy.github.com/"/>
-  <updated>2012-07-14T11:39:26+08:00</updated>
+  <updated>2012-07-14T16:16:27+08:00</updated>
   <id>http://zxdy.github.com/</id>
   <author>
     <name><![CDATA[zxdy]]></name>
@@ -14,7 +14,7 @@
 
   
   <entry>
-    <title type="html"><![CDATA[中文测试]]></title>
+    <title type="html"><![CDATA[测试]]></title>
     <link href="http://zxdy.github.com/blog/2012/07/14/chinesetest/"/>
     <updated>2012-07-14T10:04:00+08:00</updated>
     <id>http://zxdy.github.com/blog/2012/07/14/chinesetest</id>
