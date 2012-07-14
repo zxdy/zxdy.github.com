@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[tag: java | ZxDy]]></title>
-  <link href="http://zxdy.github.com/tag-cloud/java/atom.xml" rel="self"/>
+  <title><![CDATA[Category: java | ZxDy]]></title>
+  <link href="http://zxdy.github.com/blog/categories/java/atom.xml" rel="self"/>
   <link href="http://zxdy.github.com/"/>
   <updated>2012-07-14T22:41:03+08:00</updated>
   <id>http://zxdy.github.com/</id>
@@ -37,27 +37,6 @@
 <h2>方法的定义</h2>
 
 <p><blockquote><p>[修饰符] &lt;类型> &lt;方法名> (参数表) [throws &lt;异常类名列表>]<br/>{<br/>   &lt;方法体><br/>}</p></blockquote></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[2012.7.11]]></title>
-    <link href="http://zxdy.github.com/blog/2012/07/14/2012-dot-7-11/"/>
-    <updated>2012-07-14T22:01:00+08:00</updated>
-    <id>http://zxdy.github.com/blog/2012/07/14/2012-dot-7-11</id>
-    <content type="html"><![CDATA[<p>page,request,session,application</p>
-
-<p>$0,$1,$?</p>
-
-<p>eclipse 快捷键</p>
-
-<p>debug</p>
-
-<p>sublime text2</p>
-
-<p>[],[[]]</p>
-
-<p>clearcase</p>
 ]]></content>
   </entry>
   
