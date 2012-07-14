@@ -9,7 +9,7 @@
   <meta name="author" content="zxdy">
 
   
-  <meta name="description" content="Liquid error: incompatible character encodings: UTF-8 and GBK Posted by zxdy Jul 14th, 2012 Tweet &laquo; Hello World Comments Please enable &hellip;">
+  <meta name="description" content="中文编码测试 中文标题乱码解决办法 编辑: \Ruby1.9.3\lib\ruby\gems\1.9.1\gems\jekyll-0.11.2\lib\jekyll\convertible.rb 把： self.content = File.read(File.join(base, name)) &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -78,7 +78,56 @@
     <div id="content">
       <div>
 <article class="hentry" role="article">
-  Liquid error: incompatible character encodings: UTF-8 and GBK
+  
+  <header>
+    
+      <h1 class="entry-title">中文测试</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-07-14T10:04:00+08:00" pubdate data-updated="true">Jul 14<span>th</span>, 2012</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><h2>中文编码测试</h2>
+
+<p>中文标题乱码解决办法</p>
+
+<p>编辑:</p>
+
+<p><code>\Ruby1.9.3\lib\ruby\gems\1.9.1\gems\jekyll-0.11.2\lib\jekyll\convertible.rb</code></p>
+
+<p>把：</p>
+
+<blockquote><p>self.content = File.read(File.join(base, name))</p></blockquote>
+
+<p>改成:</p>
+
+<blockquote><p>self.content = File.read(File.join(base, name),:encoding => &#8220;utf-8&#8221;)</p></blockquote>
+
+<h2>CodeBlock Test</h2>
+
+<p>Liquid error: No such file or directory - python -c &#8220;import sys; print sys.executable&#8221;</p>
+</div>
+
+
   <footer>
     <p class="meta">
       
