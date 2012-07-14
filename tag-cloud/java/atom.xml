@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Category: MixIt | ZxDy]]></title>
-  <link href="http://zxdy.github.com/blog/categories/mixit/atom.xml" rel="self"/>
+  <title><![CDATA[tag: java | ZxDy]]></title>
+  <link href="http://zxdy.github.com/tag-cloud/java/atom.xml" rel="self"/>
   <link href="http://zxdy.github.com/"/>
   <updated>2012-07-14T22:11:39+08:00</updated>
   <id>http://zxdy.github.com/</id>
@@ -31,35 +31,6 @@
 <p>[],[[]]</p>
 
 <p>clearcase</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[2012.7.3]]></title>
-    <link href="http://zxdy.github.com/blog/2012/07/14/2012-dot-7-3/"/>
-    <updated>2012-07-14T21:48:00+08:00</updated>
-    <id>http://zxdy.github.com/blog/2012/07/14/2012-dot-7-3</id>
-    <content type="html"><![CDATA[<p>export</p>
-
-<p>setenv #csh 环境代替export</p>
-
-<p>case</p>
-
-<p>getopts   OPTARG</p>
-
-<p>shift</p>
-
-<p>spool</p>
-
-<p>Union, Union all</p>
-
-<p>exec rm -f {}\;</p>
-
-<p>>/dev/null</p>
-
-<p>2>&amp;1</p>
-
-<p>sqlplus</p>
 ]]></content>
   </entry>
   
