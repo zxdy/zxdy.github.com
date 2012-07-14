@@ -9,8 +9,7 @@
   <meta name="author" content="zxdy">
 
   
-  <meta name="description" content="This is the first article of zxdy 欢迎来到这里
-">
+  <meta name="description" content="{% assign index = true %} {% for post in paginator.posts %} {% assign content = post.content %} {% include article.html %} {% endfor %} {% if &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -78,73 +77,29 @@
   <div id="main">
     <div id="content">
       <div class="blog-index">
-  
-  
-  
+  {% assign index = true %}
+  {% for post in paginator.posts %}
+  {% assign content = post.content %}
     <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2012/07/13/post-title/">Hello World</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-07-13T18:42:00+08:00" pubdate data-updated="true">Jul 13<span>th</span>, 2012</time>
-        
-         | <a href="/blog/2012/07/13/post-title/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h1>This is the first article of zxdy</h1>
-
-<p><em>欢迎来到这里</em></p>
-</div>
-  
-  
-
-
+      {% include article.html %}
     </article>
-  
+  {% endfor %}
   <div class="pagination">
-    
+    {% if paginator.next_page %}
+      <a class="prev" href="{{paginator.next_page}}">&larr; Older</a>
+    {% endif %}
     <a href="/blog/archives">Blog Archives</a>
-    
+    {% if paginator.previous_page %}
+    <a class="next" href="{{paginator.previous_page}}">Newer &rarr;</a>
+    {% endif %}
   </div>
 </div>
 <aside class="sidebar">
-  
-    <section>
-  <h1>Recent Posts</h1>
-  <ul id="recent_posts">
-    
-      <li class="post">
-        <a href="/blog/2012/07/13/post-title/">Hello World</a>
-      </li>
-    
-  </ul>
-</section>
-
-
-
-
-
-
-  
+  {% if site.blog_index_asides.size %}
+    {% include_array blog_index_asides %}
+  {% else %}
+    {% include_array default_asides %}
+  {% endif %}
 </aside>
 
     </div>
