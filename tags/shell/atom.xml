@@ -4,7 +4,7 @@
   <title><![CDATA[tag: shell | ZxDy]]></title>
   <link href="http://zxdy.github.com/tags/shell/atom.xml" rel="self"/>
   <link href="http://zxdy.github.com/"/>
-  <updated>2012-07-15T11:06:40+08:00</updated>
+  <updated>2012-07-15T11:29:37+08:00</updated>
   <id>http://zxdy.github.com/</id>
   <author>
     <name><![CDATA[zxdy]]></name>
@@ -93,6 +93,9 @@
 
 <p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class=''><span class='line'>getopts 选项字符串 名称 [ 参数 ...]</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<!-- more -->
+
 
 <h3><em>shift: 用来向左移动位置参数</em></h3>
 
