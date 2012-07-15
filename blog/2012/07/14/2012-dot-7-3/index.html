@@ -9,8 +9,13 @@
   <meta name="author" content="zxdy">
 
   
-  <meta name="description" content="export setenv #csh 环境代替export case getopts OPTARG shift spool Union, Union all exec rm -f {}\; >/dev/null 2>&amp;1 sqlplus
-">
+  <meta name="description" content="export: 注意参数名大小写敏感 1
+2
+export UserName=zxdy
+echo $UserName setenv: 用于csh环境,代替export。export用于bsh和ksh环境 export VS setenv 1
+2
+export key=value
+setenv &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -108,27 +113,143 @@
   </header>
 
 
-<div class="entry-content"><p>export</p>
+<div class="entry-content"><h3><em>export: 注意参数名大小写敏感</em></h3>
 
-<p>setenv #csh 环境代替export</p>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>export UserName=zxdy
+</span><span class='line'>echo $UserName</span></code></pre></td></tr></table></div></figure>
 
-<p>case</p>
 
-<p>getopts   OPTARG</p>
+<h3><em>setenv: 用于csh环境,代替export。export用于bsh和ksh环境</em></h3>
 
-<p>shift</p>
+<figure class='code'><figcaption><span>export VS setenv </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>export key=value
+</span><span class='line'>setenv key value</span></code></pre></td></tr></table></div></figure>
 
-<p>spool</p>
 
-<p>Union, Union all</p>
+<h3><em>case: bashshell 中用于控制程序分支</em></h3>
 
-<p>exec rm -f {}\;</p>
+<figure class='code'><figcaption><span>case in bsh </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>case "$variable" in
+</span><span class='line'>"$condition1") command...;;
+</span><span class='line'>"$condition2") command...;;
+</span><span class='line'>esac</span></code></pre></td></tr></table></div></figure>
 
-<p>>/dev/null</p>
 
-<p>2>&amp;1</p>
+<h3><em>getopts OPTARG 具体使用请看<a href="http://study.chyangwa.com/IT/AIX/aixcmds2/getopts.htm">这里</a></em></h3>
 
-<p>sqlplus</p>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>getopts 选项字符串 名称 [ 参数 ...]</span></code></pre></td></tr></table></div></figure>
+
+
+<h3><em>shift: 用来向左移动位置参数</em></h3>
+
+<ul>
+<li>Shell的名字 $0</li>
+<li>第一个参数 $1</li>
+<li>第二个参数 $2</li>
+<li>第n个参数 $n</li>
+<li>所有参数 $@ 或 $*</li>
+<li>参数个数 $#</li>
+<li>shift默认是shift 1</li>
+</ul>
+
+
+<p>以下边为例</p>
+
+<figure class='code'><figcaption><span>shift </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>----------------------------输出文字-开始----------------------------
+</span><span class='line'>!/bin/bash
+</span><span class='line'>until [ -z "$1" ]  # Until all parameters used up
+</span><span class='line'>do
+</span><span class='line'>  echo "$@ "
+</span><span class='line'>  shift
+</span><span class='line'>done
+</span><span class='line'>#----------------------------输出文字-结束----------------------------
+</span><span class='line'>sh shift.sh 1 2 3 4 5 6 7 8 9
+</span><span class='line'>#----------------------------输出文字-开始----------------------------
+</span><span class='line'>1 2 3 4 5 6 7 8 9
+</span><span class='line'>2 3 4 5 6 7 8 9
+</span><span class='line'>3 4 5 6 7 8 9
+</span><span class='line'>4 5 6 7 8 9
+</span><span class='line'>5 6 7 8 9
+</span><span class='line'>6 7 8 9
+</span><span class='line'>7 8 9
+</span><span class='line'>8 9
+</span><span class='line'>9
+</span><span class='line'>#----------------------------输出文字-结束----------------------------</span></code></pre></td></tr></table></div></figure>
+
+
+<h3><em>spool: 在sqlplus中用来保存或打印查询结果</em></h3>
+
+<h3><em>Union, Union all</em></h3>
+
+<p>用于合并两个或多个 SELECT 语句的结果集。注意</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>1.内部的 SELECT 语句必须拥有相同数量的列
+</span><span class='line'>2.列也必须拥有相似的数据类型
+</span><span class='line'>3.每条 SELECT 语句中的列的顺序必须相同。</span></code></pre></td></tr></table></div></figure>
+
+
+<blockquote><p>Union和 Union all几乎是等效的，但是UNION ALL命令会列出所有的值，而UNION命令只会选取不同的值列出</p></blockquote>
+
+<h3><em>find ~/ -name &#8221;</em>.aic&#8221; -exec rm -rf {} \;*</h3>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>~/ 在根目录下查找
+</span><span class='line'>-name 查找文件名的方式
+</span><span class='line'>"*.aic"文件名中要求后缀是aic的所有文件
+</span><span class='line'>-exec 找到后执行命令
+</span><span class='line'>rm -rf {}命令就是删除文件
+</span><span class='line'>\; ";" 用来结束find 命令序列的-exec 选项</span></code></pre></td></tr></table></div></figure>
+
+
+<h3><em>2>&amp;1</em></h3>
+
+<p>在shell中，每个进程都和三个系统文件相关联：标准输入stdin，标准输出stdout和标准错误stderr，三个系统文件的文件描述符分别为0，1和2。所以这里2>&amp;1的意思就是将标准错误也输出到标准输出当中。</p>
+
+<h3><em>sqlplus</em></h3>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>sqlplus user/password@tnsname@sqlfile.sql</span></code></pre></td></tr></table></div></figure>
+
+
+
 </div>
 
 
