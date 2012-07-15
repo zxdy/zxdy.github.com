@@ -4,7 +4,7 @@
   <title><![CDATA[Category: octopress | ZxDy]]></title>
   <link href="http://zxdy.github.com/blog/categories/octopress/atom.xml" rel="self"/>
   <link href="http://zxdy.github.com/"/>
-  <updated>2012-07-15T01:47:43+08:00</updated>
+  <updated>2012-07-15T09:34:25+08:00</updated>
   <id>http://zxdy.github.com/</id>
   <author>
     <name><![CDATA[zxdy]]></name>
@@ -25,7 +25,7 @@
 
 <p>总的来说，这是一个静态的blog。因为blog本身是静态的，又按我以前的德性懒得更新也是常有的事。so，姑且看看好了。</p>
 
-<p><em>列一下建站过程中的一些问题，以备将来抽风不时之需。</em></p>
+<p><em>列一下建站过程中的一些问题，以备将来抽风不时之需</em></p>
 
 <ul>
 <li>github</li>
@@ -41,10 +41,11 @@
 <li>codeblock --这个自带插件显示挺漂亮</li>
 <li>sublime text2 --神器不解释</li>
 <li>markdown， 配合<a href="http://dillinger.io/">dillinger</a></li>
+<li>还要解决一个分享的问题。web2.0时代嘛</li>
 </ul>
 
 
-<h2>以上</h2>
+<h2>以上，就酱</h2>
 
 <p>还是蛮有成就感</p>
 ]]></content>
@@ -77,8 +78,7 @@
 <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class=''><span class='line'>Codeblock</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
-<p><div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span>zxdy's box </span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
