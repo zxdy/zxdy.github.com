@@ -4,7 +4,7 @@
   <title><![CDATA[Category: MixIt | ZxDy]]></title>
   <link href="http://zxdy.github.com/blog/categories/mixit/atom.xml" rel="self"/>
   <link href="http://zxdy.github.com/"/>
-  <updated>2012-07-16T20:30:22+08:00</updated>
+  <updated>2012-07-16T21:03:01+08:00</updated>
   <id>http://zxdy.github.com/</id>
   <author>
     <name><![CDATA[zxdy]]></name>
@@ -211,7 +211,7 @@ esac
 <h3><em>sqlplus</em></h3>
 
 <p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>sqlplus user/password@tnsname@sqlfile.sql</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+</pre></td><td class='code'><pre><code class=''><span class='line'>SQLplus $dbuser/$dbpass@dbserver @$sqlfile $logfile 1＞/dev/null 2＞＆1</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 ]]></content>
   </entry>
   
