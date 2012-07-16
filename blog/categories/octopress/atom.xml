@@ -4,7 +4,7 @@
   <title><![CDATA[Category: octopress | ZxDy]]></title>
   <link href="http://zxdy.github.com/blog/categories/octopress/atom.xml" rel="self"/>
   <link href="http://zxdy.github.com/"/>
-  <updated>2012-07-15T11:29:37+08:00</updated>
+  <updated>2012-07-16T20:11:51+08:00</updated>
   <id>http://zxdy.github.com/</id>
   <author>
     <name><![CDATA[zxdy]]></name>
@@ -18,7 +18,7 @@
     <link href="http://zxdy.github.com/blog/2012/07/15/newblog/"/>
     <updated>2012-07-15T01:05:00+08:00</updated>
     <id>http://zxdy.github.com/blog/2012/07/15/newblog</id>
-    <content type="html"><![CDATA[<p>前些天偶然接触到了git，然后又很偶然的接触到了Octopress，折腾了两天总算把新的blog建起来了。我确实很是能折腾新东西。虽然直到现在对中间git，ruby，python等等乱七八糟用到过的东西还是p都不懂。再次要感谢谷歌，感谢度娘。</p>
+    <content type="html"><![CDATA[<p>前些天偶然接触到了git，然后又很偶然的接触到了Octopress，折腾了两天总算把新的blog建起来了。我确实很是能折腾新东西。虽然直到现在对中间<a href="http://rogerdudler.github.com/git-guide/index.zh.html">git</a>，ruby，python等等乱七八糟用到过的东西还是p都不懂。再次要感谢谷歌，感谢度娘。</p>
 
 <p>相比而言，确实比wordpress难搞一点，擦把汗。
 两个晚上加一个白天，现在大致能够使用了。</p>
@@ -86,6 +86,10 @@
 </span><span class='line'>aa
 </span><span class='line'>22
 </span><span class='line'>中文</span></code></pre></td></tr></table></div></figure></notextile></div></p>
+
+<p><code>
+markdwon
+</code></p>
 ]]></content>
   </entry>
   
