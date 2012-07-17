@@ -4,7 +4,7 @@
   <title><![CDATA[tag: shell | ZxDy]]></title>
   <link href="http://zxdy.github.com/tags/shell/atom.xml" rel="self"/>
   <link href="http://zxdy.github.com/"/>
-  <updated>2012-07-16T21:07:51+08:00</updated>
+  <updated>2012-07-17T23:58:23+08:00</updated>
   <id>http://zxdy.github.com/</id>
   <author>
     <name><![CDATA[zxdy]]></name>
@@ -12,6 +12,56 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[grep 简单说明]]></title>
+    <link href="http://zxdy.github.com/blog/2012/07/17/grep/"/>
+    <updated>2012-07-17T22:51:00+08:00</updated>
+    <id>http://zxdy.github.com/blog/2012/07/17/grep</id>
+    <content type="html"><![CDATA[<p>需要匹配的字符串要加上单引号，否则用<code>.</code>或者<code>\&lt;</code>时会无法匹配到</p>
+
+<h2>^</h2>
+
+<p>锚定行的开始</p>
+
+<p><img src="/images/^.png" title="^" alt="alt text" /></p>
+
+<h2>$</h2>
+
+<p>锚定行的结束</p>
+
+<p><img src="/images/$.png" title="$" alt="alt text" /></p>
+
+<p><em>以特殊字符为行开始和结束的匹配该怎么写？</em></p>
+
+<h2>.</h2>
+
+<p>匹配一个非换行符的字符</p>
+
+<!-- more -->
+
+
+<h2>*</h2>
+
+<p>匹配零个或者多个先前字符</p>
+
+<p><em>.* 可以匹配任意字符</em></p>
+
+<h2>[]</h2>
+
+<p>匹配制定范围内的字符</p>
+
+<p><img src="/images/5.png" title="[]" alt="alt text" /></p>
+
+<h2>&lt;</h2>
+
+<p>锚定单词的开始</p>
+
+<h2>\b</h2>
+
+<p>单词锁定符</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[2012.7.12]]></title>

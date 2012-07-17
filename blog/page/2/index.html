@@ -9,7 +9,13 @@
   <meta name="author" content="zxdy">
 
   
-  <meta name="description" content="中文编码测试 中文标题乱码解决办法 编辑: \Ruby1.9.3\lib\ruby\gems\1.9.1\gems\jekyll-0.11.2\lib\jekyll\convertible.rb 把： self.content = File.read(File.join(base, name)) &hellip;">
+  <meta name="description" content="export: 注意参数名大小写敏感 1
+2
+export UserName=zxdy
+echo $UserName setenv: 用于csh环境,代替export。export用于bsh和ksh环境 export VS setenv 1
+2
+export key=value
+setenv &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -79,6 +85,85 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2012/07/14/2012-dot-7-3/">2012.7.3</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-07-14T21:48:00+08:00" pubdate data-updated="true">Jul 14<span>th</span>, 2012</time>
+        
+         | <a href="/blog/2012/07/14/2012-dot-7-3/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3><em>export: 注意参数名大小写敏感</em></h3>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>export UserName=zxdy
+</span><span class='line'>echo $UserName</span></code></pre></td></tr></table></div></figure>
+
+
+<h3><em>setenv: 用于csh环境,代替export。export用于bsh和ksh环境</em></h3>
+
+<figure class='code'><figcaption><span>export VS setenv </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>export key=value
+</span><span class='line'>setenv key value</span></code></pre></td></tr></table></div></figure>
+
+
+<h3><em>case: bashshell 中用于控制程序分支</em></h3>
+
+<figure class='code'><figcaption><span>case in bsh </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>case "$variable" in
+</span><span class='line'>"$condition1") command...;;
+</span><span class='line'>"$condition2") command...;;
+</span><span class='line'>esac</span></code></pre></td></tr></table></div></figure>
+
+
+<h3><em>getopts OPTARG 具体使用请看<a href="http://study.chyangwa.com/IT/AIX/aixcmds2/getopts.htm">这里</a></em></h3>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>getopts 选项字符串 名称 [ 参数 ...]</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2012/07/14/2012-dot-7-3/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -212,6 +297,10 @@
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2012/07/17/grep/">grep 简单说明</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2012/07/15/newblog/">新博客</a>
       </li>
     
@@ -227,15 +316,11 @@
         <a href="/blog/2012/07/14/2012-dot-7-11/">2012.7.11</a>
       </li>
     
-      <li class="post">
-        <a href="/blog/2012/07/14/2012-dot-7-3/">2012.7.3</a>
-      </li>
-    
   </ul>
 </section>
 <section>
   <h1>Categories</h1>
-    <ul id="category-list"><li><a href='/blog/categories/java'>Java (1)</a></li><li><a href='/blog/categories/mixit'>Mixit (3)</a></li><li><a href='/blog/categories/octopress'>Octopress (3)</a></li></ul>
+    <ul id="category-list"><li><a href='/blog/categories/java'>Java (1)</a></li><li><a href='/blog/categories/mixit'>Mixit (4)</a></li><li><a href='/blog/categories/octopress'>Octopress (3)</a></li></ul>
 </section>
 
   

@@ -5,11 +5,11 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>2012.7.12 - ZxDy</title>
+  <title>grep 简单说明 - ZxDy</title>
   <meta name="author" content="zxdy">
 
   
-  <meta name="description" content="ps 参数 kill, killall 参数 cp -r mkdir -p find sed grep awk -F =
+  <meta name="description" content="需要匹配的字符串要加上单引号，否则用.或者\&lt;时会无法匹配到 ^ 锚定行的开始 $ 锚定行的结束 以特殊字符为行开始和结束的匹配该怎么写？ . 匹配一个非换行符的字符 * 匹配零个或者多个先前字符 .* 可以匹配任意字符 [] 匹配制定范围内的字符 &lt; 锚定单词的开始 \b 单词锁定符
 ">
   
 
@@ -19,7 +19,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://zxdy.github.com/blog/2012/07/14/2012-dot-7-12/">
+  <link rel="canonical" href="http://zxdy.github.com/blog/2012/07/17/grep/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <script src="/javascripts/modernizr-2.0.js"></script>
@@ -83,7 +83,7 @@
   
   <header>
     
-      <h1 class="entry-title">2012.7.12</h1>
+      <h1 class="entry-title">Grep 简单说明</h1>
     
     
       <p class="meta">
@@ -99,7 +99,7 @@
   
 
 
-<time datetime="2012-07-14T22:17:00+08:00" pubdate data-updated="true">Jul 14<span>th</span>, 2012</time>
+<time datetime="2012-07-17T22:51:00+08:00" pubdate data-updated="true">Jul 17<span>th</span>, 2012</time>
         
          | <a href="#disqus_thread">Comments</a>
         
@@ -108,21 +108,48 @@
   </header>
 
 
-<div class="entry-content"><p>ps 参数</p>
+<div class="entry-content"><p>需要匹配的字符串要加上单引号，否则用<code>.</code>或者<code>\&lt;</code>时会无法匹配到</p>
 
-<p>kill, killall 参数</p>
+<h2>^</h2>
 
-<p>cp -r</p>
+<p>锚定行的开始</p>
 
-<p>mkdir -p</p>
+<p><img src="/images/^.png" title="^" alt="alt text" /></p>
 
-<p>find</p>
+<h2>$</h2>
 
-<p>sed</p>
+<p>锚定行的结束</p>
 
-<p>grep</p>
+<p><img src="/images/$.png" title="$" alt="alt text" /></p>
 
-<p>awk -F =</p>
+<p><em>以特殊字符为行开始和结束的匹配该怎么写？</em></p>
+
+<h2>.</h2>
+
+<p>匹配一个非换行符的字符</p>
+
+<!-- more -->
+
+
+<h2>*</h2>
+
+<p>匹配零个或者多个先前字符</p>
+
+<p><em>.* 可以匹配任意字符</em></p>
+
+<h2>[]</h2>
+
+<p>匹配制定范围内的字符</p>
+
+<p><img src="/images/5.png" title="[]" alt="alt text" /></p>
+
+<h2>&lt;</h2>
+
+<p>锚定单词的开始</p>
+
+<h2>\b</h2>
+
+<p>单词锁定符</p>
 </div>
 
 
@@ -145,7 +172,7 @@
   
 
 
-<time datetime="2012-07-14T22:17:00+08:00" pubdate data-updated="true">Jul 14<span>th</span>, 2012</time>
+<time datetime="2012-07-17T22:51:00+08:00" pubdate data-updated="true">Jul 17<span>th</span>, 2012</time>
       
 
 <span class="categories">
@@ -189,10 +216,8 @@
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/blog/2012/07/14/2012-dot-7-11/" title="Previous Post: 2012.7.11">&laquo; 2012.7.11</a>
+        <a class="basic-alignment left" href="/blog/2012/07/15/newblog/" title="Previous Post: 新博客">&laquo; 新博客</a>
       
-      
-        <a class="basic-alignment right" href="/blog/2012/07/14/defineofjava/" title="Next Post: 类，成员变量，方法定义格式">类，成员变量，方法定义格式 &raquo;</a>
       
     </p>
   </footer>
@@ -258,8 +283,8 @@
       
         
         // var disqus_developer = 1;
-        var disqus_identifier = 'http://zxdy.github.com/blog/2012/07/14/2012-dot-7-12/';
-        var disqus_url = 'http://zxdy.github.com/blog/2012/07/14/2012-dot-7-12/';
+        var disqus_identifier = 'http://zxdy.github.com/blog/2012/07/17/grep/';
+        var disqus_url = 'http://zxdy.github.com/blog/2012/07/17/grep/';
         var disqus_script = 'embed.js';
       
     (function () {
