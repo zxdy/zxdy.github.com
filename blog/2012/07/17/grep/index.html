@@ -9,7 +9,8 @@
   <meta name="author" content="zxdy">
 
   
-  <meta name="description" content="需要匹配的字符串最好要习惯加上单引号，否则用.或者\&lt;时会无法匹配到 ^ 锚定行的开始 $ 锚定行的结束 以特殊字符为行开始和结束的匹配该怎么写？ . 匹配一个非换行符的字符 * 匹配零个或者多个先前字符 .* 可以匹配任意字符 [] 匹配制定范围内的字符 &lt; 锚定单词的开始 \b &hellip;">
+  <meta name="description" content="需要匹配的字符串最好要习惯加上单引号，否则用.或者\&lt;时会无法匹配到-
+大小写敏感 ^ 锚定行的开始 $ 锚定行的结束 以特殊字符为行开始和结束的匹配该怎么写？ . 匹配一个非换行符的字符 * 匹配零个或者多个先前字符 c*um 既匹配了cum又匹配了um，得到如上结果 .* &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -107,19 +108,23 @@
   </header>
 
 
-<div class="entry-content"><p>需要匹配的字符串最好要习惯加上单引号，否则用<code>.</code>或者<code>\&lt;</code>时会无法匹配到</p>
+<div class="entry-content"><ul>
+<li>需要匹配的字符串最好要习惯加上单引号，否则用<code>.</code>或者<code>\&lt;</code>时会无法匹配到-</li>
+<li>大小写敏感</li>
+</ul>
+
 
 <h2>^</h2>
 
 <p>锚定行的开始</p>
 
-<p><img src="/images/^.png" title="^" alt="alt text" /></p>
+<p><img src="/images/grep/^.png" title="^" alt="alt text" /></p>
 
 <h2>$</h2>
 
 <p>锚定行的结束</p>
 
-<p><img src="/images/$.png" title="$" alt="alt text" /></p>
+<p><img src="/images/grep/$.png" title="$" alt="alt text" /></p>
 
 <p><em>以特殊字符为行开始和结束的匹配该怎么写？</em></p>
 
@@ -130,25 +135,35 @@
 <!-- more -->
 
 
+<p><img src="/images/grep/%E7%82%B9%E5%8F%B7.png" alt="alt text" /></p>
+
 <h2>*</h2>
 
 <p>匹配零个或者多个先前字符</p>
 
-<p><em>.* 可以匹配任意字符</em></p>
+<p><img src="/images/grep/%E6%98%9F%E5%8F%B7.png" alt="alt text" /></p>
+
+<p><code>c*um</code> 既匹配了<code>cum</code>又匹配了<code>um</code>，得到如上结果</p>
+
+<p><em><code>.*</code> 可以匹配任意字符</em></p>
 
 <h2>[]</h2>
 
 <p>匹配制定范围内的字符</p>
 
-<p><img src="/images/5.png" title="[]" alt="alt text" /></p>
+<p><img src="/images/grep/5.png" title="[]" alt="alt text" /></p>
 
-<h2>&lt;</h2>
+<h2>\&lt;</h2>
 
 <p>锚定单词的开始</p>
+
+<p><img src="/images/grep/dancikaishi.png" alt="alt text" /></p>
 
 <h2>\b</h2>
 
 <p>单词锁定符</p>
+
+<p><img src="/images/grep/suoding.png" alt="alt text" /></p>
 </div>
 
 

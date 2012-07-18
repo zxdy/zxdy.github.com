@@ -4,7 +4,7 @@
   <title><![CDATA[ZxDy]]></title>
   <link href="http://zxdy.github.com/atom.xml" rel="self"/>
   <link href="http://zxdy.github.com/"/>
-  <updated>2012-07-18T20:46:06+08:00</updated>
+  <updated>2012-07-18T21:36:12+08:00</updated>
   <id>http://zxdy.github.com/</id>
   <author>
     <name><![CDATA[zxdy]]></name>
@@ -18,19 +18,23 @@
     <link href="http://zxdy.github.com/blog/2012/07/17/grep/"/>
     <updated>2012-07-17T22:51:00+08:00</updated>
     <id>http://zxdy.github.com/blog/2012/07/17/grep</id>
-    <content type="html"><![CDATA[<p>需要匹配的字符串最好要习惯加上单引号，否则用<code>.</code>或者<code>\&lt;</code>时会无法匹配到</p>
+    <content type="html"><![CDATA[<ul>
+<li>需要匹配的字符串最好要习惯加上单引号，否则用<code>.</code>或者<code>\&lt;</code>时会无法匹配到-</li>
+<li>大小写敏感</li>
+</ul>
+
 
 <h2>^</h2>
 
 <p>锚定行的开始</p>
 
-<p><img src="http://zxdy.github.com/images/^.png" title="^" alt="alt text" /></p>
+<p><img src="http://zxdy.github.com/images/grep/^.png" title="^" alt="alt text" /></p>
 
 <h2>$</h2>
 
 <p>锚定行的结束</p>
 
-<p><img src="http://zxdy.github.com/images/$.png" title="$" alt="alt text" /></p>
+<p><img src="http://zxdy.github.com/images/grep/$.png" title="$" alt="alt text" /></p>
 
 <p><em>以特殊字符为行开始和结束的匹配该怎么写？</em></p>
 
@@ -41,25 +45,35 @@
 <!-- more -->
 
 
+<p><img src="http://zxdy.github.com/images/grep/%E7%82%B9%E5%8F%B7.png" alt="alt text" /></p>
+
 <h2>*</h2>
 
 <p>匹配零个或者多个先前字符</p>
 
-<p><em>.* 可以匹配任意字符</em></p>
+<p><img src="http://zxdy.github.com/images/grep/%E6%98%9F%E5%8F%B7.png" alt="alt text" /></p>
+
+<p><code>c*um</code> 既匹配了<code>cum</code>又匹配了<code>um</code>，得到如上结果</p>
+
+<p><em><code>.*</code> 可以匹配任意字符</em></p>
 
 <h2>[]</h2>
 
 <p>匹配制定范围内的字符</p>
 
-<p><img src="http://zxdy.github.com/images/5.png" title="[]" alt="alt text" /></p>
+<p><img src="http://zxdy.github.com/images/grep/5.png" title="[]" alt="alt text" /></p>
 
-<h2>&lt;</h2>
+<h2>\&lt;</h2>
 
 <p>锚定单词的开始</p>
+
+<p><img src="http://zxdy.github.com/images/grep/dancikaishi.png" alt="alt text" /></p>
 
 <h2>\b</h2>
 
 <p>单词锁定符</p>
+
+<p><img src="http://zxdy.github.com/images/grep/suoding.png" alt="alt text" /></p>
 ]]></content>
   </entry>
   
