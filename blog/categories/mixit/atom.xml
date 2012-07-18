@@ -4,7 +4,7 @@
   <title><![CDATA[Category: MixIt | ZxDy]]></title>
   <link href="http://zxdy.github.com/blog/categories/mixit/atom.xml" rel="self"/>
   <link href="http://zxdy.github.com/"/>
-  <updated>2012-07-17T23:58:23+08:00</updated>
+  <updated>2012-07-18T20:46:06+08:00</updated>
   <id>http://zxdy.github.com/</id>
   <author>
     <name><![CDATA[zxdy]]></name>
@@ -18,7 +18,7 @@
     <link href="http://zxdy.github.com/blog/2012/07/17/grep/"/>
     <updated>2012-07-17T22:51:00+08:00</updated>
     <id>http://zxdy.github.com/blog/2012/07/17/grep</id>
-    <content type="html"><![CDATA[<p>需要匹配的字符串要加上单引号，否则用<code>.</code>或者<code>\&lt;</code>时会无法匹配到</p>
+    <content type="html"><![CDATA[<p>需要匹配的字符串最好要习惯加上单引号，否则用<code>.</code>或者<code>\&lt;</code>时会无法匹配到</p>
 
 <h2>^</h2>
 
@@ -80,7 +80,7 @@
 
 <p>sed</p>
 
-<p>grep</p>
+<p><a href="http://zxdy.github.com/blog/2012/07/17/grep/">grep</a></p>
 
 <p>awk -F =</p>
 ]]></content>
