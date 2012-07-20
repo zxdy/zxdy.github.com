@@ -228,22 +228,6 @@ setenv &hellip;">
 
 <blockquote><p>Union和 Union all几乎是等效的，但是UNION ALL命令会列出所有的值，而UNION命令只会选取不同的值列出</p></blockquote>
 
-<h3><em>find ~/ -name &#8221;</em>.aic&#8221; -exec rm -rf {} \;*</h3>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>~/ 在根目录下查找
-</span><span class='line'>-name 查找文件名的方式
-</span><span class='line'>"*.aic"文件名中要求后缀是aic的所有文件
-</span><span class='line'>-exec 找到后执行命令
-</span><span class='line'>rm -rf {}命令就是删除文件
-</span><span class='line'>\; ";" 用来结束find 命令序列的-exec 选项</span></code></pre></td></tr></table></div></figure>
-
-
 <h3><em>2>&amp;1</em></h3>
 
 <p>在shell中，每个进程都和三个系统文件相关联：标准输入stdin，标准输出stdout和标准错误stderr，三个系统文件的文件描述符分别为0，1和2。所以这里2>&amp;1的意思就是将标准错误也输出到标准输出当中。</p>

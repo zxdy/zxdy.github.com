@@ -10,7 +10,7 @@
 
   
   <meta name="description" content="
-需要匹配的字符串最好要习惯加上单引号，否则用.或者\&lt;时会无法匹配到-
+需要匹配的字符串最好要习惯加上单引号，否则用.或\&lt;等时会无法匹配到
 大小写敏感 ^ 锚定行的开始 $ 锚定行的结束 以特殊字符为行开始和结束的匹配该怎么写？ . 匹配一个非换行符的字符 ">
   
 
@@ -113,7 +113,7 @@
 
 
   <div class="entry-content"><ul>
-<li>需要匹配的字符串最好要习惯加上单引号，否则用<code>.</code>或者<code>\&lt;</code>时会无法匹配到-</li>
+<li>需要匹配的字符串最好要习惯加上单引号，否则用<code>.</code>或<code>\&lt;</code>等时会无法匹配到</li>
 <li>大小写敏感</li>
 </ul>
 
@@ -337,21 +337,85 @@
   </header>
 
 
-  <div class="entry-content"><p>ps 参数</p>
+  <div class="entry-content"><h3>killall 参数</h3>
 
-<p>kill, killall 参数</p>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>kill pid 删除指定pid的进程
+</span><span class='line'>kill -l 查看所有可供传送的信号
+</span><span class='line'>kill -9 pid 强制删除进程,传送的是SIGKILL信号
+</span><span class='line'>kill -15 pid 强制删除进程,传送的是SIGTERM信号
+</span><span class='line'>kill -HUP pid 重启Deamon进程</span></code></pre></td></tr></table></div></figure>
 
-<p>cp -r</p>
 
-<p>mkdir -p</p>
+<p><code>-v</code> 报告信号是否成功发送；</p>
 
-<p>find</p>
+<h3>cp 复制命令</h3>
 
-<p>sed</p>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>cp -r 复制目录，如果目标目录不存在时新建
+</span><span class='line'>cp -p 此时cp除复制源文件的内容外，还将把其修改时间和访问权限也复制到新文件中
+</span><span class='line'>cp -f  相同文件强制覆盖
+</span><span class='line'>cp -i  与-f相反，覆盖前提示
+</span><span class='line'>cp /test/file1 /test2/file2 把test下的file1复制到test2下，并改名为file2
+</span><span class='line'>cp -a /dir1 /dir2 把dir1及其内部文件、文件夹复制到dir2
+</span><span class='line'>cp -ax /dir1 /dir2 把dir1及其内部文件、文件夹复制到dir2，并更改文件系统格式，如fat32变为ext3 </span></code></pre></td></tr></table></div></figure>
 
-<p><a href="http://zxdy.github.com/blog/2012/07/17/grep/">grep</a></p>
 
-<p>awk -F =</p>
+<h3>mkdir</h3>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>mkdir -m 777 filename           #设置目录权限
+</span><span class='line'>mkdir -p /test1/test2/test3     #直接建立递归目录，即可以在test1,test2不存在的情况下，一次性把从test1到test3的目录生成</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>find</h3>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>find /etc -name passwd -print 在/etc下查找passwd文件，并输出屏幕上
+</span><span class='line'>find / -name core -print -exec rm -rf {} \;查找到结果后，把找到的文件全部删除，{}表示找到文件
+</span><span class='line'>*******参数说明*******
+</span><span class='line'>-name 文件名称
+</span><span class='line'>-print 在屏幕输出
+</span><span class='line'>-amin 分钟(a表示access)
+</span><span class='line'>-atime 24小时数(a表示access)
+</span><span class='line'>-cmin 分钟 (c表示changes)
+</span><span class='line'>-ctime 24小时数 (c表示changes)
+</span><span class='line'>-user 所有者名称
+</span><span class='line'>-exec 找到结果后，接着执行指定程序，须以\;结尾
+</span><span class='line'>-perm 指定权限，如-perm 600
+</span><span class='line'>-size 查找特定大小文件，如-size +1024c表示大于1024字节的文件，单位：b块、c字节、k千字节、w两字节</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>awk 学习笔记</h3>
+
+<p>参见 <a href="http://man.lupaworld.com/content/manage/ringkee/awk.htm#id2875104">这里</a></p>
+
+<h3>sed 学习笔记</h3>
+
+<p>参见 <a href="http://www.tsnc.edu.cn/tsnc_wgrj/doc/sed.htm">这里</a></p>
 </div>
   
   

@@ -4,7 +4,7 @@
   <title><![CDATA[tag: oracle | ZxDy]]></title>
   <link href="http://zxdy.github.com/tags/oracle/atom.xml" rel="self"/>
   <link href="http://zxdy.github.com/"/>
-  <updated>2012-07-18T21:36:12+08:00</updated>
+  <updated>2012-07-20T22:29:33+08:00</updated>
   <id>http://zxdy.github.com/</id>
   <author>
     <name><![CDATA[zxdy]]></name>
@@ -136,21 +136,6 @@
 </span><span class='line'>3.每条 SELECT 语句中的列的顺序必须相同。</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <blockquote><p>Union和 Union all几乎是等效的，但是UNION ALL命令会列出所有的值，而UNION命令只会选取不同的值列出</p></blockquote>
-
-<h3><em>find ~/ -name "</em>.aic" -exec rm -rf {} \;*</h3>
-
-<p><div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>~/ 在根目录下查找
-</span><span class='line'>-name 查找文件名的方式
-</span><span class='line'>"*.aic"文件名中要求后缀是aic的所有文件
-</span><span class='line'>-exec 找到后执行命令
-</span><span class='line'>rm -rf {}命令就是删除文件
-</span><span class='line'>\; ";" 用来结束find 命令序列的-exec 选项</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <h3><em>2>&amp;1</em></h3>
 
