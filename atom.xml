@@ -4,7 +4,7 @@
   <title><![CDATA[ZxDy]]></title>
   <link href="http://zxdy.github.com/atom.xml" rel="self"/>
   <link href="http://zxdy.github.com/"/>
-  <updated>2012-07-20T22:34:10+08:00</updated>
+  <updated>2012-07-23T21:48:26+08:00</updated>
   <id>http://zxdy.github.com/</id>
   <author>
     <name><![CDATA[zxdy]]></name>
@@ -12,6 +12,52 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[java标识符]]></title>
+    <link href="http://zxdy.github.com/blog/2012/07/23/identifier/"/>
+    <updated>2012-07-23T21:35:00+08:00</updated>
+    <id>http://zxdy.github.com/blog/2012/07/23/identifier</id>
+    <content type="html"><![CDATA[<ul>
+<li>在程序中自定义的一些名字</li>
+<li>由26个英文字母大小写，数字：0~9， 符号：_$组成</li>
+<li>定义合法标识符规则：
+
+<ul>
+<li>1、数字不可以开头</li>
+<li>2、不可以使用关键字</li>
+</ul>
+</li>
+<li>Java中严格区分大小写</li>
+<li>起名字时，为了提高阅读性，要尽量有意义</li>
+</ul>
+
+
+<h2>Java中的名词规范</h2>
+
+<ul>
+<li>包名：多个单词组成时所有字母都小写
+
+<ul>
+<li><code>xxxyyyzzz</code></li>
+</ul>
+</li>
+<li>类名接口名：多单词组成时，所有单词的首字母大写
+
+<ul>
+<li><code>XxxYyyZzz</code></li>
+</ul>
+</li>
+<li>常量名：所有字母都大写。多单词时每个单词用下划线连接
+
+<ul>
+<li><code>XXX_YYY_ZZZ</code></li>
+</ul>
+</li>
+</ul>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[grep 简单说明]]></title>

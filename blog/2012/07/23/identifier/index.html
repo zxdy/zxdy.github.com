@@ -5,11 +5,15 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>新博客 - ZxDy</title>
+  <title>java标识符 - ZxDy</title>
   <meta name="author" content="zxdy">
 
   
-  <meta name="description" content="前些天偶然接触到了git，然后又很偶然的接触到了Octopress，折腾了两天总算把新的blog建起来了。我确实很是能折腾新东西。虽然直到现在对中间git，ruby，python等等乱七八糟用到过的东西还是p都不懂。再次要感谢谷歌，感谢度娘。 相比而言，确实比wordpress难搞一点，擦把汗。 &hellip;">
+  <meta name="description" content="在程序中自定义的一些名字
+由26个英文字母大小写，数字：0~9， 符号：_$组成
+定义合法标识符规则： 1、数字不可以开头
+2、不可以使用关键字 Java中严格区分大小写
+起名字时，为了提高阅读性，要尽量有意义 Java中的名词规范 包名：多个单词组成时所有字母都小写 xxxyyyzzz &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -18,7 +22,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://zxdy.github.com/blog/2012/07/15/newblog/">
+  <link rel="canonical" href="http://zxdy.github.com/blog/2012/07/23/identifier/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <script src="/javascripts/modernizr-2.0.js"></script>
@@ -82,7 +86,7 @@
   
   <header>
     
-      <h1 class="entry-title">新博客</h1>
+      <h1 class="entry-title">Java标识符</h1>
     
     
       <p class="meta">
@@ -98,7 +102,7 @@
   
 
 
-<time datetime="2012-07-15T01:05:00+08:00" pubdate data-updated="true">Jul 15<span>th</span>, 2012</time>
+<time datetime="2012-07-23T21:35:00+08:00" pubdate data-updated="true">Jul 23<span>rd</span>, 2012</time>
         
          | <a href="#disqus_thread">Comments</a>
         
@@ -107,36 +111,44 @@
   </header>
 
 
-<div class="entry-content"><p>前些天偶然接触到了git，然后又很偶然的接触到了Octopress，折腾了两天总算把新的blog建起来了。我确实很是能折腾新东西。虽然直到现在对中间<a href="http://rogerdudler.github.com/git-guide/index.zh.html">git</a>，ruby，python等等乱七八糟用到过的东西还是p都不懂。再次要感谢谷歌，感谢度娘。</p>
-
-<p>相比而言，确实比wordpress难搞一点，擦把汗。
-两个晚上加一个白天，现在大致能够使用了。</p>
-
-<p>总的来说，这是一个静态的blog。因为blog本身是静态的，又按我以前的德性懒得更新也是常有的事。so，姑且看看好了。</p>
-
-<p><em>列一下建站过程中的一些问题，以备将来抽风不时之需</em></p>
+<div class="entry-content"><ul>
+<li>在程序中自定义的一些名字</li>
+<li>由26个英文字母大小写，数字：0~9， 符号：_$组成</li>
+<li>定义合法标识符规则：
 
 <ul>
-<li>github</li>
-<li>域名指向</li>
-<li>repo</li>
-<li>本地（win7）搭建环境<code>git</code>, <code>rails</code> &#8211;吐下槽，linux搭环境肯定快多了</li>
-<li>octopress安装</li>
-<li>目录结构啊混蛋，到现在还没弄清楚</li>
-<li>disqus</li>
-<li>new_post, new_page</li>
-<li>编码，中文（标题）支持</li>
-<li>标签云，分类   &#8211;这个花了很久才解决，网上的资料还是不够傻瓜化啊</li>
-<li>codeblock &#8211;这个自带插件显示挺漂亮</li>
-<li>sublime text2 &#8211;神器不解释</li>
-<li>markdown， 配合<a href="http://dillinger.io/">dillinger</a></li>
-<li>还要解决一个分享的问题。web2.0时代嘛</li>
+<li>1、数字不可以开头</li>
+<li>2、不可以使用关键字</li>
+</ul>
+</li>
+<li>Java中严格区分大小写</li>
+<li>起名字时，为了提高阅读性，要尽量有意义</li>
 </ul>
 
 
-<h2>以上，就酱</h2>
+<h2>Java中的名词规范</h2>
 
-<p>还是蛮有成就感</p>
+<ul>
+<li>包名：多个单词组成时所有字母都小写
+
+<ul>
+<li><code>xxxyyyzzz</code></li>
+</ul>
+</li>
+<li>类名接口名：多单词组成时，所有单词的首字母大写
+
+<ul>
+<li><code>XxxYyyZzz</code></li>
+</ul>
+</li>
+<li>常量名：所有字母都大写。多单词时每个单词用下划线连接
+
+<ul>
+<li><code>XXX_YYY_ZZZ</code></li>
+</ul>
+</li>
+</ul>
+
 </div>
 
 
@@ -159,17 +171,23 @@
   
 
 
-<time datetime="2012-07-15T01:05:00+08:00" pubdate data-updated="true">Jul 15<span>th</span>, 2012</time>
+<time datetime="2012-07-23T21:35:00+08:00" pubdate data-updated="true">Jul 23<span>rd</span>, 2012</time>
       
 
 <span class="categories">
   
-    <a class='category' href='/blog/categories/octopress/'>octopress</a>
+    <a class='category' href='/blog/categories/mixit/'>MixIt</a>
   
 </span>
 
 
       
+
+<span class="tags">
+  
+    <a class='tag' href='/tags/java/'>java</a>
+  
+</span>
 
 
     </p>
@@ -197,10 +215,8 @@
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/blog/2012/07/14/defineofjava/" title="Previous Post: 类，成员变量，方法定义格式">&laquo; 类，成员变量，方法定义格式</a>
+        <a class="basic-alignment left" href="/blog/2012/07/17/grep/" title="Previous Post: grep 简单说明">&laquo; grep 简单说明</a>
       
-      
-        <a class="basic-alignment right" href="/blog/2012/07/17/grep/" title="Next Post: grep 简单说明">grep 简单说明 &raquo;</a>
       
     </p>
   </footer>
@@ -266,8 +282,8 @@
       
         
         // var disqus_developer = 1;
-        var disqus_identifier = 'http://zxdy.github.com/blog/2012/07/15/newblog/';
-        var disqus_url = 'http://zxdy.github.com/blog/2012/07/15/newblog/';
+        var disqus_identifier = 'http://zxdy.github.com/blog/2012/07/23/identifier/';
+        var disqus_url = 'http://zxdy.github.com/blog/2012/07/23/identifier/';
         var disqus_script = 'embed.js';
       
     (function () {
