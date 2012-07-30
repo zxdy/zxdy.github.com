@@ -4,7 +4,7 @@
   <title><![CDATA[tag: java | ZxDy]]></title>
   <link href="http://zxdy.github.com/tags/java/atom.xml" rel="self"/>
   <link href="http://zxdy.github.com/"/>
-  <updated>2012-07-23T21:51:14+08:00</updated>
+  <updated>2012-07-30T22:41:44+08:00</updated>
   <id>http://zxdy.github.com/</id>
   <author>
     <name><![CDATA[zxdy]]></name>
@@ -52,6 +52,12 @@
 
 <ul>
 <li><code>XXX_YYY_ZZZ</code></li>
+</ul>
+</li>
+<li>变量名：多单词组成时，第一个单词首字母小写，第二个单词开始每个单词首字母大写
+
+<ul>
+<li><code>xxxYyyZzz</code></li>
 </ul>
 </li>
 </ul>
