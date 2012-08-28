@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[tag: eclipse | ZxDy]]></title>
+  <link href="http://zxdy.github.com/tags/eclipse/atom.xml" rel="self"/>
+  <link href="http://zxdy.github.com/"/>
+  <updated>2012-08-28T21:21:48+08:00</updated>
+  <id>http://zxdy.github.com/</id>
+  <author>
+    <name><![CDATA[zxdy]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[eclipse hotkey]]></title>
+    <link href="http://zxdy.github.com/blog/2012/08/28/eclipse-hotkey/"/>
+    <updated>2012-08-28T21:05:00+08:00</updated>
+    <id>http://zxdy.github.com/blog/2012/08/28/eclipse-hotkey</id>
+    <content type="html"><![CDATA[<h2>编辑</h2>
+
+<ol>
+<li>【ALT+/】
+此快捷键为用户编辑的好帮手，能为用户提供内容的辅助，不要为记不全方法和属性名称犯愁，当记不全类、方法和属性的名字时，多体验一下【ALT+/】快捷键带来的好处吧。</li>
+<li>【Ctrl+O】
+显示类中方法和属性的大纲，能快速定位类的方法和属性，在查找Bug时非常有用。</li>
+<li>【Ctrl+/】
+快速添加注释，能为光标所在行或所选定行快速添加注释或取消注释，在调试的时候可能总会需要注释一些东西或取消注释，现在好了，不需要每行进行重复的注释。</li>
+<li>【Ctrl+D】
+删除当前行。</li>
+<li>【Ctrl+M】
+窗口最大化和还原。</li>
+<li>【ctrl+E】
+ 快速转换编辑器。</li>
+<li>【ctrl+】&amp;【ctrl+1】
+ 下一个错误及快速修改</li>
+</ol>
+
+
+<h2>定位 </h2>
+
+<ol>
+<li>【Ctrl+K】、【Ctrl++Shift+K】
+快速向下和向上查找选定的内容，从此不再需要用鼠标单击查找对话框了。</li>
+<li>【Ctrl+Shift+T】
+查找工作空间（Workspace）构建路径中的可找到Java类文件，不要为找不到类而痛苦，而且可以使用“*”、“？”等通配符。</li>
+<li>【Ctrl+Shift+R】
+和【Ctrl+Shift+T】对应，查找工作空间（Workspace）中的所有文件（包括Java文件），也可以使用通配符。</li>
+<li>【Ctrl+Shift+G】
+查找类、方法和属性的引用。这是一个非常实用的快捷键，例如要修改引用某个方法的代码，可以通过【Ctrl+Shift+G】快捷键迅速定位所有引用此方法的位置。</li>
+<li>【Ctrl+Shift+O】
+快速生成import，当从网上拷贝一段程序后，不知道如何import进所调用的类，试试【Ctrl+Shift+O】快捷键，一定会有惊喜。</li>
+<li>【Ctrl+Shift+F】
+格式化代码，书写格式规范的代码是每一个程序员的必修之课，当看见某段代码极不顺眼时，选定后按【Ctrl+Shift+F】快捷键可以格式化这段代码，如果不选定代码则默认格式化当前文件（Java文件）。</li>
+<li>【ALT+Shift+W】
+查找当前文件所在项目中的路径，可以快速定位浏览器视图的位置，如果想查找某个文件所在的包时，此快捷键非常有用（特别在比较大的项目中,超实用）。</li>
+<li>【Ctrl+L】
+定位到当前编辑器的某一行，对非Java文件也有效。</li>
+<li>【Alt+←】、【Alt+→】
+定位历史记录操作定位</li>
+<li>【F3】
+快速定位光标位置的某个类、方法和属性。</li>
+<li>【F4】
+显示类的继承关系，并打开类继承视图。</li>
+</ol>
+
+]]></content>
+  </entry>
+  
+</feed>
