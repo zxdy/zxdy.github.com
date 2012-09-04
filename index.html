@@ -9,11 +9,16 @@
   <meta name="author" content="zxdy">
 
   
-  <meta name="description" content="编辑 【ALT+/】
-此快捷键为用户编辑的好帮手，能为用户提供内容的辅助，不要为记不全方法和属性名称犯愁，当记不全类、方法和属性的名字时，多体验一下【ALT+/】快捷键带来的好处吧。
-【Ctrl+O】
-显示类中方法和属性的大纲，能快速定位类的方法和属性，在查找Bug时非常有用。
-【Ctrl+/】 &hellip;">
+  <meta name="description" content="你不知道每句话背后的故事，你不知道简单的一句话里有着怎样的玄机
+因为不在一个世界，不在有以前的默契
+因为已经与我无关了
+凭什么
+我说，够了好了吗？
+你看，也不就不过如此而已
+你会发现这样生硬的变化就是这么让人心寒。
+你有没有发现曾经存在而后被理所当然地忘记比从来没有存在过更加悲哀？
+不如不要回忆
+">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -89,6 +94,52 @@
       
   <header>
     
+      <h1 class="entry-title"><a href="/blog/2012/09/04/nothing-to-memory/">Nothing to Memory</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-09-04T20:17:00+08:00" pubdate data-updated="true">Sep 4<span>th</span>, 2012</time>
+        
+         | <a href="/blog/2012/09/04/nothing-to-memory/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>你不知道每句话背后的故事，你不知道简单的一句话里有着怎样的玄机
+因为不在一个世界，不在有以前的默契
+因为已经与我无关了
+凭什么
+我说，够了好了吗？
+你看，也不就不过如此而已
+你会发现这样生硬的变化就是这么让人心寒。
+你有没有发现曾经存在而后被理所当然地忘记比从来没有存在过更加悲哀？
+不如不要回忆</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
       <h1 class="entry-title"><a href="/blog/2012/08/28/eclipse-hotkey/">Eclipse Hotkey</a></h1>
     
     
@@ -146,7 +197,7 @@
 <li>【Ctrl+Shift+G】
 查找类、方法和属性的引用。这是一个非常实用的快捷键，例如要修改引用某个方法的代码，可以通过【Ctrl+Shift+G】快捷键迅速定位所有引用此方法的位置。</li>
 <li>【Ctrl+Shift+O】
-快速生成import，当从网上拷贝一段程序后，不知道如何import进所调用的类，试试【Ctrl+Shift+O】快捷键，一定会有惊喜。</li>
+ 快速生成import，当从网上拷贝一段程序后，不知道如何import进所调用的类，试试【Ctrl+Shift+O】，一定会有惊喜。</li>
 <li>【Ctrl+Shift+F】
 格式化代码，书写格式规范的代码是每一个程序员的必修之课，当看见某段代码极不顺眼时，选定后按【Ctrl+Shift+F】快捷键可以格式化这段代码，如果不选定代码则默认格式化当前文件（Java文件）。</li>
 <li>【ALT+Shift+W】
@@ -159,6 +210,10 @@
 快速定位光标位置的某个类、方法和属性。</li>
 <li>【F4】
 显示类的继承关系，并打开类继承视图。</li>
+<li>【Ctrl+Alt+↑】
+复制粘贴当前选中行。</li>
+<li>【Alt+↑】或【Alt+↓】
+上下移动当前选中行。</li>
 </ol>
 
 </div>
@@ -381,99 +436,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2012/07/14/defineofjava/">类，成员变量，方法定义格式</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-07-14T22:24:00+08:00" pubdate data-updated="true">Jul 14<span>th</span>, 2012</time>
-        
-         | <a href="/blog/2012/07/14/defineofjava/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2>类的定义</h2>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>[修饰符] class &lt;类名> [extends &lt;父类名>] [implements &lt;接口名>]
-</span><span class='line'>{
-</span><span class='line'>   &lt;类的成员变量说明>
-</span><span class='line'>   &lt;类的方法定义>
-</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
-
-
-<h2>成员变量定义</h2>
-
-<ul>
-<li>简单成员变量</li>
-</ul>
-
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>[修饰词] &lt;变量类型> &lt;变量名> = [初值]</span></code></pre></td></tr></table></div></figure>
-
-
-<ul>
-<li>对象成员变量</li>
-</ul>
-
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>[修饰符] &lt;类名> &lt;对象名> = new &lt;类名>(实参表)</span></code></pre></td></tr></table></div></figure>
-
-
-<ul>
-<li>最终变量</li>
-</ul>
-
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>[修饰符] &lt;类型> &lt;变量名> = [初值]</span></code></pre></td></tr></table></div></figure>
-
-
-<h2>方法的定义</h2>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>[修饰符] &lt;类型> &lt;方法名> (参数表) [throws &lt;异常类名列表>]
-</span><span class='line'>{
-</span><span class='line'>   &lt;方法体>
-</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
-
-
-
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/2/">&larr; Older</a>
@@ -487,6 +449,10 @@
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2012/09/04/nothing-to-memory/">nothing to memory</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2012/08/28/eclipse-hotkey/">eclipse hotkey</a>
@@ -504,15 +470,11 @@
         <a href="/blog/2012/07/15/newblog/">新博客</a>
       </li>
     
-      <li class="post">
-        <a href="/blog/2012/07/14/defineofjava/">类，成员变量，方法定义格式</a>
-      </li>
-    
   </ul>
 </section>
 <section>
   <h1>Categories</h1>
-    <ul id="category-list"><li><a href='/blog/categories/java'>Java (2)</a></li><li><a href='/blog/categories/mixit'>Mixit (4)</a></li><li><a href='/blog/categories/octopress'>Octopress (3)</a></li><li><a href='/blog/categories/tools'>Tools (1)</a></li></ul>
+    <ul id="category-list"><li><a href='/blog/categories/java'>Java (2)</a></li><li><a href='/blog/categories/mixit'>Mixit (4)</a></li><li><a href='/blog/categories/octopress'>Octopress (3)</a></li><li><a href='/blog/categories/tools'>Tools (1)</a></li><li><a href='/blog/categories/心情'>心情 (1)</a></li></ul>
 </section>
 
   

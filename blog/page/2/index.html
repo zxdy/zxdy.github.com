@@ -9,16 +9,15 @@
   <meta name="author" content="zxdy">
 
   
-  <meta name="description" content="killall 参数 1
+  <meta name="description" content="类的定义 1
 2
 3
 4
 5
-kill pid 删除指定pid的进程
-kill -l 查看所有可供传送的信号
-kill -9 pid 强制删除进程,传送的是SIGKILL信号
-kill -15 pid 强制删除进程,传送的是SIGTERM信号
-kill -HUP pid &hellip;">
+[修饰符] class &lt;类名> [extends &lt;父类名>] [implements &lt;接口名>]
+{ &lt;类的成员变量说明> &lt;类的方法定义>
+} 成员变量定义 简单成员变量 1
+[修饰词] &lt;变量类型> &lt;变量名 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -88,6 +87,99 @@ kill -HUP pid &hellip;">
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2012/07/14/defineofjava/">类，成员变量，方法定义格式</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-07-14T22:24:00+08:00" pubdate data-updated="true">Jul 14<span>th</span>, 2012</time>
+        
+         | <a href="/blog/2012/07/14/defineofjava/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2>类的定义</h2>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[修饰符] class &lt;类名> [extends &lt;父类名>] [implements &lt;接口名>]
+</span><span class='line'>{
+</span><span class='line'>   &lt;类的成员变量说明>
+</span><span class='line'>   &lt;类的方法定义>
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>成员变量定义</h2>
+
+<ul>
+<li>简单成员变量</li>
+</ul>
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[修饰词] &lt;变量类型> &lt;变量名> = [初值]</span></code></pre></td></tr></table></div></figure>
+
+
+<ul>
+<li>对象成员变量</li>
+</ul>
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[修饰符] &lt;类名> &lt;对象名> = new &lt;类名>(实参表)</span></code></pre></td></tr></table></div></figure>
+
+
+<ul>
+<li>最终变量</li>
+</ul>
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[修饰符] &lt;类型> &lt;变量名> = [初值]</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>方法的定义</h2>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[修饰符] &lt;类型> &lt;方法名> (参数表) [throws &lt;异常类名列表>]
+</span><span class='line'>{
+</span><span class='line'>   &lt;方法体>
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -413,47 +505,9 @@ kill -HUP pid &hellip;">
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2012/07/13/post-title/">Hello World</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-07-13T18:42:00+08:00" pubdate data-updated="true">Jul 13<span>th</span>, 2012</time>
-        
-         | <a href="/blog/2012/07/13/post-title/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h1>This is the first article of zxdy</h1>
-
-<p><em>欢迎来到这里</em></p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
+    
+      <a class="prev" href="/blog/page/3/">&larr; Older</a>
     
     <a href="/blog/archives">Blog Archives</a>
     
@@ -466,6 +520,10 @@ kill -HUP pid &hellip;">
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2012/09/04/nothing-to-memory/">nothing to memory</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2012/08/28/eclipse-hotkey/">eclipse hotkey</a>
@@ -483,15 +541,11 @@ kill -HUP pid &hellip;">
         <a href="/blog/2012/07/15/newblog/">新博客</a>
       </li>
     
-      <li class="post">
-        <a href="/blog/2012/07/14/defineofjava/">类，成员变量，方法定义格式</a>
-      </li>
-    
   </ul>
 </section>
 <section>
   <h1>Categories</h1>
-    <ul id="category-list"><li><a href='/blog/categories/java'>Java (2)</a></li><li><a href='/blog/categories/mixit'>Mixit (4)</a></li><li><a href='/blog/categories/octopress'>Octopress (3)</a></li><li><a href='/blog/categories/tools'>Tools (1)</a></li></ul>
+    <ul id="category-list"><li><a href='/blog/categories/java'>Java (2)</a></li><li><a href='/blog/categories/mixit'>Mixit (4)</a></li><li><a href='/blog/categories/octopress'>Octopress (3)</a></li><li><a href='/blog/categories/tools'>Tools (1)</a></li><li><a href='/blog/categories/心情'>心情 (1)</a></li></ul>
 </section>
 
   
