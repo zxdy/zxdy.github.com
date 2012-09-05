@@ -4,7 +4,7 @@
   <title><![CDATA[ZxDy]]></title>
   <link href="http://zxdy.github.com/atom.xml" rel="self"/>
   <link href="http://zxdy.github.com/"/>
-  <updated>2012-09-05T22:56:08+08:00</updated>
+  <updated>2012-09-05T23:22:07+08:00</updated>
   <id>http://zxdy.github.com/</id>
   <author>
     <name><![CDATA[zxdy]]></name>
@@ -41,8 +41,7 @@
 </span><span class='line'>Build failed</span></code></pre></td></tr></table></div></figure>
 
 
-<pre><code> 说明ant安装成功！因为ant默认运行build.xml文件，这个文件需要我们建立。 
-</code></pre>
+<p>说明ant安装成功！因为ant默认运行build.xml文件，这个文件需要我们建立</p>
 ]]></content>
   </entry>
   
