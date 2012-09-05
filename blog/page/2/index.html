@@ -9,15 +9,7 @@
   <meta name="author" content="zxdy">
 
   
-  <meta name="description" content="类的定义 1
-2
-3
-4
-5
-[修饰符] class &lt;类名> [extends &lt;父类名>] [implements &lt;接口名>]
-{ &lt;类的成员变量说明> &lt;类的方法定义>
-} 成员变量定义 简单成员变量 1
-[修饰词] &lt;变量类型> &lt;变量名 &hellip;">
+  <meta name="description" content="前些天偶然接触到了git，然后又很偶然的接触到了Octopress，折腾了两天总算把新的blog建起来了。我确实很是能折腾新东西。虽然直到现在对中间git，ruby，python等等乱七八糟用到过的东西还是p都不懂。再次要感谢谷歌，感谢度娘。 相比而言，确实比wordpress难搞一点，擦把汗。 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -87,6 +79,73 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2012/07/15/newblog/">新博客</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-07-15T01:05:00+08:00" pubdate data-updated="true">Jul 15<span>th</span>, 2012</time>
+        
+         | <a href="/blog/2012/07/15/newblog/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>前些天偶然接触到了git，然后又很偶然的接触到了Octopress，折腾了两天总算把新的blog建起来了。我确实很是能折腾新东西。虽然直到现在对中间<a href="http://rogerdudler.github.com/git-guide/index.zh.html">git</a>，ruby，python等等乱七八糟用到过的东西还是p都不懂。再次要感谢谷歌，感谢度娘。</p>
+
+<p>相比而言，确实比wordpress难搞一点，擦把汗。
+两个晚上加一个白天，现在大致能够使用了。</p>
+
+<p>总的来说，这是一个静态的blog。因为blog本身是静态的，又按我以前的德性懒得更新也是常有的事。so，姑且看看好了。</p>
+
+<p><em>列一下建站过程中的一些问题，以备将来抽风不时之需</em></p>
+
+<ul>
+<li>github</li>
+<li>域名指向</li>
+<li>repo</li>
+<li>本地（win7）搭建环境<code>git</code>, <code>rails</code> &#8211;吐下槽，linux搭环境肯定快多了</li>
+<li>octopress安装</li>
+<li>目录结构啊混蛋，到现在还没弄清楚</li>
+<li>disqus</li>
+<li>new_post, new_page</li>
+<li>编码，中文（标题）支持</li>
+<li>标签云，分类   &#8211;这个花了很久才解决，网上的资料还是不够傻瓜化啊</li>
+<li>codeblock &#8211;这个自带插件显示挺漂亮</li>
+<li>sublime text2 &#8211;神器不解释</li>
+<li>markdown， 配合<a href="http://dillinger.io/">dillinger</a></li>
+<li>还要解决一个分享的问题。web2.0时代嘛</li>
+</ul>
+
+
+<h2>以上，就酱</h2>
+
+<p>还是蛮有成就感</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -428,83 +487,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2012/07/14/chinesetest/">测试</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-07-14T10:04:00+08:00" pubdate data-updated="true">Jul 14<span>th</span>, 2012</time>
-        
-         | <a href="/blog/2012/07/14/chinesetest/#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2>中文编码测试</h2>
-
-<p>中文标题乱码解决办法</p>
-
-<p>编辑:</p>
-
-<p><code>\Ruby1.9.3\lib\ruby\gems\1.9.1\gems\jekyll-0.11.2\lib\jekyll\convertible.rb</code></p>
-
-<p>把：</p>
-
-<blockquote><p>self.content = File.read(File.join(base, name))</p></blockquote>
-
-<p>改成:</p>
-
-<blockquote><p>self.content = File.read(File.join(base, name),:encoding => &#8220;utf-8&#8221;)</p></blockquote>
-
-<h2>CodeBlock Test</h2>
-
-<figure class='code'><figcaption><span>zxdy&#8217;s box </span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>Codeblock</span></code></pre></td></tr></table></div></figure>
-
-
-
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>code box without title
-</span><span class='line'>aa
-</span><span class='line'>22
-</span><span class='line'>中文</span></code></pre></td></tr></table></div></figure>
-
-
-
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>markdwon</span></code></pre></td></tr></table></div></figure>
-
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/3/">&larr; Older</a>
@@ -522,6 +504,10 @@
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2012/09/05/ant-setup/">ant 安装配置</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2012/09/04/nothing-to-memory/">nothing to memory</a>
       </li>
     
@@ -537,15 +523,11 @@
         <a href="/blog/2012/07/17/grep/">grep 简单说明</a>
       </li>
     
-      <li class="post">
-        <a href="/blog/2012/07/15/newblog/">新博客</a>
-      </li>
-    
   </ul>
 </section>
 <section>
   <h1>Categories</h1>
-    <ul id="category-list"><li><a href='/blog/categories/java'>Java (2)</a></li><li><a href='/blog/categories/mixit'>Mixit (4)</a></li><li><a href='/blog/categories/octopress'>Octopress (3)</a></li><li><a href='/blog/categories/tools'>Tools (1)</a></li><li><a href='/blog/categories/心情'>心情 (1)</a></li></ul>
+    <ul id="category-list"><li><a href='/blog/categories/java'>Java (2)</a></li><li><a href='/blog/categories/mixit'>Mixit (4)</a></li><li><a href='/blog/categories/octopress'>Octopress (3)</a></li><li><a href='/blog/categories/tools'>Tools (2)</a></li><li><a href='/blog/categories/心情'>心情 (1)</a></li></ul>
 </section>
 
   

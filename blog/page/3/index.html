@@ -9,8 +9,7 @@
   <meta name="author" content="zxdy">
 
   
-  <meta name="description" content="This is the first article of zxdy 欢迎来到这里
-">
+  <meta name="description" content="中文编码测试 中文标题乱码解决办法 编辑: \Ruby1.9.3\lib\ruby\gems\1.9.1\gems\jekyll-0.11.2\lib\jekyll\convertible.rb 把： self.content = File.read(File.join(base, name)) &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -86,6 +85,83 @@
       
   <header>
     
+      <h1 class="entry-title"><a href="/blog/2012/07/14/chinesetest/">测试</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-07-14T10:04:00+08:00" pubdate data-updated="true">Jul 14<span>th</span>, 2012</time>
+        
+         | <a href="/blog/2012/07/14/chinesetest/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2>中文编码测试</h2>
+
+<p>中文标题乱码解决办法</p>
+
+<p>编辑:</p>
+
+<p><code>\Ruby1.9.3\lib\ruby\gems\1.9.1\gems\jekyll-0.11.2\lib\jekyll\convertible.rb</code></p>
+
+<p>把：</p>
+
+<blockquote><p>self.content = File.read(File.join(base, name))</p></blockquote>
+
+<p>改成:</p>
+
+<blockquote><p>self.content = File.read(File.join(base, name),:encoding => &#8220;utf-8&#8221;)</p></blockquote>
+
+<h2>CodeBlock Test</h2>
+
+<figure class='code'><figcaption><span>zxdy&#8217;s box </span></figcaption>
+<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Codeblock</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>code box without title
+</span><span class='line'>aa
+</span><span class='line'>22
+</span><span class='line'>中文</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>markdwon</span></code></pre></td></tr></table></div></figure>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
       <h1 class="entry-title"><a href="/blog/2012/07/13/post-title/">Hello World</a></h1>
     
     
@@ -136,6 +212,10 @@
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2012/09/05/ant-setup/">ant 安装配置</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2012/09/04/nothing-to-memory/">nothing to memory</a>
       </li>
     
@@ -151,15 +231,11 @@
         <a href="/blog/2012/07/17/grep/">grep 简单说明</a>
       </li>
     
-      <li class="post">
-        <a href="/blog/2012/07/15/newblog/">新博客</a>
-      </li>
-    
   </ul>
 </section>
 <section>
   <h1>Categories</h1>
-    <ul id="category-list"><li><a href='/blog/categories/java'>Java (2)</a></li><li><a href='/blog/categories/mixit'>Mixit (4)</a></li><li><a href='/blog/categories/octopress'>Octopress (3)</a></li><li><a href='/blog/categories/tools'>Tools (1)</a></li><li><a href='/blog/categories/心情'>心情 (1)</a></li></ul>
+    <ul id="category-list"><li><a href='/blog/categories/java'>Java (2)</a></li><li><a href='/blog/categories/mixit'>Mixit (4)</a></li><li><a href='/blog/categories/octopress'>Octopress (3)</a></li><li><a href='/blog/categories/tools'>Tools (2)</a></li><li><a href='/blog/categories/心情'>心情 (1)</a></li></ul>
 </section>
 
   

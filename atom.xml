@@ -4,7 +4,7 @@
   <title><![CDATA[ZxDy]]></title>
   <link href="http://zxdy.github.com/atom.xml" rel="self"/>
   <link href="http://zxdy.github.com/"/>
-  <updated>2012-09-05T19:51:05+08:00</updated>
+  <updated>2012-09-05T22:44:48+08:00</updated>
   <id>http://zxdy.github.com/</id>
   <author>
     <name><![CDATA[zxdy]]></name>
@@ -12,6 +12,29 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[ant 安装配置]]></title>
+    <link href="http://zxdy.github.com/blog/2012/09/05/ant-setup/"/>
+    <updated>2012-09-05T22:36:00+08:00</updated>
+    <id>http://zxdy.github.com/blog/2012/09/05/ant-setup</id>
+    <content type="html"><![CDATA[<ol>
+<li>下载：到ANT官方网站http://ant.apache.org/ 下载最新版本，解压后即可。</li>
+<li>配置环境变量：我的电脑&#8212;-属性&#8212;&#8211;高级&#8212;-环境变量
+  <code>
+  ANT_HOME：C:\apache-ant-1.7.1
+  PATH：%ANT_HOME%\bin
+ </code></li>
+<li>查看是否安装成功：在dos窗口中输入命令ant，若出现结果
+  <code>
+  Buildfile：build.xml does not exist!
+  Build failed
+ </code>
+ 说明ant安装成功！因为ant默认运行build.xml文件，这个文件需要我们建立。</li>
+</ol>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[nothing to memory]]></title>

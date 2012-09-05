@@ -5,11 +5,12 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>测试 - ZxDy</title>
+  <title>ant 安装配置 - ZxDy</title>
   <meta name="author" content="zxdy">
 
   
-  <meta name="description" content="中文编码测试 中文标题乱码解决办法 编辑: \Ruby1.9.3\lib\ruby\gems\1.9.1\gems\jekyll-0.11.2\lib\jekyll\convertible.rb 把： self.content = File.read(File.join(base, name)) &hellip;">
+  <meta name="description" content="下载：到ANT官方网站http://ant.apache.org/ 下载最新版本，解压后即可。
+配置环境变量：我的电脑&#8212;-属性&#8212;&#8211;高级&#8212;-环境变量 ANT_HOME：C:\apache-ant-1.7.1 PATH：%ANT_HOME%\bin &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -18,7 +19,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://zxdy.github.com/blog/2012/07/14/chinesetest/">
+  <link rel="canonical" href="http://zxdy.github.com/blog/2012/09/05/ant-setup/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <script src="/javascripts/modernizr-2.0.js"></script>
@@ -82,7 +83,7 @@
   
   <header>
     
-      <h1 class="entry-title">测试</h1>
+      <h1 class="entry-title">Ant 安装配置</h1>
     
     
       <p class="meta">
@@ -98,7 +99,7 @@
   
 
 
-<time datetime="2012-07-14T10:04:00+08:00" pubdate data-updated="true">Jul 14<span>th</span>, 2012</time>
+<time datetime="2012-09-05T22:36:00+08:00" pubdate data-updated="true">Sep 5<span>th</span>, 2012</time>
         
          | <a href="#disqus_thread">Comments</a>
         
@@ -107,45 +108,20 @@
   </header>
 
 
-<div class="entry-content"><h2>中文编码测试</h2>
-
-<p>中文标题乱码解决办法</p>
-
-<p>编辑:</p>
-
-<p><code>\Ruby1.9.3\lib\ruby\gems\1.9.1\gems\jekyll-0.11.2\lib\jekyll\convertible.rb</code></p>
-
-<p>把：</p>
-
-<blockquote><p>self.content = File.read(File.join(base, name))</p></blockquote>
-
-<p>改成:</p>
-
-<blockquote><p>self.content = File.read(File.join(base, name),:encoding => &#8220;utf-8&#8221;)</p></blockquote>
-
-<h2>CodeBlock Test</h2>
-
-<figure class='code'><figcaption><span>zxdy&#8217;s box </span></figcaption>
-<div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>Codeblock</span></code></pre></td></tr></table></div></figure>
-
-
-
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>code box without title
-</span><span class='line'>aa
-</span><span class='line'>22
-</span><span class='line'>中文</span></code></pre></td></tr></table></div></figure>
-
-
-
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>markdwon</span></code></pre></td></tr></table></div></figure>
+<div class="entry-content"><ol>
+<li>下载：到ANT官方网站http://ant.apache.org/ 下载最新版本，解压后即可。</li>
+<li>配置环境变量：我的电脑&#8212;-属性&#8212;&#8211;高级&#8212;-环境变量
+  <code>
+  ANT_HOME：C:\apache-ant-1.7.1
+  PATH：%ANT_HOME%\bin
+ </code></li>
+<li>查看是否安装成功：在dos窗口中输入命令ant，若出现结果
+  <code>
+  Buildfile：build.xml does not exist!
+  Build failed
+ </code>
+ 说明ant安装成功！因为ant默认运行build.xml文件，这个文件需要我们建立。</li>
+</ol>
 
 </div>
 
@@ -169,17 +145,23 @@
   
 
 
-<time datetime="2012-07-14T10:04:00+08:00" pubdate data-updated="true">Jul 14<span>th</span>, 2012</time>
+<time datetime="2012-09-05T22:36:00+08:00" pubdate data-updated="true">Sep 5<span>th</span>, 2012</time>
       
 
 <span class="categories">
   
-    <a class='category' href='/blog/categories/octopress/'>octopress</a>
+    <a class='category' href='/blog/categories/tools/'>Tools</a>
   
 </span>
 
 
       
+
+<span class="tags">
+  
+    <a class='tag' href='/tags/ant/'>ant</a>, <a class='tag' href='/tags/eclipse/'>eclipse</a>, <a class='tag' href='/tags/java/'>java</a>
+  
+</span>
 
 
     </p>
@@ -207,10 +189,8 @@
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/blog/2012/07/13/post-title/" title="Previous Post: Hello World">&laquo; Hello World</a>
+        <a class="basic-alignment left" href="/blog/2012/09/04/nothing-to-memory/" title="Previous Post: nothing to memory">&laquo; nothing to memory</a>
       
-      
-        <a class="basic-alignment right" href="/blog/2012/07/14/2012-dot-7-3/" title="Next Post: 2012.7.3">2012.7.3 &raquo;</a>
       
     </p>
   </footer>
@@ -276,8 +256,8 @@
       
         
         // var disqus_developer = 1;
-        var disqus_identifier = 'http://zxdy.github.com/blog/2012/07/14/chinesetest/';
-        var disqus_url = 'http://zxdy.github.com/blog/2012/07/14/chinesetest/';
+        var disqus_identifier = 'http://zxdy.github.com/blog/2012/09/05/ant-setup/';
+        var disqus_url = 'http://zxdy.github.com/blog/2012/09/05/ant-setup/';
         var disqus_script = 'embed.js';
       
     (function () {
