@@ -4,7 +4,7 @@
   <title><![CDATA[tag: sql | ZxDy]]></title>
   <link href="http://zxdy.github.com/tags/sql/atom.xml" rel="self"/>
   <link href="http://zxdy.github.com/"/>
-  <updated>2012-09-18T00:07:25+08:00</updated>
+  <updated>2012-09-18T00:21:02+08:00</updated>
   <id>http://zxdy.github.com/</id>
   <author>
     <name><![CDATA[zxdy]]></name>
@@ -18,7 +18,7 @@
     <link href="http://zxdy.github.com/blog/2012/09/17/sql-test/"/>
     <updated>2012-09-17T23:58:00+08:00</updated>
     <id>http://zxdy.github.com/blog/2012/09/17/sql-test</id>
-    <content type="html"><![CDATA[<p>创建测试表</p>
+    <content type="html"><![CDATA[<h2>创建测试表</h2>
 
 <p>```
 CREATE TABLE "ZXD0"."ZXD_TEST"
@@ -33,8 +33,9 @@ CREATE TABLE "ZXD0"."ZXD_TEST"
 <p>  )
 ```</p>
 
-<p>数据集
-```</p>
+<h2>数据集</h2>
+
+<p>```</p>
 
 <h2>select * from zxd_test;</h2>
 
@@ -49,8 +50,15 @@ zhibing              cheng                25                   hangzhou         
 haidong              xu                   25                   shanghai           <br/>
 xudong               zhang                24                   beijing<br/>
 <code>
-distinct 测试
+* 1.distinct 测试
 </code></p>
+
+<h2>select distinct age from zxd_test;</h2>
+
+<h2>AGE                </h2>
+
+<p>25                 <br/>
+24</p>
 
 <h2>select distinct age,lname from zxd_test;</h2>
 
@@ -65,8 +73,20 @@ distinct 测试
 25                   cheng              <br/>
 24                   zhang     <br/>
 <code>
-partition 测试
+* 2.partition 测试
 </code></p>
+
+<h2>select nvl(sum(age) over (partition by city),0) as age_sum from zxd_test;</h2>
+
+<h2>AGE_SUM</h2>
+
+<pre><code> 24 
+100 
+100 
+100 
+100 
+ 25 
+</code></pre>
 
 <h2>select city,nvl(sum(age) over (partition by city),0) as age_sum from zxd_test;</h2>
 
@@ -81,6 +101,9 @@ hangzhou                 100
 hangzhou                 100
 shanghai                  25
 ```</p>
+
+<!-- more -->
+
 ]]></content>
   </entry>
   

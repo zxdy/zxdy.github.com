@@ -114,7 +114,7 @@ CREATE TABLE "ZXD0"."ZXD_TEST" ( "FNAME" VARCHAR2(20 BYTE), "LNAME" VARCHAR2(20 
   </header>
 
 
-<div class="entry-content"><p>创建测试表</p>
+<div class="entry-content"><h2>创建测试表</h2>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -132,7 +132,7 @@ CREATE TABLE "ZXD0"."ZXD_TEST" ( "FNAME" VARCHAR2(20 BYTE), "LNAME" VARCHAR2(20 
 </span><span class='line'>  )</span></code></pre></td></tr></table></div></figure>
 
 
-<p>数据集</p>
+<h2>数据集</h2>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -156,7 +156,10 @@ CREATE TABLE "ZXD0"."ZXD_TEST" ( "FNAME" VARCHAR2(20 BYTE), "LNAME" VARCHAR2(20 
 </span><span class='line'>xudong               zhang                24                   beijing  </span></code></pre></td></tr></table></div></figure>
 
 
-<p>distinct 测试</p>
+<ul>
+<li>1.distinct 测试</li>
+</ul>
+
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -168,7 +171,21 @@ CREATE TABLE "ZXD0"."ZXD_TEST" ( "FNAME" VARCHAR2(20 BYTE), "LNAME" VARCHAR2(20 
 <span class='line-number'>8</span>
 <span class='line-number'>9</span>
 <span class='line-number'>10</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>select distinct age,lname from zxd_test;
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>select distinct age from zxd_test;
+</span><span class='line'>---
+</span><span class='line'>AGE                
+</span><span class='line'>--------------------
+</span><span class='line'>25                   
+</span><span class='line'>24                   
+</span><span class='line'>
+</span><span class='line'>select distinct age,lname from zxd_test;
 </span><span class='line'>---
 </span><span class='line'>AGE                  LNAME              
 </span><span class='line'>-------------------- --------------------
@@ -180,7 +197,10 @@ CREATE TABLE "ZXD0"."ZXD_TEST" ( "FNAME" VARCHAR2(20 BYTE), "LNAME" VARCHAR2(20 
 </span><span class='line'>24                   zhang       </span></code></pre></td></tr></table></div></figure>
 
 
-<p>partition 测试</p>
+<ul>
+<li>2.partition 测试</li>
+</ul>
+
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -192,7 +212,29 @@ CREATE TABLE "ZXD0"."ZXD_TEST" ( "FNAME" VARCHAR2(20 BYTE), "LNAME" VARCHAR2(20 
 <span class='line-number'>8</span>
 <span class='line-number'>9</span>
 <span class='line-number'>10</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>select city,nvl(sum(age) over (partition by city),0) as age_sum from zxd_test;
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>select nvl(sum(age) over (partition by city),0) as age_sum from zxd_test;
+</span><span class='line'>---
+</span><span class='line'>AGE_SUM
+</span><span class='line'>-------
+</span><span class='line'>     24 
+</span><span class='line'>    100 
+</span><span class='line'>    100 
+</span><span class='line'>    100 
+</span><span class='line'>    100 
+</span><span class='line'>     25 
+</span><span class='line'>
+</span><span class='line'>select city,nvl(sum(age) over (partition by city),0) as age_sum from zxd_test;
 </span><span class='line'>---
 </span><span class='line'>CITY                 AGE_SUM
 </span><span class='line'>-------------------- -------
@@ -202,6 +244,9 @@ CREATE TABLE "ZXD0"."ZXD_TEST" ( "FNAME" VARCHAR2(20 BYTE), "LNAME" VARCHAR2(20 
 </span><span class='line'>hangzhou                 100 
 </span><span class='line'>hangzhou                 100 
 </span><span class='line'>shanghai                  25 </span></code></pre></td></tr></table></div></figure>
+
+
+<!-- more -->
 
 </div>
 
