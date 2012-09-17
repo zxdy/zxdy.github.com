@@ -5,12 +5,18 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Hello World - ZxDy</title>
+  <title>sql test - ZxDy</title>
   <meta name="author" content="zxdy">
 
   
-  <meta name="description" content="This is the first article of zxdy 欢迎来到这里
-">
+  <meta name="description" content="创建测试表 1
+2
+3
+4
+5
+6
+7
+CREATE TABLE "ZXD0"."ZXD_TEST" ( "FNAME" VARCHAR2(20 BYTE), "LNAME" VARCHAR2(20 BYTE), "AGE" VARCHAR2(20 BYTE), "CITY" VARCHAR2( &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -19,7 +25,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://zxdy.github.com/blog/2012/07/13/post-title/">
+  <link rel="canonical" href="http://zxdy.github.com/blog/2012/09/17/sql-test/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <script src="/javascripts/modernizr-2.0.js"></script>
@@ -83,7 +89,7 @@
   
   <header>
     
-      <h1 class="entry-title">Hello World</h1>
+      <h1 class="entry-title">Sql Test</h1>
     
     
       <p class="meta">
@@ -99,7 +105,7 @@
   
 
 
-<time datetime="2012-07-13T18:42:00+08:00" pubdate data-updated="true">Jul 13<span>th</span>, 2012</time>
+<time datetime="2012-09-17T23:58:00+08:00" pubdate data-updated="true">Sep 17<span>th</span>, 2012</time>
         
          | <a href="#disqus_thread">Comments</a>
         
@@ -108,9 +114,95 @@
   </header>
 
 
-<div class="entry-content"><h1>This is the first article of zxdy</h1>
+<div class="entry-content"><p>创建测试表</p>
 
-<p><em>欢迎来到这里</em></p>
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>CREATE TABLE "ZXD0"."ZXD_TEST"
+</span><span class='line'>  (
+</span><span class='line'>    "FNAME" VARCHAR2(20 BYTE),
+</span><span class='line'>    "LNAME" VARCHAR2(20 BYTE),
+</span><span class='line'>    "AGE"   VARCHAR2(20 BYTE),
+</span><span class='line'>    "CITY"  VARCHAR2(20 BYTE)
+</span><span class='line'>  )</span></code></pre></td></tr></table></div></figure>
+
+
+<p>数据集</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>select * from zxd_test;
+</span><span class='line'>---
+</span><span class='line'>FNAME                LNAME                AGE                  CITY               
+</span><span class='line'>-------------------- -------------------- -------------------- --------------------
+</span><span class='line'>xudong               zhao                 25                   hangzhou             
+</span><span class='line'>qian                 he                   25                   hangzhou             
+</span><span class='line'>qi                   chen                 25                   hangzhou             
+</span><span class='line'>zhibing              cheng                25                   hangzhou             
+</span><span class='line'>haidong              xu                   25                   shanghai             
+</span><span class='line'>xudong               zhang                24                   beijing  </span></code></pre></td></tr></table></div></figure>
+
+
+<p>distinct 测试</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>select distinct age,lname from zxd_test;
+</span><span class='line'>---
+</span><span class='line'>AGE                  LNAME              
+</span><span class='line'>-------------------- --------------------
+</span><span class='line'>25                   xu                   
+</span><span class='line'>25                   zhao                 
+</span><span class='line'>25                   he                   
+</span><span class='line'>25                   chen                 
+</span><span class='line'>25                   cheng                
+</span><span class='line'>24                   zhang       </span></code></pre></td></tr></table></div></figure>
+
+
+<p>partition 测试</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>select city,nvl(sum(age) over (partition by city),0) as age_sum from zxd_test;
+</span><span class='line'>---
+</span><span class='line'>CITY                 AGE_SUM
+</span><span class='line'>-------------------- -------
+</span><span class='line'>beijing                   24 
+</span><span class='line'>hangzhou                 100 
+</span><span class='line'>hangzhou                 100 
+</span><span class='line'>hangzhou                 100 
+</span><span class='line'>hangzhou                 100 
+</span><span class='line'>shanghai                  25 </span></code></pre></td></tr></table></div></figure>
+
 </div>
 
 
@@ -133,17 +225,23 @@
   
 
 
-<time datetime="2012-07-13T18:42:00+08:00" pubdate data-updated="true">Jul 13<span>th</span>, 2012</time>
+<time datetime="2012-09-17T23:58:00+08:00" pubdate data-updated="true">Sep 17<span>th</span>, 2012</time>
       
 
 <span class="categories">
   
-    <a class='category' href='/blog/categories/octopress/'>octopress</a>
+    <a class='category' href='/blog/categories/database/'>DATABASE</a>
   
 </span>
 
 
       
+
+<span class="tags">
+  
+    <a class='tag' href='/tags/oracle/'>oracle</a>, <a class='tag' href='/tags/sql/'>sql</a>
+  
+</span>
 
 
     </p>
@@ -171,8 +269,8 @@
     
     <p class="meta">
       
+        <a class="basic-alignment left" href="/blog/2012/09/05/ant-setup/" title="Previous Post: ant 安装配置">&laquo; ant 安装配置</a>
       
-        <a class="basic-alignment right" href="/blog/2012/07/14/chinesetest/" title="Next Post: 测试">测试 &raquo;</a>
       
     </p>
   </footer>
@@ -238,8 +336,8 @@
       
         
         // var disqus_developer = 1;
-        var disqus_identifier = 'http://zxdy.github.com/blog/2012/07/13/post-title/';
-        var disqus_url = 'http://zxdy.github.com/blog/2012/07/13/post-title/';
+        var disqus_identifier = 'http://zxdy.github.com/blog/2012/09/17/sql-test/';
+        var disqus_url = 'http://zxdy.github.com/blog/2012/09/17/sql-test/';
         var disqus_script = 'embed.js';
       
     (function () {

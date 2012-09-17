@@ -4,7 +4,7 @@
   <title><![CDATA[ZxDy]]></title>
   <link href="http://zxdy.github.com/atom.xml" rel="self"/>
   <link href="http://zxdy.github.com/"/>
-  <updated>2012-09-05T23:22:07+08:00</updated>
+  <updated>2012-09-18T00:07:25+08:00</updated>
   <id>http://zxdy.github.com/</id>
   <author>
     <name><![CDATA[zxdy]]></name>
@@ -12,6 +12,103 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[sql test]]></title>
+    <link href="http://zxdy.github.com/blog/2012/09/17/sql-test/"/>
+    <updated>2012-09-17T23:58:00+08:00</updated>
+    <id>http://zxdy.github.com/blog/2012/09/17/sql-test</id>
+    <content type="html"><![CDATA[<p>创建测试表</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>CREATE TABLE "ZXD0"."ZXD_TEST"
+</span><span class='line'>  (
+</span><span class='line'>    "FNAME" VARCHAR2(20 BYTE),
+</span><span class='line'>    "LNAME" VARCHAR2(20 BYTE),
+</span><span class='line'>    "AGE"   VARCHAR2(20 BYTE),
+</span><span class='line'>    "CITY"  VARCHAR2(20 BYTE)
+</span><span class='line'>  )</span></code></pre></td></tr></table></div></figure>
+
+
+<p>数据集</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>select * from zxd_test;
+</span><span class='line'>---
+</span><span class='line'>FNAME                LNAME                AGE                  CITY               
+</span><span class='line'>-------------------- -------------------- -------------------- --------------------
+</span><span class='line'>xudong               zhao                 25                   hangzhou             
+</span><span class='line'>qian                 he                   25                   hangzhou             
+</span><span class='line'>qi                   chen                 25                   hangzhou             
+</span><span class='line'>zhibing              cheng                25                   hangzhou             
+</span><span class='line'>haidong              xu                   25                   shanghai             
+</span><span class='line'>xudong               zhang                24                   beijing  </span></code></pre></td></tr></table></div></figure>
+
+
+<p>distinct 测试</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>select distinct age,lname from zxd_test;
+</span><span class='line'>---
+</span><span class='line'>AGE                  LNAME              
+</span><span class='line'>-------------------- --------------------
+</span><span class='line'>25                   xu                   
+</span><span class='line'>25                   zhao                 
+</span><span class='line'>25                   he                   
+</span><span class='line'>25                   chen                 
+</span><span class='line'>25                   cheng                
+</span><span class='line'>24                   zhang       </span></code></pre></td></tr></table></div></figure>
+
+
+<p>partition 测试</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>select city,nvl(sum(age) over (partition by city),0) as age_sum from zxd_test;
+</span><span class='line'>---
+</span><span class='line'>CITY                 AGE_SUM
+</span><span class='line'>-------------------- -------
+</span><span class='line'>beijing                   24 
+</span><span class='line'>hangzhou                 100 
+</span><span class='line'>hangzhou                 100 
+</span><span class='line'>hangzhou                 100 
+</span><span class='line'>hangzhou                 100 
+</span><span class='line'>shanghai                  25 </span></code></pre></td></tr></table></div></figure>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[ant 安装配置]]></title>
