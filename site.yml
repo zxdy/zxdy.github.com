@@ -1,5 +1,5 @@
 title: 离世庭院
-subtitle: Subtitle of blog
+subtitle: To be a builder,not a imitator
 link: Homepage link
 meta:
   description: Content of description meta tag
@@ -11,14 +11,14 @@ meta:
 master:
   name: Ario
   about: Introduce yourself here
-  email: Your E-mail
+  email: zxdy@vip.qq.com
 rss:
   title: RSS feed title
   desc: RSS feed description
   lang: zh-cn
   max: 10
 copyright:
-  owner: Copyrighter
+  owner: Ario
   beginYear: 2011
   endYear: 2014
 theme: default
