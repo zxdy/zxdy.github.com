@@ -1,15 +1,15 @@
-title: Title of blog
+title: 离世庭院
 subtitle: Subtitle of blog
 link: Homepage link
 meta:
   description: Content of description meta tag
   keywords: !!seq
-    - keyword1
-    - keyword2
-    - keyword3
+    - 代码
+    - 数据库
+    - 信息安全
   author: Content of author meta tag
 master:
-  name: Your name
+  name: Ario
   about: Introduce yourself here
   email: Your E-mail
 rss:
@@ -20,6 +20,6 @@ rss:
 copyright:
   owner: Copyrighter
   beginYear: 2011
-  endYear: 2013
+  endYear: 2014
 theme: default
 codetheme: night
