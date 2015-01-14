@@ -4,14 +4,14 @@
         <title>RSS feed title</title>
         <link>Homepage link</link>
         <description>RSS feed description</description>
-        <lastBuildDate>Wed, 14 Jan 2015 14:56:12 +0800</lastBuildDate>
+        <lastBuildDate>Wed, 14 Jan 2015 15:17:52 +0800</lastBuildDate>
         <language>zh-cn</language>
         
         <item>
             <title>Papery快速指南</title>
             <link>Homepage link/articles/papery-quickstart.html?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</link>
             <guid>Homepage link/articles/papery-quickstart.html</guid>
-            <author>Your E-mail Your name</author>
+            <author>Your E-mail Ario</author>
             <pubDate>Wed, 02 Jan 2013 00:00:00 +0800</pubDate>
             <description>&lt;p&gt;Papery - create your simple, fast &amp; elegant blog with plain text.&lt;/p&gt;
 &lt;h1 id=&quot;使用说明&quot;&gt;使用说明&lt;/h1&gt;
@@ -268,7 +268,7 @@ THE SOFTWARE.&lt;/p&gt;
             <title>代码与数学公式示例</title>
             <link>Homepage link/articles/code-and-math.html?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</link>
             <guid>Homepage link/articles/code-and-math.html</guid>
-            <author>Your E-mail Your name</author>
+            <author>Your E-mail Ario</author>
             <pubDate>Tue, 01 Jan 2013 00:00:00 +0800</pubDate>
             <description>&lt;h1 id=&quot;这是一段代码&quot;&gt;这是一段代码&lt;/h1&gt;
 &lt;pre class=&quot;prettyprint linenums lang-c&quot;&gt;#include &lt;stdio.h&gt;
