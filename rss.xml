@@ -4,8 +4,51 @@
         <title>RSS feed title</title>
         <link>Homepage link</link>
         <description>RSS feed description</description>
-        <lastBuildDate>Sun, 18 Jan 2015 19:42:33 +0800</lastBuildDate>
+        <lastBuildDate>Sun, 18 Jan 2015 19:56:16 +0800</lastBuildDate>
         <language>zh-cn</language>
+        
+        <item>
+            <title>sql developer怎样调试Pipelined</title>
+            <link>Homepage link/articles/debug-Pipelined.html?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</link>
+            <guid>Homepage link/articles/debug-Pipelined.html</guid>
+            <author>zxdy@vip.qq.com Ario</author>
+            <pubDate>Wed, 18 Dec 2013 00:00:00 +0800</pubDate>
+            <description>&lt;p&gt;在sql developer中，如果直接对pipelined语句进行断点debug会报错，那么怎样可以解决这个问题呢？可以用procedure包住这个函数，再进行单步调试。下面是演示的demo。  &lt;/p&gt;
+&lt;h2 id=&quot;准备pipelined&quot;&gt;准备pipelined&lt;/h2&gt;
+&lt;pre class=&quot;prettyprint linenums lang-pl/sql&quot;&gt;CREATE TYPE t_tf_row AS OBJECT (
+  id           NUMBER,
+  description  VARCHAR2(50)
+);
+/
+
+CREATE TYPE t_tf_tab IS TABLE OF t_tf_row;
+/
+
+CREATE OR REPLACE FUNCTION get_tab_ptf (p_rows IN NUMBER) RETURN t_tf_tab PIPELINED AS
+BEGIN
+  FOR i IN 1 .. p_rows LOOP
+    PIPE ROW(t_tf_row(i, &#39;Description for &#39; || i));   
+  END LOOP;
+
+  RETURN;
+END;
+/
+&lt;/pre&gt;
+&lt;h2 id=&quot;然后用procedure包住这个get_tab_ptf函数&quot;&gt;然后用procedure包住这个get_tab_ptf函数&lt;/h2&gt;
+&lt;pre class=&quot;prettyprint linenums lang-pl/sql&quot;&gt;CREATE OR REPLACE
+PROCEDURE test_pipeline
+IS
+BEGIN
+  FOR cur_rec IN (SELECT *  FROM  TABLE(get_tab_ptf(10)))
+  LOOP
+    dbms_output.put_line(&#39;get one row!&#39;);
+  END LOOP;
+END;
+&lt;/pre&gt;
+&lt;h2 id=&quot;断点位置&quot;&gt;断点位置&lt;/h2&gt;
+&lt;p&gt;最后将断点打在test_pipeline的for循环上，对这个procedure进行单步调试就可以跳转到函数get_tab_ptf内部了。&lt;/p&gt;
+</description>
+        </item>
         
         <item>
             <title>oracle dbms_output 在java中输出</title>
@@ -150,7 +193,7 @@ public class Test{
 }
 &lt;/pre&gt;
 &lt;h2 id=&quot;输出的结果&quot;&gt;输出的结果&lt;/h2&gt;
-&lt;p&gt;运行测试代码之后，就可以看见在java 控制台输出了&lt;strong&gt;im in store procedure&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;运行测试代码之后，就可以看见在java 控制台输出了: &lt;strong&gt;im in store procedure&lt;/strong&gt;&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;这样就可以让java为我们输出DBMS_OUTPUT，就像SQL*PLUS一样。你需要做的仅仅是在java运行存储过程之后，调用DbmsOutput.show() ，就能显示这个存储过程内的DBMS_OUTPUT，是不是很方便？再也不用在eclipse和sql develper之间两头调试了&lt;/p&gt;
 &lt;/blockquote&gt;
