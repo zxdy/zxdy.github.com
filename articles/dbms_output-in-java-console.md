@@ -4,7 +4,8 @@
 
 所以在此分享一个解决方案： [原文链接][1] 。05年的一个方法，不知现在有没有更好的：）  
 
-* 存储过程demo
+## 存储过程demo
+
 ```pl/sql
 create or replace
 PROCEDURE test_java_dbmsOutPut
@@ -14,7 +15,9 @@ BEGIN
 END;
 /
 ```
-* 用来输出dbms_output 的类
+
+## 用来输出dbms_output 的类
+
 ```java
 import java.sql.*;
 class DbmsOutput 
@@ -118,10 +121,12 @@ class DbmsOutput
     }
 }
 ```
-* 测试代码
-```java
-import java.sql.*;
 
+## 测试代码
+
+```java
+
+import java.sql.*;
 public class Test{
     public static void main(String args[])
         throws SQLException {
@@ -138,7 +143,14 @@ public class Test{
         conn.close();
     }   
 }
+
 ```
 
-* 输出的结果  
-运行测试代码之后，就可以看见在java 控制台输出了
+## 输出的结果  
+
+运行测试代码之后，就可以看见在java 控制台输出了: **im in store procedure**
+
+
+> 这样就可以让java为我们输出DBMS_OUTPUT，就像SQL*PLUS一样。你需要做的仅仅是在java运行存储过程之后，调用DbmsOutput.show() ，就能显示这个存储过程内的DBMS_OUTPUT，是不是很方便？再也不用在eclipse和sql develper之间两头调试了
+
+[1]: http://asktom.oracle.com/pls/asktom/f?p=100:11:0::::P11_QUESTION_ID:45027262935845

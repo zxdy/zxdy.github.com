@@ -4,7 +4,7 @@
         <title>RSS feed title</title>
         <link>Homepage link</link>
         <description>RSS feed description</description>
-        <lastBuildDate>Sun, 18 Jan 2015 19:28:02 +0800</lastBuildDate>
+        <lastBuildDate>Sun, 18 Jan 2015 19:42:33 +0800</lastBuildDate>
         <language>zh-cn</language>
         
         <item>
@@ -16,126 +16,123 @@
             <description>&lt;p&gt;有没有碰到过这种情况，当你的java程序连接oracle运行存储过程的时候，java控制台只是仅仅输出java程序的相关信息，
 而存储过程中的dbms_output内容却没有办法显示？这样只能跑去sql developer 单独调试存储过程，而不能直接在eclipse
 进行集成测试，出了问题也不好定位。  &lt;/p&gt;
-&lt;p&gt;所以在此分享一个解决方案： [原文链接][1] 。05年的一个方法，不知现在有没有更好的：）  &lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;存储过程demo&lt;pre class=&quot;prettyprint linenums lang-pl/sql&quot;&gt;create or replace
+&lt;p&gt;所以在此分享一个解决方案： &lt;a href=&quot;http://asktom.oracle.com/pls/asktom/f?p=100:11:0::::P11_QUESTION_ID:45027262935845&quot;&gt;原文链接&lt;/a&gt; 。05年的一个方法，不知现在有没有更好的：）  &lt;/p&gt;
+&lt;h2 id=&quot;存储过程demo&quot;&gt;存储过程demo&lt;/h2&gt;
+&lt;pre class=&quot;prettyprint linenums lang-pl/sql&quot;&gt;create or replace
 PROCEDURE test_java_dbmsOutPut
 IS
 BEGIN
- dbms_output.put_line(&#39;im in store procedure&#39;);
+   dbms_output.put_line(&#39;im in store procedure&#39;);
 END;
 /
 &lt;/pre&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;用来输出dbms_output 的类&lt;/p&gt;
+&lt;h2 id=&quot;用来输出dbms_output-的类&quot;&gt;用来输出dbms_output 的类&lt;/h2&gt;
 &lt;pre class=&quot;prettyprint linenums lang-java&quot;&gt;import java.sql.*;
 class DbmsOutput 
-{
-  /*
-   * our instance variables. It is always best to use callable or prepared
-   * statements and prepare (parse) them once per program execution, rather
-   * then one per execution in the program. The cost of reparsing is very
-   * high. Also -- make sure to use BIND VARIABLES!
-   * 
-   * we use three statments in this class. One to enable dbms_output -
-   * equivalent to SET SERVEROUTPUT on in SQL*PLUS. another to disable it --
-   * like SET SERVEROUTPUT OFF. the last is to &quot;dump&quot; or display the results
-   * from dbms_output using system.out
-   */
-  private CallableStatement enable_stmt;
+ {
+    /*
+     * our instance variables. It is always best to use callable or prepared
+     * statements and prepare (parse) them once per program execution, rather
+     * then one per execution in the program. The cost of reparsing is very
+     * high. Also -- make sure to use BIND VARIABLES!
+     * 
+     * we use three statments in this class. One to enable dbms_output -
+     * equivalent to SET SERVEROUTPUT on in SQL*PLUS. another to disable it --
+     * like SET SERVEROUTPUT OFF. the last is to &quot;dump&quot; or display the results
+     * from dbms_output using system.out
+     */
+    private CallableStatement enable_stmt;
 
-  private CallableStatement disable_stmt;
+    private CallableStatement disable_stmt;
 
-  private CallableStatement show_stmt;
+    private CallableStatement show_stmt;
 
-  /*
-   * our constructor simply prepares the three statements we plan on
-   * executing.
-   * 
-   * the statement we prepare for SHOW is a block of code to return a String
-   * of dbms_output output. Normally, you might bind to a PLSQL table type but
-   * the jdbc drivers don&#39;t support PLSQL table types -- hence we get the
-   * output and concatenate it into a string. We will retrieve at least one
-   * line of output -- so we may exceed your MAXBYTES parameter below. If you
-   * set MAXBYTES to 10 and the first line is 100 bytes long, you will get the
-   * 100 bytes. MAXBYTES will stop us from getting yet another line but it
-   * will not chunk up a line.
-   */
-  public DbmsOutput(Connection conn)
-      throws SQLException {
-      enable_stmt = conn.prepareCall(&quot;begin dbms_output.enable(:1); end;&quot;);
-      disable_stmt = conn.prepareCall(&quot;begin dbms_output.disable; end;&quot;);
-      show_stmt =
-          conn.prepareCall(&quot;declare &quot;
-              + &quot;    l_line varchar2(255); &quot;
-              + &quot;    l_done number; &quot;
-              + &quot;    l_buffer long; &quot;
-              + &quot;begin &quot;
-              + &quot;  loop &quot;
-              + &quot;    exit when length(l_buffer)+255 &gt; :maxbytes OR l_done = 1; &quot;
-              + &quot;    dbms_output.get_line( l_line, l_done ); &quot;
-              + &quot;    l_buffer := l_buffer || l_line || chr(10); &quot;
-              + &quot;  end loop; &quot; + &quot; :done := l_done; &quot;
-              + &quot; :buffer := l_buffer; &quot; + &quot;end;&quot;);
-  }
+    /*
+     * our constructor simply prepares the three statements we plan on
+     * executing.
+     * 
+     * the statement we prepare for SHOW is a block of code to return a String
+     * of dbms_output output. Normally, you might bind to a PLSQL table type but
+     * the jdbc drivers don&#39;t support PLSQL table types -- hence we get the
+     * output and concatenate it into a string. We will retrieve at least one
+     * line of output -- so we may exceed your MAXBYTES parameter below. If you
+     * set MAXBYTES to 10 and the first line is 100 bytes long, you will get the
+     * 100 bytes. MAXBYTES will stop us from getting yet another line but it
+     * will not chunk up a line.
+     */
+    public DbmsOutput(Connection conn)
+        throws SQLException {
+        enable_stmt = conn.prepareCall(&quot;begin dbms_output.enable(:1); end;&quot;);
+        disable_stmt = conn.prepareCall(&quot;begin dbms_output.disable; end;&quot;);
+        show_stmt =
+            conn.prepareCall(&quot;declare &quot;
+                + &quot;    l_line varchar2(255); &quot;
+                + &quot;    l_done number; &quot;
+                + &quot;    l_buffer long; &quot;
+                + &quot;begin &quot;
+                + &quot;  loop &quot;
+                + &quot;    exit when length(l_buffer)+255 &gt; :maxbytes OR l_done = 1; &quot;
+                + &quot;    dbms_output.get_line( l_line, l_done ); &quot;
+                + &quot;    l_buffer := l_buffer || l_line || chr(10); &quot;
+                + &quot;  end loop; &quot; + &quot; :done := l_done; &quot;
+                + &quot; :buffer := l_buffer; &quot; + &quot;end;&quot;);
+    }
 
-  /*
-   * enable simply sets your size and executes the dbms_output.enable call
-   */
-  public void enable(int size)
-      throws SQLException {
-      enable_stmt.setInt(1, size);
-      enable_stmt.executeUpdate();
-  }
+    /*
+     * enable simply sets your size and executes the dbms_output.enable call
+     */
+    public void enable(int size)
+        throws SQLException {
+        enable_stmt.setInt(1, size);
+        enable_stmt.executeUpdate();
+    }
 
-  /*
-   * disable only has to execute the dbms_output.disable call
-   */
-  public void disable()
-      throws SQLException {
-      disable_stmt.executeUpdate();
-  }
+    /*
+     * disable only has to execute the dbms_output.disable call
+     */
+    public void disable()
+        throws SQLException {
+        disable_stmt.executeUpdate();
+    }
 
-  /*
-   * show does most of the work. It loops over all of the dbms_output data,
-   * fetching it in this case 32,000 bytes at a time (give or take 255 bytes).
-   * It will print this output on stdout by default (just reset what
-   * System.out is to change or redirect this output).
-   */
-  public void show()
-      throws SQLException {
-      int done = 0;
-      show_stmt.registerOutParameter(2, java.sql.Types.INTEGER);
-      show_stmt.registerOutParameter(3, java.sql.Types.VARCHAR);
-      for (;;) {
-          show_stmt.setInt(1, 32000);
-          show_stmt.executeUpdate();
-          System.out.print(show_stmt.getString(3));
-          if ((done = show_stmt.getInt(2)) == 1)
-              break;
-      }
-  }
+    /*
+     * show does most of the work. It loops over all of the dbms_output data,
+     * fetching it in this case 32,000 bytes at a time (give or take 255 bytes).
+     * It will print this output on stdout by default (just reset what
+     * System.out is to change or redirect this output).
+     */
+    public void show()
+        throws SQLException {
+        int done = 0;
+        show_stmt.registerOutParameter(2, java.sql.Types.INTEGER);
+        show_stmt.registerOutParameter(3, java.sql.Types.VARCHAR);
+        for (;;) {
+            show_stmt.setInt(1, 32000);
+            show_stmt.executeUpdate();
+            System.out.print(show_stmt.getString(3));
+            if ((done = show_stmt.getInt(2)) == 1)
+                break;
+        }
+    }
 
-  /*
-   * close closes the callable statements associated with the DbmsOutput
-   * class. Call this if you allocate a DbmsOutput statement on the stack and
-   * it is going to go out of scope -- just as you would with any callable
-   * statement, result set and so on.
-   */
-  public void close()
-      throws SQLException {
-      enable_stmt.close();
-      disable_stmt.close();
-      show_stmt.close();
-  }
+    /*
+     * close closes the callable statements associated with the DbmsOutput
+     * class. Call this if you allocate a DbmsOutput statement on the stack and
+     * it is going to go out of scope -- just as you would with any callable
+     * statement, result set and so on.
+     */
+    public void close()
+        throws SQLException {
+        enable_stmt.close();
+        disable_stmt.close();
+        show_stmt.close();
+    }
 }
 &lt;/pre&gt;
-&lt;/li&gt;
-&lt;li&gt;测试代码
-```java
-import java.sql.*;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;public class Test{
+&lt;h2 id=&quot;测试代码&quot;&gt;测试代码&lt;/h2&gt;
+&lt;pre class=&quot;prettyprint linenums lang-java&quot;&gt;
+import java.sql.*;
+public class Test{
     public static void main(String args[])
         throws SQLException {
         DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
@@ -149,11 +146,14 @@ import java.sql.*;&lt;/li&gt;
         dbmsOutput.show(); #显示DBMS_OUTPUT
         dbmsOutput.close();
         conn.close();
-    }&lt;br&gt;}
-```&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;输出的结果&lt;br&gt;运行测试代码之后，就可以看见在java 控制台输出了&lt;/li&gt;
-&lt;/ul&gt;
+    }   
+}
+&lt;/pre&gt;
+&lt;h2 id=&quot;输出的结果&quot;&gt;输出的结果&lt;/h2&gt;
+&lt;p&gt;运行测试代码之后，就可以看见在java 控制台输出了&lt;strong&gt;im in store procedure&lt;/strong&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;这样就可以让java为我们输出DBMS_OUTPUT，就像SQL*PLUS一样。你需要做的仅仅是在java运行存储过程之后，调用DbmsOutput.show() ，就能显示这个存储过程内的DBMS_OUTPUT，是不是很方便？再也不用在eclipse和sql develper之间两头调试了&lt;/p&gt;
+&lt;/blockquote&gt;
 </description>
         </item>
         
