@@ -1,3 +1,10 @@
+- id: locate-exception-line
+  title: oracle 存储过程显示异常行
+  postedOn: !!str 2013-12-18
+  author: Ario
+  tags:
+    - Oracle
+  abstract: 记一个写pl/sql比较有用的技巧。当oracle的存储过程运行出现异常的时候，虽然可以被exception抓到，但是无法定位究竟是在之前的业务处理逻辑代码哪一行出现了问题，调试起来不方便...
 - id: debug-Pipelined
   title: sql developer怎样调试Pipelined
   postedOn: !!str 2013-12-18

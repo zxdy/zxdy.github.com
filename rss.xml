@@ -4,8 +4,75 @@
         <title>RSS feed title</title>
         <link>Homepage link</link>
         <description>RSS feed description</description>
-        <lastBuildDate>Sun, 18 Jan 2015 19:56:16 +0800</lastBuildDate>
+        <lastBuildDate>Sun, 18 Jan 2015 20:13:33 +0800</lastBuildDate>
         <language>zh-cn</language>
+        
+        <item>
+            <title>oracle 存储过程显示异常行</title>
+            <link>Homepage link/articles/locate-exception-line.html?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</link>
+            <guid>Homepage link/articles/locate-exception-line.html</guid>
+            <author>zxdy@vip.qq.com Ario</author>
+            <pubDate>Wed, 18 Dec 2013 00:00:00 +0800</pubDate>
+            <description>&lt;p&gt;记一个写pl/sql比较有用的技巧。当oracle的存储过程运行出现异常的时候，虽然可以被exception抓到，但是无法定位究竟是在之前的业务处理逻辑代码哪一行出现了问题，调试起来不方便。比如下面的demo运行之后&lt;/p&gt;
+&lt;pre class=&quot;prettyprint linenums lang-pl/sql&quot;&gt;CREATE OR REPLACE
+  FUNCTION FUNC
+    RETURN NUMBER
+  AS
+    v_in NUMBER;
+    v_out NUMBER;
+
+  BEGIN
+    v_in :=12;
+    dbms_output.put_line(v_in);
+    v_out:=v_in/0;
+    RETURN v_out;
+  EXCEPTION
+  WHEN OTHERS THEN
+    dbms_output.put_line(&#39;######exception:&#39;);
+  END FUNC;
+&lt;/pre&gt;
+&lt;p&gt;显示的结果如下，并没有显示真正异常的代码行号&lt;/p&gt;
+&lt;pre class=&quot;prettyprint linenums lang-text&quot;&gt;Connecting to the database dev74.
+ORA-06503: PL/SQL: Function returned without value
+ORA-06512: at &quot;TLSPID.FUNC&quot;, line 16
+ORA-06512: at line 5
+12
+######exception:
+Process exited.
+Disconnecting from the database dev74.
+&lt;/pre&gt;
+&lt;p&gt;但是只要在exception代码块中加上第16行的代码&lt;/p&gt;
+&lt;pre class=&quot;prettyprint linenums lang-pl/sql&quot;&gt;CREATE OR REPLACE
+  FUNCTION FUNC
+    RETURN NUMBER
+  AS
+    v_in NUMBER;
+    v_out NUMBER;
+
+  BEGIN
+    v_in :=12;
+    dbms_output.put_line(v_in);
+    v_out:=v_in/0;
+    RETURN v_out;
+  EXCEPTION
+  WHEN OTHERS THEN
+    dbms_output.put_line(&#39;######exception:&#39;);
+    dbms_output.put_line(dbms_utility.format_error_backtrace());
+  END FUNC;
+&lt;/pre&gt;
+&lt;p&gt;运行后结果如下，可以看到第7行显示了出错的地方。实际使用的时候注意出错的行号应该是报错的下一行。比如下面显示第10行报错，但实际应该是第11行出错。&lt;/p&gt;
+&lt;pre class=&quot;prettyprint linenums lang-text&quot;&gt;Connecting to the database dev74.
+ORA-06503: PL/SQL: Function returned without value
+ORA-06512: at &quot;TLSPID.FUNC&quot;, line 16
+ORA-06512: at line 5
+12
+######exception:
+ORA-06512: at &quot;TLSPID.FUNC&quot;, line 10
+Process exited.
+Disconnecting from the database dev74.
+&lt;/pre&gt;
+</description>
+        </item>
         
         <item>
             <title>sql developer怎样调试Pipelined</title>

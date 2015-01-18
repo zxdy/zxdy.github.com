@@ -1,0 +1,138 @@
+<!doctype html>
+<html>
+    <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <meta name="description" content="Content of description meta tag"/>
+        <meta name="keywords" content="代码,数据库,信息安全"/>
+        <meta name="author" content="Content of author meta tag"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+        <title>离世庭院 - oracle 存储过程显示异常行
+</title>
+        <link rel="stylesheet" href="/assets/vendor/normalize.css"/>
+        <link rel="stylesheet" href="/assets/vendor/prettify-night.css"/>
+        <link rel="stylesheet" href="/assets/themes/default/main.css"/>
+        <link rel="shortcut icon" href="/fav.ico"/>
+        <script type="text/javascript" src="/assets/vendor/prettify.js"></script>
+        
+    </head>
+    <body onload="prettyPrint()">
+    <div id="header">
+        <div id="header-inner">
+            <div id="title"><a href="/">离世庭院</a></div>
+            <div id="subtitle">To be a builder,not a imitator</div>
+        </div>
+    </div>
+
+<div id="main">
+    <div id="main-inner">
+        <div id="topnav">
+            <ul>
+                <li><a href="/">首页</a></li>
+                <li class="sep"> | </li>
+                <li><a href="/tag.html">标签</a></li>
+                
+<li class="sep"> | </li>
+<li><a href="/pages/about-me.html" target="_self">关于我</a></li>
+
+<li class="sep"> | </li>
+<li><a href="https://github.com/zxdy" target="_blank">github</a></li>
+
+
+            </ul>
+            <div style="clear:both;"></div>
+        </div>
+        <div id="article-title">
+            <a href="/articles/locate-exception-line.html">oracle 存储过程显示异常行</a>
+        </div>
+        <div id="article-meta">
+            作者 Ario | 发布于 2013-12-18
+        </div>
+        <div id="article-tags">
+        
+        <a class="tag" href="/tag.html#Oracle">Oracle</a>
+        
+        </div>
+        <div id="article-content">
+            <p>记一个写pl/sql比较有用的技巧。当oracle的存储过程运行出现异常的时候，虽然可以被exception抓到，但是无法定位究竟是在之前的业务处理逻辑代码哪一行出现了问题，调试起来不方便。比如下面的demo运行之后</p>
+<pre class="prettyprint linenums lang-pl/sql">CREATE OR REPLACE
+  FUNCTION FUNC
+    RETURN NUMBER
+  AS
+    v_in NUMBER;
+    v_out NUMBER;
+
+  BEGIN
+    v_in :=12;
+    dbms_output.put_line(v_in);
+    v_out:=v_in/0;
+    RETURN v_out;
+  EXCEPTION
+  WHEN OTHERS THEN
+    dbms_output.put_line(&#39;######exception:&#39;);
+  END FUNC;
+</pre>
+<p>显示的结果如下，并没有显示真正异常的代码行号</p>
+<pre class="prettyprint linenums lang-text">Connecting to the database dev74.
+ORA-06503: PL/SQL: Function returned without value
+ORA-06512: at &quot;TLSPID.FUNC&quot;, line 16
+ORA-06512: at line 5
+12
+######exception:
+Process exited.
+Disconnecting from the database dev74.
+</pre>
+<p>但是只要在exception代码块中加上第16行的代码</p>
+<pre class="prettyprint linenums lang-pl/sql">CREATE OR REPLACE
+  FUNCTION FUNC
+    RETURN NUMBER
+  AS
+    v_in NUMBER;
+    v_out NUMBER;
+
+  BEGIN
+    v_in :=12;
+    dbms_output.put_line(v_in);
+    v_out:=v_in/0;
+    RETURN v_out;
+  EXCEPTION
+  WHEN OTHERS THEN
+    dbms_output.put_line(&#39;######exception:&#39;);
+    dbms_output.put_line(dbms_utility.format_error_backtrace());
+  END FUNC;
+</pre>
+<p>运行后结果如下，可以看到第7行显示了出错的地方。实际使用的时候注意出错的行号应该是报错的下一行。比如下面显示第10行报错，但实际应该是第11行出错。</p>
+<pre class="prettyprint linenums lang-text">Connecting to the database dev74.
+ORA-06503: PL/SQL: Function returned without value
+ORA-06512: at &quot;TLSPID.FUNC&quot;, line 16
+ORA-06512: at line 5
+12
+######exception:
+ORA-06512: at &quot;TLSPID.FUNC&quot;, line 10
+Process exited.
+Disconnecting from the database dev74.
+</pre>
+
+        </div>
+        
+    </div>
+</div>
+        <div id="footer">
+            <div id="footer-inner">
+                <p id="copyright">Copyright (c) 2011-2014 Ario</p>
+            </div>
+        </div>
+        <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [['$','$'], ['\\(','\\)']],
+            processEscapes: true
+        }
+    });
+</script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+    </body>
+</html>
+
