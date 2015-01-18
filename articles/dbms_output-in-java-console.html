@@ -1,0 +1,221 @@
+<!doctype html>
+<html>
+    <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <meta name="description" content="Content of description meta tag"/>
+        <meta name="keywords" content="代码,数据库,信息安全"/>
+        <meta name="author" content="Content of author meta tag"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+        <title>离世庭院 - oracle dbms_output 在java中输出
+</title>
+        <link rel="stylesheet" href="/assets/vendor/normalize.css"/>
+        <link rel="stylesheet" href="/assets/vendor/prettify-night.css"/>
+        <link rel="stylesheet" href="/assets/themes/default/main.css"/>
+        <link rel="shortcut icon" href="/fav.ico"/>
+        <script type="text/javascript" src="/assets/vendor/prettify.js"></script>
+        
+    </head>
+    <body onload="prettyPrint()">
+    <div id="header">
+        <div id="header-inner">
+            <div id="title"><a href="/">离世庭院</a></div>
+            <div id="subtitle">To be a builder,not a imitator</div>
+        </div>
+    </div>
+
+<div id="main">
+    <div id="main-inner">
+        <div id="topnav">
+            <ul>
+                <li><a href="/">首页</a></li>
+                <li class="sep"> | </li>
+                <li><a href="/tag.html">标签</a></li>
+                
+<li class="sep"> | </li>
+<li><a href="/pages/about-me.html" target="_self">关于我</a></li>
+
+<li class="sep"> | </li>
+<li><a href="https://github.com/zxdy" target="_blank">github</a></li>
+
+
+            </ul>
+            <div style="clear:both;"></div>
+        </div>
+        <div id="article-title">
+            <a href="/articles/dbms_output-in-java-console.html">oracle dbms_output 在java中输出</a>
+        </div>
+        <div id="article-meta">
+            作者 Ario | 发布于 2013-12-13
+        </div>
+        <div id="article-tags">
+        
+        <a class="tag" href="/tag.html#Oracle">Oracle</a>
+        
+        </div>
+        <div id="article-content">
+            <p>有没有碰到过这种情况，当你的java程序连接oracle运行存储过程的时候，java控制台只是仅仅输出java程序的相关信息，
+而存储过程中的dbms_output内容却没有办法显示？这样只能跑去sql developer 单独调试存储过程，而不能直接在eclipse
+进行集成测试，出了问题也不好定位。  </p>
+<p>所以在此分享一个解决方案： [原文链接][1] 。05年的一个方法，不知现在有没有更好的：）  </p>
+<ul>
+<li>存储过程demo<pre class="prettyprint linenums lang-pl/sql">create or replace
+PROCEDURE test_java_dbmsOutPut
+IS
+BEGIN
+ dbms_output.put_line(&#39;im in store procedure&#39;);
+END;
+/
+</pre>
+</li>
+<li><p>用来输出dbms_output 的类</p>
+<pre class="prettyprint linenums lang-java">import java.sql.*;
+class DbmsOutput 
+{
+  /*
+   * our instance variables. It is always best to use callable or prepared
+   * statements and prepare (parse) them once per program execution, rather
+   * then one per execution in the program. The cost of reparsing is very
+   * high. Also -- make sure to use BIND VARIABLES!
+   * 
+   * we use three statments in this class. One to enable dbms_output -
+   * equivalent to SET SERVEROUTPUT on in SQL*PLUS. another to disable it --
+   * like SET SERVEROUTPUT OFF. the last is to &quot;dump&quot; or display the results
+   * from dbms_output using system.out
+   */
+  private CallableStatement enable_stmt;
+
+  private CallableStatement disable_stmt;
+
+  private CallableStatement show_stmt;
+
+  /*
+   * our constructor simply prepares the three statements we plan on
+   * executing.
+   * 
+   * the statement we prepare for SHOW is a block of code to return a String
+   * of dbms_output output. Normally, you might bind to a PLSQL table type but
+   * the jdbc drivers don&#39;t support PLSQL table types -- hence we get the
+   * output and concatenate it into a string. We will retrieve at least one
+   * line of output -- so we may exceed your MAXBYTES parameter below. If you
+   * set MAXBYTES to 10 and the first line is 100 bytes long, you will get the
+   * 100 bytes. MAXBYTES will stop us from getting yet another line but it
+   * will not chunk up a line.
+   */
+  public DbmsOutput(Connection conn)
+      throws SQLException {
+      enable_stmt = conn.prepareCall(&quot;begin dbms_output.enable(:1); end;&quot;);
+      disable_stmt = conn.prepareCall(&quot;begin dbms_output.disable; end;&quot;);
+      show_stmt =
+          conn.prepareCall(&quot;declare &quot;
+              + &quot;    l_line varchar2(255); &quot;
+              + &quot;    l_done number; &quot;
+              + &quot;    l_buffer long; &quot;
+              + &quot;begin &quot;
+              + &quot;  loop &quot;
+              + &quot;    exit when length(l_buffer)+255 &gt; :maxbytes OR l_done = 1; &quot;
+              + &quot;    dbms_output.get_line( l_line, l_done ); &quot;
+              + &quot;    l_buffer := l_buffer || l_line || chr(10); &quot;
+              + &quot;  end loop; &quot; + &quot; :done := l_done; &quot;
+              + &quot; :buffer := l_buffer; &quot; + &quot;end;&quot;);
+  }
+
+  /*
+   * enable simply sets your size and executes the dbms_output.enable call
+   */
+  public void enable(int size)
+      throws SQLException {
+      enable_stmt.setInt(1, size);
+      enable_stmt.executeUpdate();
+  }
+
+  /*
+   * disable only has to execute the dbms_output.disable call
+   */
+  public void disable()
+      throws SQLException {
+      disable_stmt.executeUpdate();
+  }
+
+  /*
+   * show does most of the work. It loops over all of the dbms_output data,
+   * fetching it in this case 32,000 bytes at a time (give or take 255 bytes).
+   * It will print this output on stdout by default (just reset what
+   * System.out is to change or redirect this output).
+   */
+  public void show()
+      throws SQLException {
+      int done = 0;
+      show_stmt.registerOutParameter(2, java.sql.Types.INTEGER);
+      show_stmt.registerOutParameter(3, java.sql.Types.VARCHAR);
+      for (;;) {
+          show_stmt.setInt(1, 32000);
+          show_stmt.executeUpdate();
+          System.out.print(show_stmt.getString(3));
+          if ((done = show_stmt.getInt(2)) == 1)
+              break;
+      }
+  }
+
+  /*
+   * close closes the callable statements associated with the DbmsOutput
+   * class. Call this if you allocate a DbmsOutput statement on the stack and
+   * it is going to go out of scope -- just as you would with any callable
+   * statement, result set and so on.
+   */
+  public void close()
+      throws SQLException {
+      enable_stmt.close();
+      disable_stmt.close();
+      show_stmt.close();
+  }
+}
+</pre>
+</li>
+<li>测试代码
+```java
+import java.sql.*;</li>
+</ul>
+<p>public class Test{
+    public static void main(String args[])
+        throws SQLException {
+        DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
+        Connection conn = DBAgent.getConn(); 
+        conn.setAutoCommit(false);
+        Statement stmt = conn.createStatement();
+        DbmsOutput dbmsOutput = new DbmsOutput(conn);
+        dbmsOutput.enable(1000000);
+        stmt.execute(&quot;begin test_java_dbmsOutPut; end;&quot;); #调用存储过程
+        stmt.close();
+        dbmsOutput.show(); #显示DBMS_OUTPUT
+        dbmsOutput.close();
+        conn.close();
+    }<br>}
+```</p>
+<ul>
+<li>输出的结果<br>运行测试代码之后，就可以看见在java 控制台输出了</li>
+</ul>
+
+        </div>
+        
+    </div>
+</div>
+        <div id="footer">
+            <div id="footer-inner">
+                <p id="copyright">Copyright (c) 2011-2014 Ario</p>
+            </div>
+        </div>
+        <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [['$','$'], ['\\(','\\)']],
+            processEscapes: true
+        }
+    });
+</script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+    </body>
+</html>
+
