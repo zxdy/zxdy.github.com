@@ -1,9 +1,16 @@
+- id: dbms_output-in-java-console
+  title: oracle dbms_output 在java中输出
+  postedOn: !!str 2013-12-13
+  author: Ario
+  tags:
+    - Oracle
+  abstract: 当java调用oracle存储过程的时候，能让java得到存储过程中的dbms_output输出
+
 - id: papery-quickstart
   title: Papery快速指南
   postedOn: !!str 2013-01-02
   author: Papery
   tags: 
-    - Papery
     - 指南
   abstract: 快速了解如何使用Papery。
 
@@ -12,7 +19,6 @@
   postedOn: !!str 2013-01-01
   author: Papery
   tags:
-    - Papery
     - 代码
     - 数学公式
   abstract: 展示了一些代码和数学公式显示效果。
