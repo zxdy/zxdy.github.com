@@ -4,8 +4,158 @@
         <title>RSS feed title</title>
         <link>Homepage link</link>
         <description>RSS feed description</description>
-        <lastBuildDate>Mon, 19 Jan 2015 11:27:18 +0800</lastBuildDate>
+        <lastBuildDate>Tue, 20 Jan 2015 13:45:02 +0800</lastBuildDate>
         <language>zh-cn</language>
+        
+        <item>
+            <title>大文件读写效率比较</title>
+            <link>Homepage link/articles/file-read-write-compare.html?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</link>
+            <guid>Homepage link/articles/file-read-write-compare.html</guid>
+            <author>zxdy@vip.qq.com Ario</author>
+            <pubDate>Thu, 15 Jan 2015 00:00:00 +0800</pubDate>
+            <description>&lt;p&gt;之前做到一个大日志文件（size &gt; 1G）解析的项目，在此记录下对于大文本解析方式的效率比较。不同方式的性能差别很大，那个项目的日志解析时间能从原来的超过36小时优化到只需要2分钟，awk功不可没。&lt;/p&gt;
+&lt;h2 id=&quot;bash-比较&quot;&gt;bash 比较&lt;/h2&gt;
+&lt;p&gt;bash脚本中对于文本的读取主要有以下四种，尽管 AWK 具有完全属于其本身的语法，但在此我也把它归在一起：&lt;/p&gt;
+&lt;pre class=&quot;prettyprint linenums lang-bash&quot;&gt;#方法一
+func1(){
+    rm -f $2
+    echo &quot;$(date) start to read&quot;
+    start_time=$(date +%s)
+    cat $1|while read Line
+    do
+        echo $Line &gt;&gt; $2
+    done
+    end_time=$(date +%s)
+    echo &quot;$(date) end to read&quot;
+    echo &quot;cost: &quot;$((end_time-start_time))&quot;sec&quot;
+}
+
+#方法二
+func2(){
+    rm -f $2
+    echo &quot;$(date) start to read&quot;
+    start_time=$(date +%s)
+    while read Line
+    do
+        echo $Line &gt;&gt; $2
+    done &lt;$1
+    end_time=$(date +%s)
+    echo &quot;$(date) end to read&quot;
+    echo &quot;cost: &quot;$((end_time-start_time))&quot;sec&quot;
+}
+
+#方法三
+func3(){
+    rm -f $2
+    echo &quot;$(date) start to read&quot;
+    start_time=$(date +%s)
+    for Line in `cat $1`
+    do
+        echo $Line &gt;&gt; $2
+    done
+    end_time=$(date +%s)
+    echo &quot;$(date) end to read&quot;
+    echo &quot;cost: &quot;$((end_time-start_time))&quot;sec&quot;
+}
+
+#func4
+func4(){
+    rm -f $2
+    echo &quot;$(date) start to read&quot;
+    start_time=$(date +%s)
+    awk &#39;{print $0}&#39; $1 &gt; $2
+    echo &quot;$(date) end to read&quot;
+    echo &quot;cost: &quot;$((end_time-start_time))&quot;sec&quot;
+}
+
+
+source=$1
+dest=$2
+
+#比较结果：
+echo &quot;####cat read: &quot;
+func1 $source $dest
+echo &quot;####redirect read: &quot;
+func2 $source $dest
+echo &quot;####for read: &quot;
+func3 $source $dest
+echo &quot;####awk read: &quot;
+func4 $source $dest
+&lt;/pre&gt;
+&lt;p&gt;结果:&lt;/p&gt;
+&lt;p&gt;cat read:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Thu Jan 15 07:57:50 GMT 2015 start to read&lt;/p&gt;
+&lt;p&gt;Thu Jan 15 07:58:33 GMT 2015 end to read&lt;/p&gt;
+&lt;p&gt;cost: 43sec&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;redirect read:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Thu Jan 15 07:58:33 GMT 2015 start to read&lt;/p&gt;
+&lt;p&gt;Thu Jan 15 07:59:01 GMT 2015 end to read&lt;/p&gt;
+&lt;p&gt;cost: 28sec&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;for read:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Thu Jan 15 07:59:01 GMT 2015 start to read&lt;/p&gt;
+&lt;p&gt;Thu Jan 15 08:00:00 GMT 2015 end to read&lt;/p&gt;
+&lt;p&gt;cost: 59sec&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;awk read:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Thu Jan 15 08:00:00 GMT 2015 start to read&lt;/p&gt;
+&lt;p&gt;Thu Jan 15 08:00:00 GMT 2015 end to read&lt;/p&gt;
+&lt;p&gt;cost: 0sec&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;从以上结果可以看出，awk的效率远超其他方法&lt;/p&gt;
+&lt;h2 id=&quot;python-比较&quot;&gt;python 比较&lt;/h2&gt;
+&lt;p&gt;python 有三种读取文件的方法：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;read() 会将所有内容读入到一个字符串中&lt;/li&gt;
+&lt;li&gt;readline() 每次读取一行&lt;/li&gt;
+&lt;li&gt;readlines() 将所有内容按行读取，返回一个列表，列表中每个元素是一个字符串，一个字符串是一行内容&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;所以从效率上讲， read() 和readlines()会比readline()高，但是同时对内存的要求也比较高，需要能一次性将文件内容放入内存中。但是如果这个文件很大的话，就会影响到程序运行的速度，甚至会导致程序挂掉，此时分行读取或是设置buff_size会是个更好的选择&lt;/p&gt;
+&lt;pre class=&quot;prettyprint linenums lang-python&quot;&gt;#!/usr/bin/env python
+import time
+import os
+def func1(source,dest):
+    os.remove(dest)
+    with open(source, &#39;r&#39;) as fr:
+        content=fr.read()
+    with open(dest,&#39;w&#39;) as fw:
+        fw.write(content)
+def  func2(source,dest):
+    os.remove(dest)
+    fw=open(dest,&#39;w&#39;)
+    for line in open(source,&#39;r&#39;):
+        fw.write(line)
+    fw.close
+if __name__ == &#39;__main__&#39;:
+    from timeit import Timer
+    t1=Timer(&quot;func1(&#39;log&#39;,&#39;log1&#39;)&quot;,&quot;from __main__ import func1&quot;)
+    t2=Timer(&quot;func2(&#39;log&#39;,&#39;log1&#39;)&quot;,&quot;from __main__ import func2&quot;)
+    print &quot;read once: &quot;+str(t1.timeit(1))
+    print &quot;read line: &quot;+str(t2.timeit(1))
+&lt;/pre&gt;
+&lt;p&gt;40M文件5次处理时间：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;read once: 0.308089971542&lt;/p&gt;
+&lt;p&gt;read line: 1.17492413521&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;1G文件首次处理时间：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;read once: 8.17146706581&lt;/p&gt;
+&lt;p&gt;read line: 4.13687205315&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;1G文件5次处理时间：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;read once: 7.32681894302&lt;/p&gt;
+&lt;p&gt;read line: 30.3610920906&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;有意思的是，虽然一次性读入内存效率比line by line读取的效率差，但是假如重复处理同一个文件，一次性读取的总体效率反而高，所以python应该做了类似于缓存的机制。所以当我们用python处理大文本文件的时候需要综合考虑服务器内存，文件处理次数来决定使用哪种方式。&lt;/p&gt;
+</description>
+        </item>
         
         <item>
             <title>oracle 存储过程显示异常行</title>

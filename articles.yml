@@ -1,3 +1,13 @@
+- id: file-read-write-compare
+  title: 大文件读写效率比较
+  postedOn: !!str 2015-01-15
+  author: Ario
+  tags:
+    - bash
+    - python
+    - linux
+  abstract: 比较bash shell，awk 以及 python 对于大文本文件读写的效率问题
+
 - id: locate-exception-line
   title: oracle 存储过程显示异常行
   postedOn: !!str 2013-12-18
@@ -5,6 +15,7 @@
   tags:
     - Oracle
   abstract: 记一个写pl/sql比较有用的技巧。当oracle的存储过程运行出现异常的时候，虽然可以被exception抓到，但是无法定位究竟是在之前的业务处理逻辑代码哪一行出现了问题，调试起来不方便...
+
 - id: debug-Pipelined
   title: sql developer怎样调试Pipelined
   postedOn: !!str 2013-12-18
