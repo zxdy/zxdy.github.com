@@ -4,8 +4,47 @@
         <title>RSS feed title</title>
         <link>Homepage link</link>
         <description>RSS feed description</description>
-        <lastBuildDate>Tue, 20 Jan 2015 13:45:02 +0800</lastBuildDate>
+        <lastBuildDate>Mon, 26 Jan 2015 15:13:22 +0800</lastBuildDate>
         <language>zh-cn</language>
+        
+        <item>
+            <title>shadowsocks搭建代理</title>
+            <link>Homepage link/articles/shadowsocks-proxy.html?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</link>
+            <guid>Homepage link/articles/shadowsocks-proxy.html</guid>
+            <author>zxdy@vip.qq.com Ario</author>
+            <pubDate>Fri, 13 Dec 2013 00:00:00 +0800</pubDate>
+            <description>&lt;p&gt;今天openvpn貌似有点抽风， 不好使了。。。sigh。。
+听说shadowsocks挺好用，就尝试了一下，确实还挺方便。记录一下搭建过程，基本上照官方的user manual来就ok了&lt;/p&gt;
+&lt;h2 id=&quot;1-安装&quot;&gt;1. 安装&lt;/h2&gt;
+&lt;pre class=&quot;prettyprint linenums lang-bash&quot;&gt;apt-get install python-pip python-dev build-essential
+python --version #安装之前检查一下vps的python版本号，需要2.6或2.7以上
+pip install shadowsocks #安装
+&lt;/pre&gt;
+&lt;h2 id=&quot;2-配置文件&quot;&gt;2. 配置文件&lt;/h2&gt;
+&lt;p&gt;新建一个名为&lt;code&gt;config.json的配置文件&lt;/p&gt;
+&lt;pre class=&quot;prettyprint linenums lang-bash&quot;&gt;{
+          &quot;server&quot;:&quot;vps的ip&quot;,
+          &quot;server_port&quot;:8388,
+          &quot;local_port&quot;:1080,
+          &quot;password&quot;:&quot;barfoo!&quot;, #认证密码
+          &quot;timeout&quot;:600,
+          &quot;method&quot;:&quot;table&quot; #加密方式，默认table，推荐aes-256-cfb
+}
+&lt;/pre&gt;
+&lt;p&gt;&lt;em&gt;如果想用除table以外的加密方式，需要额外安装M2Crypto&lt;/em&gt;&lt;/p&gt;
+&lt;pre class=&quot;prettyprint linenums lang-bash&quot;&gt;apt-get install python-m2crypto
+#或者
+pip install M2Crypto
+&lt;/pre&gt;
+&lt;h2 id=&quot;3进入-code-configjson-code-所在目录，运行shadowsocks&quot;&gt;3.进入&lt;code&gt;config.json所在目录，运行shadowsocks&lt;/h2&gt;
+&lt;pre class=&quot;prettyprint linenums lang-bash&quot;&gt;nohup ssserver &gt; shadowsocks_log &amp;
+&lt;/pre&gt;
+&lt;h2 id=&quot;4客户端&quot;&gt;4.客户端&lt;/h2&gt;
+&lt;p&gt;下载&lt;a href=&quot;http://sourceforge.net/projects/shadowsocksgui/files/dist/&quot;&gt;shadowsocks-gui&lt;/a&gt;，填入相应的vps ip地址，端口，密码信息后保存  &lt;/p&gt;
+&lt;h2 id=&quot;5-浏览器代理&quot;&gt;5. 浏览器代理&lt;/h2&gt;
+&lt;p&gt;新建socket5代理，地址填127.0.0.1，端口1080保存就可以使用了&lt;/p&gt;
+</description>
+        </item>
         
         <item>
             <title>大文件读写效率比较</title>

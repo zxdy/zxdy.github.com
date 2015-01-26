@@ -1,3 +1,12 @@
+- id: shadowsocks-proxy
+  title: shadowsocks搭建代理
+  postedOn: !!str 2013-12-13
+  author: Ario
+  tags:
+    - 代理
+    - linux
+  abstract: 在vps上用shadowsocks搭建代理服务的简易tutorial
+
 - id: file-read-write-compare
   title: 大文件读写效率比较
   postedOn: !!str 2015-01-15

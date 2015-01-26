@@ -1,0 +1,112 @@
+<!doctype html>
+<html>
+    <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <meta name="description" content="Content of description meta tag"/>
+        <meta name="keywords" content="代码,数据库,信息安全"/>
+        <meta name="author" content="Content of author meta tag"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+        <title>离世庭院 - shadowsocks搭建代理
+</title>
+        <link rel="stylesheet" href="/assets/vendor/normalize.css"/>
+        <link rel="stylesheet" href="/assets/vendor/prettify-night.css"/>
+        <link rel="stylesheet" href="/assets/themes/default/main.css"/>
+        <link rel="shortcut icon" href="/fav.ico"/>
+        <script type="text/javascript" src="/assets/vendor/prettify.js"></script>
+        
+    </head>
+    <body onload="prettyPrint()">
+    <div id="header">
+        <div id="header-inner">
+            <div id="title"><a href="/">离世庭院</a></div>
+            <div id="subtitle">To be a builder,not a imitator</div>
+        </div>
+    </div>
+
+<div id="main">
+    <div id="main-inner">
+        <div id="topnav">
+            <ul>
+                <li><a href="/">首页</a></li>
+                <li class="sep"> | </li>
+                <li><a href="/tag.html">标签</a></li>
+                
+<li class="sep"> | </li>
+<li><a href="/pages/about-me.html" target="_self">关于我</a></li>
+
+<li class="sep"> | </li>
+<li><a href="https://github.com/zxdy" target="_blank">github</a></li>
+
+
+            </ul>
+            <div style="clear:both;"></div>
+        </div>
+        <div id="article-title">
+            <a href="/articles/shadowsocks-proxy.html">shadowsocks搭建代理</a>
+        </div>
+        <div id="article-meta">
+            作者 Ario | 发布于 2013-12-13
+        </div>
+        <div id="article-tags">
+        
+        <a class="tag" href="/tag.html#代理">代理</a>
+        
+        <a class="tag" href="/tag.html#linux">linux</a>
+        
+        </div>
+        <div id="article-content">
+            <p>今天openvpn貌似有点抽风， 不好使了。。。sigh。。
+听说shadowsocks挺好用，就尝试了一下，确实还挺方便。记录一下搭建过程，基本上照官方的user manual来就ok了</p>
+<h2 id="1-安装">1. 安装</h2>
+<pre class="prettyprint linenums lang-bash">apt-get install python-pip python-dev build-essential
+python --version #安装之前检查一下vps的python版本号，需要2.6或2.7以上
+pip install shadowsocks #安装
+</pre>
+<h2 id="2-配置文件">2. 配置文件</h2>
+<p>新建一个名为<code>config.json的配置文件</p>
+<pre class="prettyprint linenums lang-bash">{
+          &quot;server&quot;:&quot;vps的ip&quot;,
+          &quot;server_port&quot;:8388,
+          &quot;local_port&quot;:1080,
+          &quot;password&quot;:&quot;barfoo!&quot;, #认证密码
+          &quot;timeout&quot;:600,
+          &quot;method&quot;:&quot;table&quot; #加密方式，默认table，推荐aes-256-cfb
+}
+</pre>
+<p><em>如果想用除table以外的加密方式，需要额外安装M2Crypto</em></p>
+<pre class="prettyprint linenums lang-bash">apt-get install python-m2crypto
+#或者
+pip install M2Crypto
+</pre>
+<h2 id="3进入-code-configjson-code-所在目录，运行shadowsocks">3.进入<code>config.json所在目录，运行shadowsocks</h2>
+<pre class="prettyprint linenums lang-bash">nohup ssserver &gt; shadowsocks_log &amp;
+</pre>
+<h2 id="4客户端">4.客户端</h2>
+<p>下载<a href="http://sourceforge.net/projects/shadowsocksgui/files/dist/">shadowsocks-gui</a>，填入相应的vps ip地址，端口，密码信息后保存  </p>
+<h2 id="5-浏览器代理">5. 浏览器代理</h2>
+<p>新建socket5代理，地址填127.0.0.1，端口1080保存就可以使用了</p>
+
+        </div>
+        
+    </div>
+</div>
+        <div id="footer">
+            <div id="footer-inner">
+                <p id="copyright">Copyright (c) 2011-2014 Ario</p>
+            </div>
+        </div>
+        <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [['$','$'], ['\\(','\\)']],
+            processEscapes: true
+        }
+    });
+</script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+    </body>
+</html>
+
