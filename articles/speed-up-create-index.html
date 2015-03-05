@@ -1,0 +1,177 @@
+<!doctype html>
+<html>
+    <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <meta name="description" content="Content of description meta tag"/>
+        <meta name="keywords" content="代码,数据库,信息安全"/>
+        <meta name="author" content="Content of author meta tag"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+        <title>离世庭院 - oracle 如何加快建立索引的速度
+</title>
+        <link rel="stylesheet" href="/assets/vendor/normalize.css"/>
+        <link rel="stylesheet" href="/assets/vendor/prettify-night.css"/>
+        <link rel="stylesheet" href="/assets/themes/default/main.css"/>
+        <link rel="shortcut icon" href="/fav.ico"/>
+        <script type="text/javascript" src="/assets/vendor/prettify.js"></script>
+        
+    </head>
+    <body onload="prettyPrint()">
+    <div id="header">
+        <div id="header-inner">
+            <div id="title"><a href="/">离世庭院</a></div>
+            <div id="subtitle">To be a builder,not a imitator</div>
+        </div>
+    </div>
+
+<div id="main">
+    <div id="main-inner">
+        <div id="topnav">
+            <ul>
+                <li><a href="/">首页</a></li>
+                <li class="sep"> | </li>
+                <li><a href="/tag.html">标签</a></li>
+                
+<li class="sep"> | </li>
+<li><a href="/pages/about-me.html" target="_self">关于我</a></li>
+
+<li class="sep"> | </li>
+<li><a href="https://github.com/zxdy" target="_blank">github</a></li>
+
+
+            </ul>
+            <div style="clear:both;"></div>
+        </div>
+        <div id="article-title">
+            <a href="/articles/speed-up-create-index.html">oracle 如何加快建立索引的速度</a>
+        </div>
+        <div id="article-meta">
+            作者 Ario | 发布于 2014-09-19
+        </div>
+        <div id="article-tags">
+        
+        <a class="tag" href="/tag.html#Oracle">Oracle</a>
+        
+        <a class="tag" href="/tag.html#优化">优化</a>
+        
+        </div>
+        <div id="article-content">
+            <p>通常情况下对oracle的表建立索引的时候并不需要考虑效率问题，这个通常情况指的是相应的表数据在百万级以下。但是一旦数据量大到千万级，亿级甚至更大的时候，我们就不能不考虑新建索引的效率问题，因为当表在建立索引的时候，会产生锁阻塞新数据的更新，如果索引不能很快地建立完毕，会对生产环境造成影响。</p>
+<h1 id="1-pga设置">1. PGA设置</h1>
+<p>普通的auto pga最大才100M, 显然没有达到最好性能，应该使用manual pga。</p>
+<p>hash_area_size： 这个参数控制每个会话的hash内存空间有多大。它也可以在会话级和实例级被修改。默认值是sort area空间大小的两倍</p>
+<pre class="prettyprint linenums lang-sql">alter session set workarea_size_policy=manual;
+alter session set hash_area_size=100000; 
+alter session set sort_area_size=2000000000; -- 在系统可用内存足够的情况下，最大可以到2G
+</pre>
+<p><em>question</em></p>
+<blockquote>
+<p>什么是PGA</p>
+<p>什么是SGA</p>
+</blockquote>
+<h1 id="2-增加temp表空间">2. 增加temp表空间</h1>
+<p>因为大表的数据量比较大，导致建索引时需要的temp表空间也比较大，一般来说接近索引的大小，没把握的情况下可以估算一下索引的大小先：</p>
+<pre class="prettyprint linenums lang-sql">set serveroutput on
+declare
+l_index_ddl varchar(1000);
+l_used_bytes number
+l_allocated_bytes number;
+begin
+dbms_space.create_index_cost(
+ddl =&gt;&#39; create index ids_t on user(userid) &#39;,
+used_bytes=&gt;l_used_bytes
+alloc_bytes =&gt;l_allocated_bytes);
+dbms_ouput.put_line(&#39;used =&#39; ||    &#39;bytes&#39; 
+||&#39;  allocated= &#39; || l_allocated_bytes || &#39;bytes&#39;);
+end;
+/
+</pre>
+<p>另外在建索引的过程中也可以随时监控表空间的使用情况，一旦发现temp表空间不够，可以随时加大</p>
+<pre class="prettyprint linenums lang-sql">--查询表空间使用情况
+SELECT UPPER(F.TABLESPACE_NAME) &quot;表空间名&quot;,
+D.TOT_GROOTTE_MB &quot;表空间大小(M)&quot;,
+D.TOT_GROOTTE_MB - F.TOTAL_BYTES &quot;已使用空间(M)&quot;,
+TO_CHAR(ROUND((D.TOT_GROOTTE_MB - F.TOTAL_BYTES) / D.TOT_GROOTTE_MB * 100,2),&#39;990.99&#39;) &quot;使用比&quot;,
+F.TOTAL_BYTES &quot;空闲空间(M)&quot;,
+F.MAX_BYTES &quot;最大块(M)&quot;
+FROM (SELECT TABLESPACE_NAME,
+ROUND(SUM(BYTES) / (1024 * 1024), 2) TOTAL_BYTES,
+ROUND(MAX(BYTES) / (1024 * 1024), 2) MAX_BYTES
+FROM SYS.DBA_FREE_SPACE
+GROUP BY TABLESPACE_NAME) F,
+(SELECT DD.TABLESPACE_NAME,
+ROUND(SUM(DD.BYTES) / (1024 * 1024), 2) TOT_GROOTTE_MB
+FROM SYS.DBA_DATA_FILES DD
+GROUP BY DD.TABLESPACE_NAME) D
+WHERE D.TABLESPACE_NAME = F.TABLESPACE_NAME
+ORDER BY 4 DESC;
+
+select file_name,tablespace_name,autoextensible from dba_data_files
+
+--增加表空间大小
+alter tablespace USERS add datafile &#39;/opt/ora9/users02.dbf&#39; size 50M autoextend on next 50M maxsize UNLIMITED;
+</pre>
+<h1 id="3-使用并行参数">3. 使用并行参数</h1>
+<p>oracle的很多操作都可以使用并行参数，建索引也不例外。理论上来说8个CPU, 可以用parallel 6 ,最多占用6个CPU,另外留下两个CPU供其他进程使用。
+查看CPU核数的方法有很多，详细见（oracle性能优化-CPU篇）。最简单地就是用下面这个sql直接查</p>
+<pre class="prettyprint linenums lang-sql">SELECT NUM_CPUS FROM v$osstat;
+</pre>
+<h1 id="4-使用nologging">4. 使用nologging</h1>
+<p>nologging, 绝对应该使用，能减少大量redo log，使速度大幅上升。</p>
+<p>于是一个比较标准的并行nologging建索引语句就出炉了。对于生产环境，保险的办法是再加上online参数，避免建索引时的锁对dml产生阻塞。</p>
+<pre class="prettyprint linenums lang-sql">CREATE INDEX  table_idx ON table (col )  NOLOGGING PARALLEL 6;
+</pre>
+<p><em>Note</em></p>
+<blockquote>
+<p>对于一个比较大的操作，oracle可能会有等待事件发生
+首先可以通过sql developer查看等待时间的信息，得到等待时间的p1，p2，p3。然后通过下面的sql转换p1，p2得到具体等待的object。</p>
+<pre class="prettyprint linenums lang-sql">select 
+   owner,
+   segment_name,
+   segment_type
+from 
+   dba_extents
+where 
+   file_id = &amp;P1 and &amp;P2 between block_id and block_id + blocks -1;
+</pre>
+</blockquote>
+
+        </div>
+        <!-- 多说评论框 start -->
+<div class="ds-thread" data-thread-key="speed-up-create-index" data-title="oracle 如何加快建立索引的速度" data-url="http://blog.codinglabs.org/articles/speed-up-create-index.html"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"zxdy8812"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0]
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+
+    </div>
+</div>
+        <div id="footer">
+            <div id="footer-inner">
+                <p id="copyright">Copyright (c) 2011-2014 Ario</p>
+            </div>
+        </div>
+        <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [['$','$'], ['\\(','\\)']],
+            processEscapes: true
+        }
+    });
+</script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+    </body>
+</html>
+
