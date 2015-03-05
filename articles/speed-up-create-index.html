@@ -58,7 +58,7 @@
         <div id="article-content">
             <p>通常情况下对oracle的表建立索引的时候并不需要考虑效率问题，这个通常情况指的是相应的表数据在百万级以下。但是一旦数据量大到千万级，亿级甚至更大的时候，我们就不能不考虑新建索引的效率问题，因为当表在建立索引的时候，会产生锁阻塞新数据的更新，如果索引不能很快地建立完毕，会对生产环境造成影响。</p>
 <h1 id="1-pga设置">1. PGA设置</h1>
-<p>普通的auto pga最大才100M, 显然没有达到最好性能，应该使用manual pga。</p>
+<p>因为排序通常是在PGA中进行的，需要防止因空间或内存不足导致需要disk排序。</p>
 <p>hash_area_size： 这个参数控制每个会话的hash内存空间有多大。它也可以在会话级和实例级被修改。默认值是sort area空间大小的两倍</p>
 <pre class="prettyprint linenums lang-sql">alter session set workarea_size_policy=manual;
 alter session set hash_area_size=100000; 
@@ -66,8 +66,10 @@ alter session set sort_area_size=2000000000; -- 在系统可用内存足够的�
 </pre>
 <p><em>question</em></p>
 <blockquote>
-<p>什么是PGA</p>
-<p>什么是SGA</p>
+<ol>
+<li>什么是PGA</li>
+<li>什么是SGA</li>
+</ol>
 </blockquote>
 <h1 id="2-增加temp表空间">2. 增加temp表空间</h1>
 <p>因为大表的数据量比较大，导致建索引时需要的temp表空间也比较大，一般来说接近索引的大小，没把握的情况下可以估算一下索引的大小先：</p>
@@ -112,7 +114,7 @@ select file_name,tablespace_name,autoextensible from dba_data_files
 alter tablespace USERS add datafile &#39;/opt/ora9/users02.dbf&#39; size 50M autoextend on next 50M maxsize UNLIMITED;
 </pre>
 <h1 id="3-使用并行参数">3. 使用并行参数</h1>
-<p>oracle的很多操作都可以使用并行参数，建索引也不例外。理论上来说8个CPU, 可以用parallel 6 ,最多占用6个CPU,另外留下两个CPU供其他进程使用。
+<p>关于利用并行度创建索引，前提是多个CPU，单CPU下用并行度创建索引，可能会造成资源的争用。理论上来说8个CPU, 可以用parallel 6 ,最多占用6个CPU,另外留下两个CPU供其他进程使用。
 查看CPU核数的方法有很多，详细见（oracle性能优化-CPU篇）。最简单地就是用下面这个sql直接查</p>
 <pre class="prettyprint linenums lang-sql">SELECT NUM_CPUS FROM v$osstat;
 </pre>
