@@ -4,7 +4,7 @@
         <title>RSS feed title</title>
         <link>Homepage link</link>
         <description>RSS feed description</description>
-        <lastBuildDate>Thu, 05 Mar 2015 14:16:32 +0800</lastBuildDate>
+        <lastBuildDate>Thu, 05 Mar 2015 17:55:10 +0800</lastBuildDate>
         <language>zh-cn</language>
         
         <item>
@@ -223,7 +223,7 @@ alter tablespace USERS add datafile &#39;/opt/ora9/users02.dbf&#39; size 50M aut
 &lt;h1 id=&quot;3-使用并行参数&quot;&gt;3. 使用并行参数&lt;/h1&gt;
 &lt;p&gt;关于利用并行度创建索引，前提是多个CPU，单CPU下用并行度创建索引，可能会造成资源的争用。理论上来说8个CPU, 可以用parallel 6 ,最多占用6个CPU,另外留下两个CPU供其他进程使用。
 查看CPU核数的方法有很多，详细见（oracle性能优化-CPU篇）。最简单地就是用下面这个sql直接查&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-sql&quot;&gt;SELECT NUM_CPUS FROM v$osstat;
+&lt;pre class=&quot;prettyprint linenums lang-sql&quot;&gt;SELECT * FROM v$osstat where stat_name=&#39;NUM_CPUS&#39;;
 &lt;/pre&gt;
 &lt;h1 id=&quot;4-使用nologging&quot;&gt;4. 使用nologging&lt;/h1&gt;
 &lt;p&gt;nologging, 绝对应该使用，能减少大量redo log，使速度大幅上升。&lt;/p&gt;

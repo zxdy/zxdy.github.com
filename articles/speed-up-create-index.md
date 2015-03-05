@@ -70,7 +70,7 @@ alter tablespace USERS add datafile '/opt/ora9/users02.dbf' size 50M autoextend 
 查看CPU核数的方法有很多，详细见（oracle性能优化-CPU篇）。最简单地就是用下面这个sql直接查
 
 ```sql
-SELECT NUM_CPUS FROM v$osstat; 
+SELECT * FROM v$osstat where stat_name='NUM_CPUS'; 
 ```
 
 #4. 使用nologging

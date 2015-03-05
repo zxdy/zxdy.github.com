@@ -116,7 +116,7 @@ alter tablespace USERS add datafile &#39;/opt/ora9/users02.dbf&#39; size 50M aut
 <h1 id="3-使用并行参数">3. 使用并行参数</h1>
 <p>关于利用并行度创建索引，前提是多个CPU，单CPU下用并行度创建索引，可能会造成资源的争用。理论上来说8个CPU, 可以用parallel 6 ,最多占用6个CPU,另外留下两个CPU供其他进程使用。
 查看CPU核数的方法有很多，详细见（oracle性能优化-CPU篇）。最简单地就是用下面这个sql直接查</p>
-<pre class="prettyprint linenums lang-sql">SELECT NUM_CPUS FROM v$osstat;
+<pre class="prettyprint linenums lang-sql">SELECT * FROM v$osstat where stat_name=&#39;NUM_CPUS&#39;;
 </pre>
 <h1 id="4-使用nologging">4. 使用nologging</h1>
 <p>nologging, 绝对应该使用，能减少大量redo log，使速度大幅上升。</p>
