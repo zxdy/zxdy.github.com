@@ -4,7 +4,7 @@
         <title>RSS feed title</title>
         <link>Homepage link</link>
         <description>RSS feed description</description>
-        <lastBuildDate>Thu, 05 Mar 2015 17:55:10 +0800</lastBuildDate>
+        <lastBuildDate>Fri, 06 Mar 2015 13:17:17 +0800</lastBuildDate>
         <language>zh-cn</language>
         
         <item>
@@ -543,6 +543,48 @@ pip install M2Crypto
 &lt;p&gt;下载&lt;a href=&quot;http://sourceforge.net/projects/shadowsocksgui/files/dist/&quot;&gt;shadowsocks-gui&lt;/a&gt;，填入相应的vps ip地址，端口，密码信息后保存  &lt;/p&gt;
 &lt;h2 id=&quot;5-浏览器代理&quot;&gt;5. 浏览器代理&lt;/h2&gt;
 &lt;p&gt;新建socket5代理，地址填127.0.0.1，端口1080保存就可以使用了&lt;/p&gt;
+</description>
+        </item>
+        
+        <item>
+            <title>查看linux系统基本信息</title>
+            <link>Homepage link/articles/linux-info-check.html?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</link>
+            <guid>Homepage link/articles/linux-info-check.html</guid>
+            <author>zxdy@vip.qq.com Ario</author>
+            <pubDate>Sun, 01 Dec 2013 00:00:00 +0800</pubDate>
+            <description>&lt;h2 id=&quot;1-hostname：查看主机名&quot;&gt;1. hostname：查看主机名&lt;/h2&gt;
+&lt;h2 id=&quot;2-uname-a-查看所有信息&quot;&gt;2. uname -a  查看所有信息&lt;/h2&gt;
+&lt;pre&gt;-v/-r :查看内核版本
+-n  相当于查看主机名
+-s  查看内核名称
+-o  操作系统
+-i  查看硬件平台
+(1) lsb_release -a
+(2) cat /proc/version
+(3) cat /etc/issue
+(4) cat /etc/*release*
+&lt;/pre&gt;&lt;h2 id=&quot;3-查看cpu信息：&quot;&gt;3. 查看cpu信息：&lt;/h2&gt;
+&lt;p&gt;3.1 物理CPU个数：&lt;/p&gt;
+&lt;pre&gt;cat /proc/cpuinfo | grep &quot;physical id&quot; | sort -u | wc -l
+&lt;/pre&gt;&lt;p&gt;3.2 逻辑CPU个数&lt;/p&gt;
+&lt;pre&gt;cat /proc/cpuinfo | grep &quot;processor&quot; | wc -l
+&lt;/pre&gt;&lt;p&gt;3.3 CPU核数&lt;/p&gt;
+&lt;pre&gt;cat /proc/cpuinfo| grep &quot;cpu cores&quot;| uniq
+&lt;/pre&gt;&lt;p&gt;3.4 判断CPU是否64位&lt;/p&gt;
+&lt;pre&gt;检查cpuinfo中的flags区段，看是否有lm标识。
+&lt;/pre&gt;&lt;h2 id=&quot;5-查看内存&quot;&gt;5. 查看内存&lt;/h2&gt;
+&lt;p&gt;grep MemTotal /proc/meminfo 
+free&lt;/p&gt;
+&lt;h2 id=&quot;6-查看交换分区大小&quot;&gt;6. 查看交换分区大小&lt;/h2&gt;
+&lt;p&gt;grep SwapTotal /proc/meminfo &lt;/p&gt;
+&lt;h2 id=&quot;7-查看进程信息&quot;&gt;7. 查看进程信息&lt;/h2&gt;
+&lt;p&gt;ps -ef&lt;br&gt;ps -aux&lt;/p&gt;
+&lt;h2 id=&quot;8-显示档案系统的最大空间及使用情况&quot;&gt;8. 显示档案系统的最大空间及使用情况&lt;/h2&gt;
+&lt;p&gt;df -h|-H
+-ih &lt;/p&gt;
+&lt;h2 id=&quot;9-查看文件和目录占用空间&quot;&gt;9. 查看文件和目录占用空间&lt;/h2&gt;
+&lt;p&gt;du -a  显示全部目录和次目录下每个档案所占的空间
+du -s  显示各档案大小的总和 &lt;/p&gt;
 </description>
         </item>
         

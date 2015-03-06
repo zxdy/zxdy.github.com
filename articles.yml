@@ -51,6 +51,14 @@
     - linux
   abstract: 在vps上用shadowsocks搭建代理服务的简易tutorial
 
+- id: linux-info-check
+  title: 查看linux系统基本信息
+  postedOn: !!str 2013-12-01
+  author: Ario
+  tags:
+    - linux
+  abstract: 如何查看linux的基本信息,以帮助对其软硬件环境有基本的了解
+
 - id: papery-quickstart
   title: Papery快速指南
   postedOn: !!str 2013-01-02
