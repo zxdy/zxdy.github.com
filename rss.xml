@@ -4,7 +4,7 @@
         <title>RSS feed title</title>
         <link>Homepage link</link>
         <description>RSS feed description</description>
-        <lastBuildDate>Fri, 06 Mar 2015 13:17:17 +0800</lastBuildDate>
+        <lastBuildDate>Mon, 09 Mar 2015 15:37:12 +0800</lastBuildDate>
         <language>zh-cn</language>
         
         <item>
@@ -181,19 +181,16 @@ alter session set sort_area_size=2000000000; -- 在系统可用内存足够的�
 &lt;h1 id=&quot;2-增加temp表空间&quot;&gt;2. 增加temp表空间&lt;/h1&gt;
 &lt;p&gt;因为大表的数据量比较大，导致建索引时需要的temp表空间也比较大，一般来说接近索引的大小，没把握的情况下可以估算一下索引的大小先：&lt;/p&gt;
 &lt;pre class=&quot;prettyprint linenums lang-sql&quot;&gt;set serveroutput on
-declare
-l_index_ddl varchar(1000);
-l_used_bytes number
-l_allocated_bytes number;
-begin
-dbms_space.create_index_cost(
-ddl =&gt;&#39; create index ids_t on user(userid) &#39;,
-used_bytes=&gt;l_used_bytes
-alloc_bytes =&gt;l_allocated_bytes);
-dbms_ouput.put_line(&#39;used =&#39; ||    &#39;bytes&#39; 
-||&#39;  allocated= &#39; || l_allocated_bytes || &#39;bytes&#39;);
-end;
-/
+declare  
+ v_ddl varchar(1024);  
+ v_used_bytes number;  
+ v_alloc_bytes number;  
+ begin  
+ dbms_space.create_index_cost(  
+ ddl =&gt;&#39; create index ids_t on user(userid)&#39;,used_bytes=&gt;v_used_bytes,alloc_bytes =&gt;v_alloc_bytes);  
+ dbms_output.put_line(&#39;used_bytes=&#39;||v_used_bytes||&#39; bytes&#39;||&#39; alloc_bytes=&#39;|| v_alloc_bytes || &#39; bytes&#39;);  
+ end;  
+ /
 &lt;/pre&gt;
 &lt;p&gt;另外在建索引的过程中也可以随时监控表空间的使用情况，一旦发现temp表空间不够，可以随时加大&lt;/p&gt;
 &lt;pre class=&quot;prettyprint linenums lang-sql&quot;&gt;--查询表空间使用情况

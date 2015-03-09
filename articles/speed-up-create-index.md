@@ -21,19 +21,16 @@ alter session set sort_area_size=2000000000; -- 在系统可用内存足够的�
 
 ```sql
 set serveroutput on
-declare
-l_index_ddl varchar(1000);
-l_used_bytes number
-l_allocated_bytes number;
-begin
-dbms_space.create_index_cost(
-ddl =>' create index ids_t on user(userid) ',
-used_bytes=>l_used_bytes
-alloc_bytes =>l_allocated_bytes);
-dbms_ouput.put_line('used =' ||    'bytes' 
-||'  allocated= ' || l_allocated_bytes || 'bytes');
-end;
-/
+declare  
+ v_ddl varchar(1024);  
+ v_used_bytes number;  
+ v_alloc_bytes number;  
+ begin  
+ dbms_space.create_index_cost(  
+ ddl =>' create index ids_t on user(userid)',used_bytes=>v_used_bytes,alloc_bytes =>v_alloc_bytes);  
+ dbms_output.put_line('used_bytes='||v_used_bytes||' bytes'||' alloc_bytes='|| v_alloc_bytes || ' bytes');  
+ end;  
+ /  
 ```
 
 另外在建索引的过程中也可以随时监控表空间的使用情况，一旦发现temp表空间不够，可以随时加大
