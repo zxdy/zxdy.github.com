@@ -18,6 +18,15 @@
     - linux
   abstract: 比较bash shell，awk 以及 python 对于大文本文件读写的效率问题
 
+- id: python-timeit
+  title: python的两种计时方法
+  postedOn: !!str 2015-01-13
+  author: Ario
+  tags:
+    - python
+  abstract: 其实我本意是就贴一段代码完事，但又觉得确实有点干巴巴，还是稍微灌点水吧。way1和way2分别代表了两种不同的计时方
+
+
 - id: speed-up-create-index
   title : oracle 如何加快建立索引的速度
   postedOn: !!str 2014-09-19
