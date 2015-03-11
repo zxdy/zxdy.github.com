@@ -1,0 +1,167 @@
+<!doctype html>
+<html>
+    <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <meta name="description" content="Content of description meta tag"/>
+        <meta name="keywords" content="代码,数据库,信息安全"/>
+        <meta name="author" content="Content of author meta tag"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+        <title>离世庭院 - oracle性能优化-CPU篇(上)
+</title>
+        <link rel="stylesheet" href="/assets/vendor/normalize.css"/>
+        <link rel="stylesheet" href="/assets/vendor/prettify-night.css"/>
+        <link rel="stylesheet" href="/assets/themes/default/main.css"/>
+        <link rel="shortcut icon" href="/fav.ico"/>
+        <script type="text/javascript" src="/assets/vendor/prettify.js"></script>
+        
+    </head>
+    <body onload="prettyPrint()">
+    <div id="header">
+        <div id="header-inner">
+            <div id="title"><a href="/">离世庭院</a></div>
+            <div id="subtitle">To be a builder,not a imitator</div>
+        </div>
+    </div>
+
+<div id="main">
+    <div id="main-inner">
+        <div id="topnav">
+            <ul>
+                <li><a href="/">首页</a></li>
+                <li class="sep"> | </li>
+                <li><a href="/tag.html">标签</a></li>
+                
+<li class="sep"> | </li>
+<li><a href="/pages/about-me.html" target="_self">关于我</a></li>
+
+<li class="sep"> | </li>
+<li><a href="https://github.com/zxdy" target="_blank">github</a></li>
+
+
+            </ul>
+            <div style="clear:both;"></div>
+        </div>
+        <div id="article-title">
+            <a href="/articles/oracle-tunning-cpu-1.html">oracle性能优化-CPU篇(上)</a>
+        </div>
+        <div id="article-meta">
+            作者 Ario | 发布于 2015-03-04
+        </div>
+        <div id="article-tags">
+        
+        <a class="tag" href="/tag.html#Oralce">Oralce</a>
+        
+        <a class="tag" href="/tag.html#优化">优化</a>
+        
+        </div>
+        <div id="article-content">
+            <p>在任何一样计算机软件产品中，当我们需要考虑其性能的时候，往往都会从CPU，IO，Network这三个方面考虑。CPU代表着处理问题的能力，IO代表着存储的吞吐能力，Network代表着数据传输的能力。oracle当然也不例外。</p>
+<p>下图反映的是一个应用程序总体的响应时间的分布情况。用户在前端发出数据的请求之后，经过网络层，到达数据库服务器。数据库服务器接收请求，然后对SQL进行语法语义分析，然后生成执行计划，接着执行sql，取得数据最后再次经过网络层返回到前端展现给用户。</p>
+<p><img src="http://zxdy-blog.qiniudn.com/bottle-neck-of-oracle.png" alt="bottle-neck-of-oracle"></p>
+<p>很显然 <strong>oracle的处理时间=cpu处理时间+[资源等待时间+Disk IO 等待时间]</strong>。</p>
+<p>根据以上公式，我们可以发现只要能有效地利用cpu资源和降低等待时间就可以提高数据库的性能，使它处理得更快。</p>
+<p>这篇文章主要关注oracle sql在cpu上的性能优化。个人感觉相比等待上的优化简单一些，等待很多时候涉及到并发，资源争用，数据块等知识，优化也更加复杂不好下手。</p>
+<p><strong>那么问题来了：</strong></p>
+<h2 id="1-首先，怎么查看cpu信息">1. 首先，怎么查看CPU信息</h2>
+<p>CPU的多少在很大程度上（质量也是很重要滴）决定了数据库性能的好坏。越多的CPU，可以并发的数目就越多。</p>
+<ul>
+<li><p>用系统命令查看。这里我默认认为oracle是安装在linux服务器上，当然装在windows上的不是没有，只是略奇葩了。</p>
+<p>  refer to  <a href="http://zxdy.github.io/articles/linux-info-check.html">查看cpu信息</a></p>
+</li>
+<li><p>sql查询NUM_CPUS字段。v$osstat这张表包含了很多有用的信息
+附上<a href="http://docs.oracle.com/cd/E11882_01/server.112/e40402/dynviews_2085.htm#REFRN30321">官方文档</a>解释</p>
+</li>
+</ul>
+<pre class="prettyprint linenums lang-sql">SELECT * FROM v$osstat;
+</pre>
+<ul>
+<li>awr报告。在awr中会有cpu相关的各种报告，包括硬件信息以及更重要的性能信息。关于cpu的性能分析我会在后面展开。下面这张图展现了当前实例使用的cpu硬件信息。</li>
+</ul>
+<p><img src="http://zxdy-blog.qiniudn.com/awr_cpu.png" alt="awr cpu"></p>
+<blockquote>
+<p>CPUs: 逻辑cpu数
+Cores: cpu核数
+Sockets: 物理cpu数</p>
+</blockquote>
+<h2 id="2-怎么看cpu的性能">2. 怎么看CPU的性能</h2>
+<p>上面的CPU硬件信息只是帮助我们有个初步的概念，如果说你的数据库性能很差，CPU又很烂，很烂还没几个，那你真的该先换CPU了。。</p>
+<p>换完CPU，我们先来了解下下面这两个概念：</p>
+<ul>
+<li>host cpu</li>
+<li>instance cpu</li>
+</ul>
+<p>在AWR报告中会有这样两个不同的分类，像是这样</p>
+<p><img src="http://zxdy-blog.qiniudn.com/awr_cpu.png" alt="host cpu"></p>
+<p>还有这样</p>
+<p><img src="http://zxdy-blog.qiniudn.com/instance_cpu.png" alt="instance cpu"></p>
+<p>它们其实是分别代表了服务器cpu的负载和oracle实例的负载情况。</p>
+<p>对于host cpu：</p>
+<ul>
+<li>&quot;Load Average&quot; begin/end值代表CPU的大致运行队列大小。上图中快照开始
+到结束，平均 CPU负载减少了。</li>
+<li>%User+%System=&gt; 总的CPU使用率，在这里是5.7%。</li>
+<li>Busy Time=Elapsed Time * NUM_CPUS * CPU utilization</li>
+</ul>
+<p>对于instance cpu:</p>
+<ul>
+<li>%Total CPU,该实例所使用的CPU占总CPU的比例 -&gt; % of total CPU for
+Instance</li>
+<li>%Busy CPU，该实例所使用的Cpu占总的被使用CPU的比例 -&gt; % of busy CPU for Instance。例如共4个逻辑CPU，其中3个被完全使用， 3个中的1 个完全被该实例使用，则%Total CPU= 1/4 =25%，而%Busy CPU= 1/3= 33%</li>
+<li>当CPU高时一般看%Busy CPU可以确定CPU到底是否是本实例消耗的，还是
+主机上其他程序。</li>
+</ul>
+<p>身为一个开发我还要时不时看awr报告也是蛮拼的。一般来讲，awr更多的是展现数据库整体上的性能分析，你可能在以上的host cpu以及instance cpu上发现cpu的负载很高，但这又有什么用呢？是不是觉得没法继续了呢？当然不是，awr还提供了更多的详细的报告帮助我们定位哪些sql的cpu占用比较厉害：</p>
+<ol>
+<li>AWR SQL ordered by Elapsed Time：</li>
+</ol>
+<p><img src="http://zxdy-blog.qiniudn.com/sql_order_by_elapsed_time.png" alt="AWR SQL ordered by Elapsed Time"></p>
+<blockquote>
+<p>%CPU - CPU Time as a percentage of Elapsed Time -&gt; 这个语句耗费的DB TIME里CPU TIME占多少比例 -&gt; 这个语句是否是CPU敏感的</p>
+</blockquote>
+<p>2.AWR SQL ordered by CPU Time：</p>
+<p><img src="http://zxdy-blog.qiniudn.com/sql_order_by_cpu_time.png" alt="AWR SQL order by cpu time"></p>
+<blockquote>
+<p>第一列CPU TIME统计这个sql总共在快照时间内总共花费的cpu时间，在这个值比较高的情况下，如果相应的%CPU值也很高， 说明这个sql在cpu上的负载很高，需要考虑优化。</p>
+</blockquote>
+<p><strong>如果发现有比较突出的sql，很可能就是瓶颈所在，可以继续跑个@?/rdbms/admin/awrsqrpt.sql看看</strong></p>
+
+        </div>
+        <!-- 多说评论框 start -->
+<div class="ds-thread" data-thread-key="oracle-tunning-cpu-1" data-title="oracle性能优化-CPU篇(上)" data-url="http://blog.codinglabs.org/articles/oracle-tunning-cpu-1.html"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"zxdy8812"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0]
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+
+    </div>
+</div>
+        <div id="footer">
+            <div id="footer-inner">
+                <p id="copyright">Copyright (c) 2011-2014 Ario</p>
+            </div>
+        </div>
+        <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [['$','$'], ['\\(','\\)']],
+            processEscapes: true
+        }
+    });
+</script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+    </body>
+</html>
+
