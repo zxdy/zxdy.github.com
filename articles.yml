@@ -3,7 +3,7 @@
   postedOn: !!str 2015-03-04
   author: Ario
   tags:
-    - Oralce
+    - Oracle
     - 优化
   abstract: 在任何一样计算机软件产品中，当我们需要考虑其性能的时候，往往都会从CPU，IO，Network这三个方面考虑。CPU代表着处理问题的能力，IO代表着存储的吞吐能力，Network代表着数据传输的能力。oracle当然也不例外。
 
