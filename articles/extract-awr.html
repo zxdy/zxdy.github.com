@@ -1,0 +1,140 @@
+<!doctype html>
+<html>
+    <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <meta name="description" content="Content of description meta tag"/>
+        <meta name="keywords" content="代码,数据库,信息安全"/>
+        <meta name="author" content="Content of author meta tag"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+        <title>离世庭院 - AWR 启用和导出
+</title>
+        <link rel="stylesheet" href="/assets/vendor/normalize.css"/>
+        <link rel="stylesheet" href="/assets/vendor/prettify-night.css"/>
+        <link rel="stylesheet" href="/assets/themes/default/main.css"/>
+        <link rel="shortcut icon" href="/fav.ico"/>
+        <script type="text/javascript" src="/assets/vendor/prettify.js"></script>
+        
+    </head>
+    <body onload="prettyPrint()">
+    <div id="header">
+        <div id="header-inner">
+            <div id="title"><a href="/">离世庭院</a></div>
+            <div id="subtitle">To be a builder,not a imitator</div>
+        </div>
+    </div>
+
+<div id="main">
+    <div id="main-inner">
+        <div id="topnav">
+            <ul>
+                <li><a href="/">首页</a></li>
+                <li class="sep"> | </li>
+                <li><a href="/tag.html">标签</a></li>
+                
+<li class="sep"> | </li>
+<li><a href="/pages/about-me.html" target="_self">关于我</a></li>
+
+<li class="sep"> | </li>
+<li><a href="https://github.com/zxdy" target="_blank">github</a></li>
+
+
+            </ul>
+            <div style="clear:both;"></div>
+        </div>
+        <div id="article-title">
+            <a href="/articles/extract-awr.html">AWR 启用和导出</a>
+        </div>
+        <div id="article-meta">
+            作者 Ario | 发布于 2014-08-08
+        </div>
+        <div id="article-tags">
+        
+        <a class="tag" href="/tag.html#Oracle">Oracle</a>
+        
+        </div>
+        <div id="article-content">
+            <h1 id="1．awr的启用">1．AWR的启用</h1>
+<p>在默认情况下，Oracle启用数据库统计收集这项功能（即启用AWR）。是否启用AWR由初始化参数STATISTICS_LEVEL控制</p>
+<pre class="prettyprint linenums lang-sql">SQL&gt; SHOW PARAMETER STATISTICS_LEVEL 
+NAME                                 TYPE        VALUE
+------------------------------------ ----------- ------------------------------
+statistics_level                     string      TYPICAL
+</pre>
+<p>如果STATISTICS_LEVEL的值为TYPICAL或者 ALL，表示启用AWR；如果STATISTICS_LEVEL的值为BASIC，表示禁用AWR。</p>
+<p>初始化参数statistics_level介绍：</p>
+<p>AWR的行为受到参数STATISTICS_LEVEL的影响。这个参数有三个值：</p>
+<ul>
+<li><p>BASIC：awr统计的计算和衍生值关闭.只收集少量的数据库统计信息.</p>
+</li>
+<li><p>TYPICAL：默认值．只有部分的统计收集.他们代表需要的典型监控oracle数据库的行为.</p>
+</li>
+<li><p>ALL : 所有可能的统计都被捕捉. 并且有操作系统的一些信息.这个级别的捕捉应该在很少的情况下,比如你要更多的sql诊断信息的时候才使用.</p>
+</li>
+</ul>
+<h1 id="2-导出awr报告">2. 导出AWR报告</h1>
+<ul>
+<li>AWR比对报告</li>
+</ul>
+<pre class="prettyprint linenums lang-sql">@$ORACLE_HOME/rdbms/admin/awrddrpt.sql
+</pre>
+<ul>
+<li>RAC全局AWR</li>
+</ul>
+<pre class="prettyprint linenums lang-sql">@$ORACLE_HOME/rdbms/admin/awrgrpt.sql
+</pre>
+<ul>
+<li>本实例的AWR报告，运行脚本awrrpt.sql。</li>
+</ul>
+<pre class="prettyprint linenums lang-sql">@$ORACLE_HOME/rdbms/admin/awrrpt.sql
+</pre>
+<ul>
+<li>产生某个实例（RAC）的AWR报告，运行脚本awrrpti.sql。</li>
+</ul>
+<pre class="prettyprint linenums lang-sql">@$ORACLE_HOME/rdbms/admin/awrrpti.sql
+</pre>
+<ul>
+<li>产生某条SQL语句的AWR报告，运行脚本awrsqrpt.sql。</li>
+</ul>
+<pre class="prettyprint linenums lang-sql">@$ORACLE_HOME/rdbms/admin/awrsqrpt.sql
+</pre>
+
+        </div>
+        <!-- 多说评论框 start -->
+<div class="ds-thread" data-thread-key="extract-awr" data-title="AWR 启用和导出" data-url="http://blog.codinglabs.org/articles/extract-awr.html"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"zxdy8812"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0]
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+
+    </div>
+</div>
+        <div id="footer">
+            <div id="footer-inner">
+                <p id="copyright">Copyright (c) 2011-2014 Ario</p>
+            </div>
+        </div>
+        <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [['$','$'], ['\\(','\\)']],
+            processEscapes: true
+        }
+    });
+</script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+    </body>
+</html>
+

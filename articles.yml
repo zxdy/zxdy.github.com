@@ -36,6 +36,14 @@
     - 优化
   abstract: 通常情况下对oracle的表建立索引的时候并不需要考虑效率问题，这个通常情况指的是相应的表数据在百万级以下。但是一旦数据量大到千万级，亿级甚至更大的时候，我们就不能不考虑新建索引的效率问题，因为当表在建立索引的时候，会产生锁阻塞新数据的更新，如果索引不能很快地建立完毕，会对生产环境造成影响。
 
+- id: extract-awr
+  title: AWR 启用和导出
+  postedOn: !!str 2014-08-08
+  author: Ario
+  tags:
+    - Oracle
+  abstract: 如何启用和导出awr报告
+
 - id: why-vm-tor-and-vpn
   title : 为什么虚拟机+tor+vpn
   postedOn: !!str 2014-04-14

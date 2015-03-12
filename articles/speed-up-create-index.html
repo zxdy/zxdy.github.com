@@ -105,7 +105,7 @@ GROUP BY DD.TABLESPACE_NAME) D
 WHERE D.TABLESPACE_NAME = F.TABLESPACE_NAME
 ORDER BY 4 DESC;
 
-select file_name,tablespace_name,autoextensible from dba_data_files
+select file_name,bytes/1024/1024 &quot;MB&quot;,autoextensible,tablespace_name from dba_temp_files;
 
 --增加表空间大小
 alter tablespace USERS add datafile &#39;/opt/ora9/users02.dbf&#39; size 50M autoextend on next 50M maxsize UNLIMITED;
