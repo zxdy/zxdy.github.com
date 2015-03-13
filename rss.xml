@@ -4,8 +4,54 @@
         <title>RSS feed title</title>
         <link>Homepage link</link>
         <description>RSS feed description</description>
-        <lastBuildDate>Thu, 12 Mar 2015 20:11:47 +0800</lastBuildDate>
+        <lastBuildDate>Fri, 13 Mar 2015 21:00:45 +0800</lastBuildDate>
         <language>zh-cn</language>
+        
+        <item>
+            <title>oracle性能优化-CPU篇(下)</title>
+            <link>Homepage link/articles/oracle-tunning-cpu-2.html?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</link>
+            <guid>Homepage link/articles/oracle-tunning-cpu-2.html</guid>
+            <author>zxdy@vip.qq.com Ario</author>
+            <pubDate>Tue, 10 Mar 2015 00:00:00 +0800</pubDate>
+            <description>&lt;p&gt;接上篇 &lt;a href=&quot;http://zxdy.github.io/articles/oracle-tunning-cpu-1.html&quot;&gt;oracle性能优化-CPU篇(上)&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;如何有效利用好CPU，主要在于如何写好SQL语句， 并优化数据库内部处理。&lt;/p&gt;
+&lt;h2 id=&quot;1-sql语句重用&quot;&gt;1. sql语句重用&lt;/h2&gt;
+&lt;h3 id=&quot;11-硬解析与软解析&quot;&gt;1.1 硬解析与软解析&lt;/h3&gt;
+&lt;p&gt;相信用过oracle的人，特别是用oracle做后端数据库开发的程序猿都听说过硬解析和软解析。&lt;/p&gt;
+&lt;p&gt;当一个sql语句提交后，oracle会首先检查一下共享缓冲池（shared pool）里有没有与之&lt;strong&gt;完全相同&lt;/strong&gt;的语句，如果有的话只须执行软分析即可，否则就得进行硬分析。&lt;/p&gt;
+&lt;p&gt;硬解析之所以坑爹的原因是，它需要经解析,制定执行路径,优化访问计划等许多的步骤。不但耗费大量的cpu，更重要的是会占据重要的们闩（latch）资源，严重的影响系统的规模的扩大（即限制了系统的并发行），而且引起的问题不能通过增加内存条和cpu的数量来解决。&lt;/p&gt;
+&lt;p&gt;看一眼AWR报表，检查是不是有很多硬解析。下图的硬解析数和 time model statistics的hard parse elapsed time对应，可知该系统是否 是 解析敏感&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://zxdy-blog.qiniudn.com/hard_prase.png&quot; alt=&quot;hard parse&quot;&gt;&lt;/p&gt;
+&lt;p&gt;有时候当我们在oracle上对某些sql进行测试时，会发现第一次执行的sql比较慢，再次执行往往都比较快，这不仅仅是因为所需要的数据块已经读取到buffer cache中了，还因为再次执行的sql沿用的是上次执行的执行计划，并没有重新做解析。&lt;/p&gt;
+&lt;p&gt;因此假如我们需要测试相同sql不同的执行计划时，最好刷新一下当前session的shared pool。注意最好不要全局刷新，特别是在生产环境，这样会导致所有的sql都进行重新解析，可能会严重影响性能。&lt;/p&gt;
+&lt;h3 id=&quot;12-绑定变量&quot;&gt;1.2 绑定变量&lt;/h3&gt;
+&lt;p&gt;绑定变量的实质就是用于替代sql语句中的常量的替代变量，它能够使得每次提交的sql语句都完全一样。还记得前面说的&quot;oracle会首先检查一下共享缓冲池（shared pool）里有没有与之&lt;strong&gt;完全相同&lt;/strong&gt;的语句&quot;没有？
+类似这样：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://zxdy-blog.qiniudn.com/bind_var.png&quot; alt=&quot;bind var&quot;&gt;&lt;/p&gt;
+&lt;p&gt;一般来说，在实际的开发场景，只要使用比较成熟的数据持久层框架例如mybatis等，基本都可以避免这种因为没有用绑定变量而产生的性能问题。&lt;/p&gt;
+&lt;h3 id=&quot;13-索引优化&quot;&gt;1.3 索引优化&lt;/h3&gt;
+&lt;p&gt;索引优化这是大坑。。有空新开一篇再写吧&lt;/p&gt;
+&lt;h2 id=&quot;2-表连接&quot;&gt;2. 表连接&lt;/h2&gt;
+&lt;p&gt;在CBO（hash join只有在CBO才可能被使用到）模式下，优化器计算代价时，首先会考虑hash join。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;hash join的主要资源消耗在于CPU和内存（在内存中创建临时的hash表，并hash计算， Mem访问速度是Disk的万倍以上。）&lt;/li&gt;
+&lt;li&gt;Nested Loop资源消耗在磁盘IO和CPU。&lt;/li&gt;
+&lt;li&gt;sort merge的资源消耗主要在于磁盘IO（扫描表或索引）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;相对来说，比较常见的还是hash join以及nested loop。&lt;/p&gt;
+&lt;p&gt;表连接科普参见 &lt;a href=&quot;http://blog.csdn.net/tianlesoftware/article/details/5826546&quot;&gt;多表连接的三种方式&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&quot;22-hash-join&quot;&gt;2.2 hash join&lt;/h3&gt;
+&lt;p&gt; Hash join的工作方式是将一个表（通常是小一点的那个表）做hash运算，将列数据存储到hash列表中，从另一个表中抽取记录，做hash运算，到hash 列表中找到相应的值，做匹配。&lt;/p&gt;
+&lt;h3 id=&quot;22-nested-loop&quot;&gt;2.2 nested loop&lt;/h3&gt;
+&lt;p&gt;Nested loops 工作方式是从一张表中读取数据，访问另一张表（通常是索引）来做匹配，nested loops适用的场合是当一个关联表比较小的时候，效率会更高。&lt;/p&gt;
+&lt;h3 id=&quot;22-sort-merge&quot;&gt;2.2 sort merge&lt;/h3&gt;
+&lt;p&gt;Merge Join 是先将关联表的关联列各自做排序，然后从各自的排序表中抽取数据，到另一个排序表中做匹配，因为merge join需要做更多的排序，所以消耗的资源更多。 通常来讲，能够使用merge join的地方，hash join都可以发挥更好的性能。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;总的来说，小表和大表连接用nested loop，大表和大表连接用hash join，关联列已经排序好的表连接推荐用sort merge（用的不多就是了）。
+但凡事总有例外，具体的执行效果还是要根据具体情况看，有时候CBO推荐的执行计划未必是最好的， 此时你可以尝试使用hint或者修改sql语句来改变表连接。&lt;/p&gt;
+&lt;/blockquote&gt;
+</description>
+        </item>
         
         <item>
             <title>oracle性能优化-CPU篇(上)</title>
@@ -695,45 +741,6 @@ public class Test{
 &lt;blockquote&gt;
 &lt;p&gt;这样就可以让java为我们输出DBMS_OUTPUT，就像SQL*PLUS一样。你需要做的仅仅是在java运行存储过程之后，调用DbmsOutput.show() ，就能显示这个存储过程内的DBMS_OUTPUT，是不是很方便？再也不用在eclipse和sql develper之间两头调试了&lt;/p&gt;
 &lt;/blockquote&gt;
-</description>
-        </item>
-        
-        <item>
-            <title>shadowsocks搭建代理</title>
-            <link>Homepage link/articles/shadowsocks-proxy.html?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</link>
-            <guid>Homepage link/articles/shadowsocks-proxy.html</guid>
-            <author>zxdy@vip.qq.com Ario</author>
-            <pubDate>Fri, 13 Dec 2013 00:00:00 +0800</pubDate>
-            <description>&lt;p&gt;今天openvpn貌似有点抽风， 不好使了。。。sigh。。
-听说shadowsocks挺好用，就尝试了一下，确实还挺方便。记录一下搭建过程，基本上照官方的user manual来就ok了&lt;/p&gt;
-&lt;h2 id=&quot;1-安装&quot;&gt;1. 安装&lt;/h2&gt;
-&lt;pre class=&quot;prettyprint linenums lang-bash&quot;&gt;apt-get install python-pip python-dev build-essential
-python --version #安装之前检查一下vps的python版本号，需要2.6或2.7以上
-pip install shadowsocks #安装
-&lt;/pre&gt;
-&lt;h2 id=&quot;2-配置文件&quot;&gt;2. 配置文件&lt;/h2&gt;
-&lt;p&gt;新建一个名为&lt;code&gt;config.json的配置文件&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-bash&quot;&gt;{
-          &quot;server&quot;:&quot;vps的ip&quot;,
-          &quot;server_port&quot;:8388,
-          &quot;local_port&quot;:1080,
-          &quot;password&quot;:&quot;barfoo!&quot;, #认证密码
-          &quot;timeout&quot;:600,
-          &quot;method&quot;:&quot;table&quot; #加密方式，默认table，推荐aes-256-cfb
-}
-&lt;/pre&gt;
-&lt;p&gt;&lt;em&gt;如果想用除table以外的加密方式，需要额外安装M2Crypto&lt;/em&gt;&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-bash&quot;&gt;apt-get install python-m2crypto
-#或者
-pip install M2Crypto
-&lt;/pre&gt;
-&lt;h2 id=&quot;3进入-code-configjson-code-所在目录，运行shadowsocks&quot;&gt;3.进入&lt;code&gt;config.json所在目录，运行shadowsocks&lt;/h2&gt;
-&lt;pre class=&quot;prettyprint linenums lang-bash&quot;&gt;nohup ssserver &gt; shadowsocks_log &amp;
-&lt;/pre&gt;
-&lt;h2 id=&quot;4客户端&quot;&gt;4.客户端&lt;/h2&gt;
-&lt;p&gt;下载&lt;a href=&quot;http://sourceforge.net/projects/shadowsocksgui/files/dist/&quot;&gt;shadowsocks-gui&lt;/a&gt;，填入相应的vps ip地址，端口，密码信息后保存  &lt;/p&gt;
-&lt;h2 id=&quot;5-浏览器代理&quot;&gt;5. 浏览器代理&lt;/h2&gt;
-&lt;p&gt;新建socket5代理，地址填127.0.0.1，端口1080保存就可以使用了&lt;/p&gt;
 </description>
         </item>
         

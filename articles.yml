@@ -1,3 +1,12 @@
+- id: oracle-tunning-cpu-2
+  title: oracle性能优化-CPU篇(下)
+  postedOn: !!str 2015-03-10
+  author: Ario
+  tags:
+    - Oracle
+    - 优化
+  abstract: 从sql语句重用以及表连接优化oracle的cpu使用
+
 - id: oracle-tunning-cpu-1
   title: oracle性能优化-CPU篇(上)
   postedOn: !!str 2015-03-04
