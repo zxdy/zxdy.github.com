@@ -4,7 +4,7 @@
         <title>RSS feed title</title>
         <link>Homepage link</link>
         <description>RSS feed description</description>
-        <lastBuildDate>Fri, 20 Mar 2015 14:57:13 +0800</lastBuildDate>
+        <lastBuildDate>Fri, 20 Mar 2015 15:01:09 +0800</lastBuildDate>
         <language>zh-cn</language>
         
         <item>
@@ -146,7 +146,7 @@ Instance&lt;/li&gt;
 &lt;li&gt;统计信息。oracle默认会在每天的晚上以及周末触发自动收集数据改变量在10%以上的表的统计信息。如果统计信息过于陈旧，DBA或者开发也可以手动提交收集统计信息任务。&lt;/li&gt;
 &lt;li&gt;hint。hint会强制指定执行计划的路径，比如select /*+ use_hash*/ ,不管优化器怎么认为表连接应该使用nested loop更加效率，都会强制使用hash连接&lt;/li&gt;
 &lt;li&gt;sql profile。&lt;a href=&quot;https://docs.oracle.com/database/121/TGSQL/tgsql_profiles.htm#TGSQL599&quot;&gt;定义&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;sql plan。&lt;a href=&quot;https://docs.oracle.com/database/121/TGSQL/tgsql_spm.htm#TGSQL617&quot;&gt;sql prfile vs plan baseline&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;sql plan。&lt;a href=&quot;https://docs.oracle.com/database/121/TGSQL/tgsql_spm.htm#TGSQL617&quot;&gt;sql profile vs plan baseline&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;
 &lt;h1 id=&quot;怎么查看执行计划&quot;&gt;怎么查看执行计划&lt;/h1&gt;
 &lt;h2 id=&quot;1-explain-plan-for-sql&quot;&gt;1. Explain Plan For SQL&lt;/h2&gt;

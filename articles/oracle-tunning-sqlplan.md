@@ -10,7 +10,7 @@
  2. 统计信息。oracle默认会在每天的晚上以及周末触发自动收集数据改变量在10%以上的表的统计信息。如果统计信息过于陈旧，DBA或者开发也可以手动提交收集统计信息任务。
  3. hint。hint会强制指定执行计划的路径，比如select /\*+ use_hash*/ ,不管优化器怎么认为表连接应该使用nested loop更加效率，都会强制使用hash连接
  4. sql profile。[定义][2]
- 5. sql plan。[sql prfile vs plan baseline][3]
+ 5. sql plan。[sql profile vs plan baseline][3]
 
 # 怎么查看执行计划
 
