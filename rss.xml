@@ -4,7 +4,7 @@
         <title>RSS feed title</title>
         <link>Homepage link</link>
         <description>RSS feed description</description>
-        <lastBuildDate>Fri, 13 Mar 2015 21:00:45 +0800</lastBuildDate>
+        <lastBuildDate>Fri, 20 Mar 2015 14:57:13 +0800</lastBuildDate>
         <language>zh-cn</language>
         
         <item>
@@ -128,6 +128,108 @@ Instance&lt;/li&gt;
 &lt;p&gt;第一列CPU TIME统计这个sql总共在快照时间内总共花费的cpu时间，在这个值比较高的情况下，如果相应的%CPU值也很高， 说明这个sql在cpu上的负载很高，需要考虑优化。&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;&lt;strong&gt;如果发现有比较突出的sql，很可能就是瓶颈所在，可以继续跑个@?/rdbms/admin/awrsqrpt.sql看看&lt;/strong&gt;&lt;/p&gt;
+</description>
+        </item>
+        
+        <item>
+            <title>oracle性能优化-执行计划篇</title>
+            <link>Homepage link/articles/oracle-tunning-sqlplan.html?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</link>
+            <guid>Homepage link/articles/oracle-tunning-sqlplan.html</guid>
+            <author>zxdy@vip.qq.com Ario</author>
+            <pubDate>Mon, 09 Feb 2015 00:00:00 +0800</pubDate>
+            <description>&lt;h1 id=&quot;执行计划？&quot;&gt;执行计划？&lt;/h1&gt;
+&lt;p&gt;执行计划是sql在数据库中最终的执行路径，包括索引的扫描，数据的读取，过滤，连接，排序等等一系列过程。就像平常在生活中你为了完成一个任务，需要经过很多步骤，如果没有很好的统筹规划，任务时间会不断延长。所以sql的效率跟它的执行计划息息相关，同一个sql可能会有很多不一样的执行计划，基于CBO的oracle会在其中挑选出它认为最快的执行计划进行执行。下面这个流程图展现了优化器选择执行计划过程：&lt;/p&gt;
+&lt;p&gt; &lt;img src=&quot;http://zxdy-blog.qiniudn.com/sql%20plan.png&quot; alt=&quot;优化器选择执行计划过程&quot;&gt;&lt;/p&gt;
+&lt;p&gt; 从上面的流程图可以知道一个高效良好的执行计划需要考虑的因素有&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;绑定变量。//还记得CPU优化篇的sql重用吗&lt;/li&gt;
+&lt;li&gt;统计信息。oracle默认会在每天的晚上以及周末触发自动收集数据改变量在10%以上的表的统计信息。如果统计信息过于陈旧，DBA或者开发也可以手动提交收集统计信息任务。&lt;/li&gt;
+&lt;li&gt;hint。hint会强制指定执行计划的路径，比如select /*+ use_hash*/ ,不管优化器怎么认为表连接应该使用nested loop更加效率，都会强制使用hash连接&lt;/li&gt;
+&lt;li&gt;sql profile。&lt;a href=&quot;https://docs.oracle.com/database/121/TGSQL/tgsql_profiles.htm#TGSQL599&quot;&gt;定义&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;sql plan。&lt;a href=&quot;https://docs.oracle.com/database/121/TGSQL/tgsql_spm.htm#TGSQL617&quot;&gt;sql prfile vs plan baseline&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h1 id=&quot;怎么查看执行计划&quot;&gt;怎么查看执行计划&lt;/h1&gt;
+&lt;h2 id=&quot;1-explain-plan-for-sql&quot;&gt;1. Explain Plan For SQL&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;不实际执行SQL诧句，生成的计划未必是真实执行的计划 &lt;/li&gt;
+&lt;li&gt;必须要有plan_table&lt;/li&gt;
+&lt;/ul&gt;
+&lt;pre class=&quot;prettyprint linenums lang-SQL&quot;&gt;EXPLAIN PLAN FOR
+  SELECT object_id FROM dba_objects;
+SELECT PLAN_TABLE_OUTPUT FROM TABLE(DBMS_XPLAN.DISPLAY());
+&lt;/pre&gt;
+&lt;h2 id=&quot;2-sqlplus-autotrace&quot;&gt;2. SQLPLUS AUTOTRACE&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;除set autotrace traceonly explain外均实际执行SQL，但仍未必是真实计划&lt;/li&gt;
+&lt;li&gt;必须要有plan_table&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;3-其他第三方工具&quot;&gt;3. 其他第三方工具&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;sqldeveloper&lt;/li&gt;
+&lt;li&gt;toad（收费，比sqldeveloper强大，细节丰富）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&quot;4-最靠谱的方法&quot;&gt;4. 最靠谱的方法&lt;/h2&gt;
+&lt;p&gt;为什么上文说未必是真实的计划呢？这里的指的是实际生产环境使用的执行计划和你手动用上文的方法查看某个sql的执行计划是有可能有差异的。所以最靠谱的办法是在生产环境找到已经执行过的sql或者是正在执行的sql的sql id，然后根据这个id去查看他的执行计划&lt;/p&gt;
+&lt;h3 id=&quot;查询历史sql和sql-id&quot;&gt;查询历史sql和sql id&lt;/h3&gt;
+&lt;pre class=&quot;prettyprint linenums lang-SQL&quot;&gt;select sql_id,sql_text from v$SQL Where
+sql_text not like &#39;%like%&#39;
+and sql_text like &#39;%$SQL%&#39;;
+--或者
+select b.SQL_TEXT,b.FIRST_LOAD_TIME,b.SQL_FULLTEXT
+from v$sqlarea b
+where b.FIRST_LOAD_TIME between &#39;2014-10-15/09:24:47&#39; and
+&#39;2014-10-15/09:24:47&#39; order by b.FIRST_LOAD_TIME
+&lt;/pre&gt;
+&lt;h3 id=&quot;查询正在执行的sql和sql-id&quot;&gt;查询正在执行的sql和sql id&lt;/h3&gt;
+&lt;pre class=&quot;prettyprint linenums lang-SQL&quot;&gt;select a.username, a.sid,b.SQL_TEXT, b.SQL_FULLTEXT,b.sql_id
+from v$session a, v$sqlarea b 
+where a.sql_address = b.address ;
+&lt;/pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;note:&lt;/p&gt;
+&lt;p&gt;V\$SQL, V\$SQLAREA, V\$SQLTEXT三个视图的区别:&lt;/p&gt;
+&lt;p&gt;V\$SQL：CHILD CURSOR DETAILS FOR V\$SQLAREA&lt;/p&gt;
+&lt;p&gt;V\$SQLAREA：SHARED POOL DETAILS FOR STATEMENTS/ANONYMOUS BLOCKS&lt;/p&gt;
+&lt;p&gt;V\$SQLTEXT：SQL TEXT OF STATEMENTS IN THE SHARED POOL&lt;/p&gt;
+&lt;p&gt;V\$SQL的每一行表示的是每一个SQL语句的一个版本，而V\$SQLAREA存放的是相同语句不同版本一个GROUP BY汇总。&lt;/p&gt;
+&lt;p&gt;V\$SQL及V\$SQLAREA存放着统计信息在调优时使用居多，但其SQL是不全的，如果想获得完整的SQL需使用V\$SQLTEXT。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&quot;精确查询详细执行计划&quot;&gt;精确查询详细执行计划&lt;/h3&gt;
+&lt;pre class=&quot;prettyprint linenums lang-SQL&quot;&gt;alter session set STATISTICS_LEVEL = ALL; --不设置无法获得A-ROWS等信息,A-Rows 是实际执行时返回的行数
+select * from table(dbms_xplan.display_cursor(&#39;sql_id&#39;,null,&#39;ADVANCED ALLSTATS LAST PEEKED_BINDS&#39;));
+&lt;/pre&gt;
+&lt;h1 id=&quot;执行计划的执行顺序&quot;&gt;执行计划的执行顺序&lt;/h1&gt;
+&lt;p&gt;toad看这个最方便，可以直接显示执行顺序。如图中的12345678就是：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://zxdy-blog.qiniudn.com/sqlplan_toad.png&quot; alt=&quot;sql plan by toad&quot;&gt;&lt;/p&gt;
+&lt;p&gt;但是如果没有toad的话，通常显示的结果会是这样，要注意的是这里的id并不是顺序：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://zxdy-blog.qiniudn.com/sqlplan_sqldeveloper.png&quot; alt=&quot;sql plan&quot;&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;note:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Id 分配给执行计划中每一个步骤的一个数字 每个步骤（执行计划中的行，戒树中的节点）代表行源 (row source)。&lt;/li&gt;
+&lt;li&gt;Operation 该步骤实施的内部操作名 id=0的operation一般是 SELECT/INSERT/UPDATE/DELETE Statement&lt;/li&gt;
+&lt;li&gt;Name 该步骤操作的表戒者索引名&lt;/li&gt;
+&lt;li&gt;Rows CBO基亍统计信息估计该操作将返回的行数&lt;/li&gt;
+&lt;li&gt;Bytes CBO基亍统计信息估计该操作将返回的字节数&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;如果你学过二叉树的后序遍历的话，其实也很简单。首先我们先将这个图根据缩进转化成一个树。然后对这个树进行一下后续遍历，这个遍历的顺序（4 -&gt; 6 -&gt; 5-&gt; 3 -&gt; 7 -&gt; 2 -&gt; 8 -&gt; 1 -&gt; 0）就是执行顺序。&lt;/p&gt;
+&lt;p&gt; &lt;img src=&quot;http://zxdy-blog.qiniudn.com/tree.png&quot; alt=&quot;执行计划树&quot;&gt;&lt;/p&gt;
+&lt;h1 id=&quot;如何通过执行计划优化sql&quot;&gt;如何通过执行计划优化sql&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;在计划中，驱动表具有最强的过滤性。&lt;/li&gt;
+&lt;li&gt;每个步骤的联接顺序都可保证返回给下一步的行数最少（即，联接顺序应使系统转到尚未使用的最强过滤器）。&lt;/li&gt;
+&lt;li&gt;就返回的行数而言，相应的联接方法是适合的。例如，返回的行很多时，使用索引的嵌套循环联接可能不是最佳方法。&lt;/li&gt;
+&lt;li&gt;高效地使用视图。查看 SELECT 列表，确定访问的视图是否必需。&lt;/li&gt;
+&lt;li&gt;是否存在预料之外的笛卡尔积（即使对于小表，也是如此）。&lt;/li&gt;
+&lt;li&gt;高效地访问每个表：考虑 SQL 诧句中的谓词和表的行数。查找可疑活劢，例如对行数很多的表执行全表扫描（在 WHERE 子句中有谓词）。而对亍小表，戒根据返回的行数利用更好的联接方法（例如 hash_join）时，全表扫描也许更有效。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;参考：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&quot;http://t.askmaclean.com/thread-3237-1-1.html&quot;&gt;Maclean Liu的Oracle性能优化讲座 真正读懂Oracle SQL执行计划&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;http://blog.itpub.net/22664653/viewspace-701711/&quot;&gt;如何清除某条SQL在库缓存中的执行计划：dbms_shared_pool.purge &lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;http://files.cnblogs.com/files/kerrycode/ORACLE_11g_ARCHITECTURE.pdf&quot;&gt;oracle 11g 架构图&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
 </description>
         </item>
         
@@ -591,156 +693,6 @@ END;
 &lt;/pre&gt;
 &lt;h2 id=&quot;断点位置&quot;&gt;断点位置&lt;/h2&gt;
 &lt;p&gt;最后将断点打在test_pipeline的for循环上，对这个procedure进行单步调试就可以跳转到函数get_tab_ptf内部了。&lt;/p&gt;
-</description>
-        </item>
-        
-        <item>
-            <title>oracle dbms_output 在java中输出</title>
-            <link>Homepage link/articles/dbms_output-in-java-console.html?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</link>
-            <guid>Homepage link/articles/dbms_output-in-java-console.html</guid>
-            <author>zxdy@vip.qq.com Ario</author>
-            <pubDate>Fri, 13 Dec 2013 00:00:00 +0800</pubDate>
-            <description>&lt;p&gt;有没有碰到过这种情况，当你的java程序连接oracle运行存储过程的时候，java控制台只是仅仅输出java程序的相关信息，
-而存储过程中的dbms_output内容却没有办法显示？这样只能跑去sql developer 单独调试存储过程，而不能直接在eclipse
-进行集成测试，出了问题也不好定位。  &lt;/p&gt;
-&lt;p&gt;所以在此分享一个解决方案： &lt;a href=&quot;http://asktom.oracle.com/pls/asktom/f?p=100:11:0::::P11_QUESTION_ID:45027262935845&quot;&gt;原文链接&lt;/a&gt; 。05年的一个方法，不知现在有没有更好的：）  &lt;/p&gt;
-&lt;h2 id=&quot;存储过程demo&quot;&gt;存储过程demo&lt;/h2&gt;
-&lt;pre class=&quot;prettyprint linenums lang-pl/sql&quot;&gt;create or replace
-PROCEDURE test_java_dbmsOutPut
-IS
-BEGIN
-   dbms_output.put_line(&#39;im in store procedure&#39;);
-END;
-/
-&lt;/pre&gt;
-&lt;h2 id=&quot;用来输出dbms_output-的类&quot;&gt;用来输出dbms_output 的类&lt;/h2&gt;
-&lt;pre class=&quot;prettyprint linenums lang-java&quot;&gt;import java.sql.*;
-class DbmsOutput 
- {
-    /*
-     * our instance variables. It is always best to use callable or prepared
-     * statements and prepare (parse) them once per program execution, rather
-     * then one per execution in the program. The cost of reparsing is very
-     * high. Also -- make sure to use BIND VARIABLES!
-     * 
-     * we use three statments in this class. One to enable dbms_output -
-     * equivalent to SET SERVEROUTPUT on in SQL*PLUS. another to disable it --
-     * like SET SERVEROUTPUT OFF. the last is to &quot;dump&quot; or display the results
-     * from dbms_output using system.out
-     */
-    private CallableStatement enable_stmt;
-
-    private CallableStatement disable_stmt;
-
-    private CallableStatement show_stmt;
-
-    /*
-     * our constructor simply prepares the three statements we plan on
-     * executing.
-     * 
-     * the statement we prepare for SHOW is a block of code to return a String
-     * of dbms_output output. Normally, you might bind to a PLSQL table type but
-     * the jdbc drivers don&#39;t support PLSQL table types -- hence we get the
-     * output and concatenate it into a string. We will retrieve at least one
-     * line of output -- so we may exceed your MAXBYTES parameter below. If you
-     * set MAXBYTES to 10 and the first line is 100 bytes long, you will get the
-     * 100 bytes. MAXBYTES will stop us from getting yet another line but it
-     * will not chunk up a line.
-     */
-    public DbmsOutput(Connection conn)
-        throws SQLException {
-        enable_stmt = conn.prepareCall(&quot;begin dbms_output.enable(:1); end;&quot;);
-        disable_stmt = conn.prepareCall(&quot;begin dbms_output.disable; end;&quot;);
-        show_stmt =
-            conn.prepareCall(&quot;declare &quot;
-                + &quot;    l_line varchar2(255); &quot;
-                + &quot;    l_done number; &quot;
-                + &quot;    l_buffer long; &quot;
-                + &quot;begin &quot;
-                + &quot;  loop &quot;
-                + &quot;    exit when length(l_buffer)+255 &gt; :maxbytes OR l_done = 1; &quot;
-                + &quot;    dbms_output.get_line( l_line, l_done ); &quot;
-                + &quot;    l_buffer := l_buffer || l_line || chr(10); &quot;
-                + &quot;  end loop; &quot; + &quot; :done := l_done; &quot;
-                + &quot; :buffer := l_buffer; &quot; + &quot;end;&quot;);
-    }
-
-    /*
-     * enable simply sets your size and executes the dbms_output.enable call
-     */
-    public void enable(int size)
-        throws SQLException {
-        enable_stmt.setInt(1, size);
-        enable_stmt.executeUpdate();
-    }
-
-    /*
-     * disable only has to execute the dbms_output.disable call
-     */
-    public void disable()
-        throws SQLException {
-        disable_stmt.executeUpdate();
-    }
-
-    /*
-     * show does most of the work. It loops over all of the dbms_output data,
-     * fetching it in this case 32,000 bytes at a time (give or take 255 bytes).
-     * It will print this output on stdout by default (just reset what
-     * System.out is to change or redirect this output).
-     */
-    public void show()
-        throws SQLException {
-        int done = 0;
-        show_stmt.registerOutParameter(2, java.sql.Types.INTEGER);
-        show_stmt.registerOutParameter(3, java.sql.Types.VARCHAR);
-        for (;;) {
-            show_stmt.setInt(1, 32000);
-            show_stmt.executeUpdate();
-            System.out.print(show_stmt.getString(3));
-            if ((done = show_stmt.getInt(2)) == 1)
-                break;
-        }
-    }
-
-    /*
-     * close closes the callable statements associated with the DbmsOutput
-     * class. Call this if you allocate a DbmsOutput statement on the stack and
-     * it is going to go out of scope -- just as you would with any callable
-     * statement, result set and so on.
-     */
-    public void close()
-        throws SQLException {
-        enable_stmt.close();
-        disable_stmt.close();
-        show_stmt.close();
-    }
-}
-&lt;/pre&gt;
-&lt;h2 id=&quot;测试代码&quot;&gt;测试代码&lt;/h2&gt;
-&lt;pre class=&quot;prettyprint linenums lang-java&quot;&gt;
-import java.sql.*;
-public class Test{
-    public static void main(String args[])
-        throws SQLException {
-        DriverManager.registerDriver(new oracle.jdbc.driver.OracleDriver());
-        Connection conn = DBAgent.getConn(); 
-        conn.setAutoCommit(false);
-        Statement stmt = conn.createStatement();
-        DbmsOutput dbmsOutput = new DbmsOutput(conn);
-        dbmsOutput.enable(1000000);
-        stmt.execute(&quot;begin test_java_dbmsOutPut; end;&quot;); #调用存储过程
-        stmt.close();
-        dbmsOutput.show(); #显示DBMS_OUTPUT
-        dbmsOutput.close();
-        conn.close();
-    }   
-}
-&lt;/pre&gt;
-&lt;h2 id=&quot;输出的结果&quot;&gt;输出的结果&lt;/h2&gt;
-&lt;p&gt;运行测试代码之后，就可以看见在java 控制台输出了: &lt;strong&gt;im in store procedure&lt;/strong&gt;&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;这样就可以让java为我们输出DBMS_OUTPUT，就像SQL*PLUS一样。你需要做的仅仅是在java运行存储过程之后，调用DbmsOutput.show() ，就能显示这个存储过程内的DBMS_OUTPUT，是不是很方便？再也不用在eclipse和sql develper之间两头调试了&lt;/p&gt;
-&lt;/blockquote&gt;
 </description>
         </item>
         

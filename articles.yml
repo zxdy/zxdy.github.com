@@ -16,6 +16,14 @@
     - 优化
   abstract: 在任何一样计算机软件产品中，当我们需要考虑其性能的时候，往往都会从CPU，IO，Network这三个方面考虑。CPU代表着处理问题的能力，IO代表着存储的吞吐能力，Network代表着数据传输的能力。oracle当然也不例外。
 
+- id: oracle-tunning-sqlplan
+  title: oracle性能优化-执行计划篇
+  postedOn: !!str 2015-02-09
+  author: Ario
+  tags:
+    - Oracle
+    - 优化
+  abstract: 执行计划是sql在数据库中最终的执行路径，包括索引的扫描，数据的读取，过滤，连接，排序等等一系列过程。就像平常在生活中你为了完成一个任务，需要经过很多步骤，如果没有很好的统筹规划，任务时间会不断延长。所以sql的效率跟它的执行计划息息相关...
 
 - id: file-read-write-compare
   title: 大文件读写效率比较
