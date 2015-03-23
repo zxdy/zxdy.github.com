@@ -1,0 +1,164 @@
+<!doctype html>
+<html>
+    <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <meta name="description" content="Content of description meta tag"/>
+        <meta name="keywords" content="代码,数据库,信息安全"/>
+        <meta name="author" content="Content of author meta tag"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+        <title>离世庭院 - oracle性能优化-索引篇
+</title>
+        <link rel="stylesheet" href="/assets/vendor/normalize.css"/>
+        <link rel="stylesheet" href="/assets/vendor/prettify-night.css"/>
+        <link rel="stylesheet" href="/assets/themes/default/main.css"/>
+        <link rel="shortcut icon" href="/fav.ico"/>
+        <script type="text/javascript" src="/assets/vendor/prettify.js"></script>
+        
+    </head>
+    <body onload="prettyPrint()">
+    <div id="header">
+        <div id="header-inner">
+            <div id="title"><a href="/">离世庭院</a></div>
+            <div id="subtitle">To be a builder,not a imitator</div>
+        </div>
+    </div>
+
+<div id="main">
+    <div id="main-inner">
+        <div id="topnav">
+            <ul>
+                <li><a href="/">首页</a></li>
+                <li class="sep"> | </li>
+                <li><a href="/tag.html">标签</a></li>
+                
+<li class="sep"> | </li>
+<li><a href="/pages/about-me.html" target="_self">关于我</a></li>
+
+<li class="sep"> | </li>
+<li><a href="https://github.com/zxdy" target="_blank">github</a></li>
+
+
+            </ul>
+            <div style="clear:both;"></div>
+        </div>
+        <div id="article-title">
+            <a href="/articles/oracle-tunning-index.html">oracle性能优化-索引篇</a>
+        </div>
+        <div id="article-meta">
+            作者 Ario | 发布于 2014-12-19
+        </div>
+        <div id="article-tags">
+        
+        <a class="tag" href="/tag.html#Oracle">Oracle</a>
+        
+        <a class="tag" href="/tag.html#优化">优化</a>
+        
+        </div>
+        <div id="article-content">
+            <p>索引是每种数据库都避不开的一个话题。很多人不管是DBA还是开发，对于索引的印象就是：sql慢？加个索引吧。但是为什么加了索引sql就能变快呢？加了索引是不是一定就会变快？怎么加索引效率会最高？</p>
+<h2 id="从b-tree索引讲起">从B-tree索引讲起</h2>
+<p>索引就像是一本字典的查询页，你可以通过字母或者是偏旁快速定位需要查询的字。类似通过字母查询的是聚集索引（表中行的物理顺序与键值的逻辑索引顺序相同），反之通过偏旁的是非聚集索引（表中行的物理顺序与键值的逻辑索引顺序不相同）。扯远了，这里要讲的是b-tree索引。</p>
+<p>oracle默认建的索引就是b-tree索引，他的工作方式如下：</p>
+<p><img src="http://zxdy-blog.qiniudn.com/B-TREE.png" alt="b-tree"></p>
+<ol>
+<li><p>很显然索引也是需要占用空间的，只是没有普通数据那么大而已。索引的大小跟数据量以及索引列的多少成正比。</p>
+</li>
+<li><p>一般来说，还是推荐将索引使用的空间与数据的tablespace分开来，索引建在索引专用的tablespace中，方便维护，同时也有助于查询效率提高。oracle的数据查询说到底就是数据块的读取，查询索引的时候，也是在读取数据块，索引数据块越集中，查询的速度越快，如果索引的数据块跟普通数据块一起放在同一个tablespace中，肯定相对比较分散，影响查询效率。</p>
+</li>
+<li><p>b-tree索引顾名思义就是一棵树。当我们要查询字段值为&quot;ACER&quot;的时候，oracle首先会读取索引的根节点，如图中的20号数据块。这个数据块中维护着子节点的信息，通过它可以往下找到子节点30号数据块，这个节点维护着下一个节点信息，在此表示所有首字母A-F的索引信息都是它的子节点。然后找到叶子节点39号数据块。这个数据块中包含索引字段值首字母是A-F的所有值以及相对应的rowid。</p>
+</li>
+<li><p>到此，假如你的sql只是需要查到索引的字段值得话，整个过程就到此结束了。但是如果还要对应的其他字段值，则还需通过上一步得到rowid去数据存储的tablespace中找到相应数据块。</p>
+</li>
+<li><p>发现什么没有？其实oracle的sql查数据最快的方法是直接用rowid查询啊，连索引扫描的时间都省掉了。  </p>
+</li>
+</ol>
+<h2 id="如何挑选索引列">如何挑选索引列</h2>
+<ol>
+<li>定义一个主键列，oracle会自动为它建一个unique index</li>
+<li>外键列通常是需要建索引的</li>
+<li>在经常用到的列上建索引，特别是在where谓词中经常出现的</li>
+</ol>
+<p>你大概会说上面三点基本就是废话。。</p>
+<p>好吧，我们说点不是废话的：索引扫描的三种情形</p>
+<h3 id="1-sql所有需要的数据都在索引上">1. sql所有需要的数据都在索引上</h3>
+<p>又分为两种情况：</p>
+<ul>
+<li><p><strong>index range scan.</strong>
+在上图中，假如只要查询&quot;ACER&quot;,那么oracle只需读取3个block，同时在第三个block中挑出是&quot;ACER&quot;的值就可以了,此时用的就是range scan。</p>
+</li>
+<li><p><strong>index fast full scan.</strong>
+还是上图，假如需要查询被索引的所有值或是大部分值，oralce优化器会认得此时用 index fast full scan最快，就是不挑了，把索引上的值都扫一遍</p>
+</li>
+</ul>
+<h3 id="2-sql需要的数据不都在索引上">2. sql需要的数据不都在索引上</h3>
+<p>这个情况是最普遍的，即<em>从B-tree索引讲起</em>的第4点情况，反映在执行计划中就是 TABLE ACCESS BY INDEX ROWID</p>
+<h3 id="3-不想走索引，就是这么任性">3. 不想走索引，就是这么任性</h3>
+<p>有时候即使表上有各种索引，oracle优化器还是会认为不走索引反而更快，比如全表扫描（TABLE ACCESS FULL）。</p>
+<p>索引不是越多越好，也不是一个复合索引覆盖的列越多越好，需要综合考虑性能。建了索引之后也要查看一下执行计划，是不是确实用到了索引，
+同时要看下sql的buffer read和physical read跟原先比如何。</p>
+<h2 id="bitmap索引稍及">bitmap索引稍及</h2>
+<p>我并没有用过bitmap索引，经验不多，所以就只能稍微介绍下。</p>
+<p>bitmap索引即所谓的位图索引，它和b-tree索引最大的区别是适用于只有几个固定值的列，如性别、婚姻状况等，如果列的取值非常多则适用于b-tree索引。</p>
+<p>另外位图索引适合静态数据，而不适合索引频繁更新的列。因为它所造成的行锁比较广，非常坑爹。举个例子，某张表上的性别列上是位图索引，有次将其中某一个人的性别从男改成女时，会将表上所有女性记录加锁，直到commit。可以想象假如更新频繁的话，会出现严重的锁等待事件</p>
+<h2 id="监控索引使用情况">监控索引使用情况</h2>
+<p>在一个很大的数据库中，可能会有成百上千个索引分布在各个表上。随着时间的过去，可能其中很多索引都已经用不到了。虽然索引可以帮助加快数据查询的速度，但是相应也是有代价的。当表的数据有插入，更新，删除的变化时，表上的索引也需要更新，他会占用cpu和磁盘的资源，索引越多，占用的资源越多。所以对于这些已经没有在被使用的索引，可以删掉，节约资源。</p>
+<pre class="prettyprint linenums lang-SQL">--对单独某个索引启用监控
+alter index f_regs_idx1 monitoring usage; 
+--查看索引使用情况（对于在不同schema下的索引需要登录到相应的用户上去查看）
+select index_name, table_name, monitoring, used from v$object_usage; 
+
+--批量启用监控
+set pagesize 0 head off linesize 132 
+spool enable_mon.sql 
+select   
+&#39;alter index &#39; || index_name || &#39; monitoring usage;&#39; 
+from user_indexes; 
+spool off; 
+
+--禁用监控 
+alter index f_regs_idx1 nomonitoring usage;
+</pre>
+<h2 id="怎样加快建索引的速度">怎样加快建索引的速度</h2>
+<p>参见 <a href="http://zxdy.github.io/articles/speed-up-create-index.html">oracle 如何加快建立索引的速度
+</a></p>
+
+        </div>
+        <!-- 多说评论框 start -->
+<div class="ds-thread" data-thread-key="oracle-tunning-index" data-title="oracle性能优化-索引篇" data-url="http://blog.codinglabs.org/articles/oracle-tunning-index.html"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"zxdy8812"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0]
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+
+    </div>
+</div>
+        <div id="footer">
+            <div id="footer-inner">
+                <p id="copyright">Copyright (c) 2011-2014 Ario</p>
+            </div>
+        </div>
+        <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [['$','$'], ['\\(','\\)']],
+            processEscapes: true
+        }
+    });
+</script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+    </body>
+</html>
+
