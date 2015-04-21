@@ -78,6 +78,14 @@
     - Oracle
   abstract: 如何启用和导出awr报告
 
+- id: web-log-analyze
+  title: Web 日志分析
+  postedOn: !!str 2014-04-23
+  author: Ario
+  tags:
+    - 数据分析
+  abstract: 分析网站的访问日志，提取有意义的信息用于研究用户行为
+
 - id: why-vm-tor-and-vpn
   title : 为什么虚拟机+tor+vpn
   postedOn: !!str 2014-04-14
