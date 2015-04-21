@@ -46,26 +46,48 @@ Composite Key ：只是一个多字段组合的概念
 
 跟关系型数据库一样，分区都是为了解决大数据量查询的效率问题，所不同的是Cassandra的分区分布在各个节点上。注意同一个分区的数据是在同一个物理节点上的，这就造成一个问题，假如分区内的数据量过大的话，会造成Cassandra读取负载的不均衡，可以用类似于table3的建表方式，多个字段共同组成一个partition key减小单个分区的大小，使各个分区能够更均匀地分布在节点上，从而实现负载均衡。
 
-但是，问题又来了, 在查询时，cassandra查询的where语句中必须指定所有的partition key，这是最基本的条件。比如:
+
+## cassandra 查询之坑
+
+在实际的使用过程中,cassandra的数据查询有很多不同于关系型数据库的地方，如果你总是用关系型数据库的思维去考虑cassandra的问题的话，往往会掉进坑里。cassandra的CQL写法并没有像你想象中的随心所欲，因为究其本质，它的数据集是以key-value的形式存放，所以在查询时会有很多限制。
+
+让我们来看下上面三个表的查询语法会有哪些坑。
+
+**table1** PRIMARY KEY(pri_key)
+
 ```SQL
-PRIMARY KEY((key1，key2)，key3，key4，...)
+select * from table1 where pri_key='111'; --good
+select * from table1 where data='111'; --error
+select * from table1 where pri_key='111' and data='111'; --error
 ```
 
-* 合法的查询(不考虑二级索引)
-
-where key1 and key2
-
-where key1 and key2 and key3
-
-where key1 and key2 and key3 and key4
-
-* 非法的查询
-
-where key1
-
-where key2
-
-where key1 and key2 and key4
 
 
-所以parition key字段过多会对以后的查询造成很大困扰，在建表的时候首先一定要考虑好数据模型，以免后期掉坑。此外假如与spark集成的话，可以在一定程度上规避掉上面非法查询的问题，通过sparksql可以近似实现关系型数据库sql的查询，而不用考虑查询中一定要带上所有partition key字段。
+**table2** PRIMARY KEY(key_part_one, key_part_two)
+
+```SQL
+
+select * from table2 where key_part_one='111'; --good
+select * from table2 where key_part_two=111; --need allow filtering
+select * from table2 where key_part_one='111' and key_part_two=111; --good
+```
+
+**table3** PRIMARY KEY((key_part_one,key_part_two), key_clust_one, key_clust_two, key_clust_three)
+
+```SQL
+select * from table3 where key_part_one='111'; --error
+select * from table3 where key_part_two=111; --error
+select * from table3 where key_part_one='111' and key_part_two=111; --good
+select * from table3 where key_part_one='111' and key_part_two=111 and key_clust_one='111'; --good
+select * from table3 where key_part_one='111' and key_part_two=111 and key_clust_two='111'; --error
+select * from table3 where key_clust_one='111'; --need allow filtering
+```
+
+> 总结：
+1. cassandra的查询必须在主键列上，或者查询的字段有二级索引。
+2. 对于（A，B）形式的主键，假如查询条件不带分区键A，则查询语句需要开启allow filtering。
+3. 对于（（A，B）,C,D）形式的主键，可以认为是第2点的变种。A，B必须同时出现在查询条件中,且C,D不可以跳跃，像where A and B and D的查询是非法的。
+4. 以上查询不考虑范围查询的情况。
+
+
+所以因为第三点的关系，parition key字段过多会对以后的查询造成很大困扰，在建表的时候首先一定要考虑好数据模型，以免后期掉坑。此外假如与spark集成的话，可以在一定程度上规避掉上面非法查询的问题，通过sparksql可以近似实现关系型数据库sql的查询，而不用考虑查询中一定要带上所有partition key字段。
