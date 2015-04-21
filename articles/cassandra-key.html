@@ -1,0 +1,146 @@
+<!doctype html>
+<html>
+    <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <meta name="description" content="Content of description meta tag"/>
+        <meta name="keywords" content="代码,数据库,信息安全"/>
+        <meta name="author" content="Content of author meta tag"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+        <title>离世庭院 - Cassandra partition key, composite key 和 clustering key 的区别
+</title>
+        <link rel="stylesheet" href="/assets/vendor/normalize.css"/>
+        <link rel="stylesheet" href="/assets/vendor/prettify-night.css"/>
+        <link rel="stylesheet" href="/assets/themes/default/main.css"/>
+        <link rel="shortcut icon" href="/fav.ico"/>
+        <script type="text/javascript" src="/assets/vendor/prettify.js"></script>
+        
+    </head>
+    <body onload="prettyPrint()">
+    <div id="header">
+        <div id="header-inner">
+            <div id="title"><a href="/">离世庭院</a></div>
+            <div id="subtitle">To be a builder,not a imitator</div>
+        </div>
+    </div>
+
+<div id="main">
+    <div id="main-inner">
+        <div id="topnav">
+            <ul>
+                <li><a href="/">首页</a></li>
+                <li class="sep"> | </li>
+                <li><a href="/tag.html">标签</a></li>
+                
+<li class="sep"> | </li>
+<li><a href="/pages/about-me.html" target="_self">关于我</a></li>
+
+<li class="sep"> | </li>
+<li><a href="https://github.com/zxdy" target="_blank">github</a></li>
+
+
+            </ul>
+            <div style="clear:both;"></div>
+        </div>
+        <div id="article-title">
+            <a href="/articles/cassandra-key.html">Cassandra partition key, composite key 和 clustering key 的区别</a>
+        </div>
+        <div id="article-meta">
+            作者 Ario | 发布于 2015-03-12
+        </div>
+        <div id="article-tags">
+        
+        <a class="tag" href="/tag.html#cassandra">cassandra</a>
+        
+        </div>
+        <div id="article-content">
+            <p>在Cassandra中，primary key是一个非常重要的概念。关系型数据库中表可以没有primary key（主键），但是Cassandra中建表时必须指定primary key，它不仅决定了表的结构，而且还对数据查询方式的差异有巨大影响。partition key, composite key 和 clustering key共同组成了Cassandra的primary key。</p>
+<p>为了说明它们的不同，我们先来看三张表。</p>
+<pre class="prettyprint linenums lang-sql">create table table1 (
+pri_key text PRIMARY KEY,
+data text
+);
+
+create table table2 (
+  key_part_one text,
+  key_part_two int,
+  data text,
+  PRIMARY KEY(key_part_one, key_part_two)
+);
+
+create table table3 (
+  key_part_one text,
+  key_part_two int,
+  key_clust_one text,
+  key_clust_two int,
+  key_clust_three uuid,
+  data text,
+  PRIMARY KEY((key_part_one,key_part_two), key_clust_one, key_clust_two, key_clust_three)
+);
+</pre>
+<h2 id="格式区别">格式区别</h2>
+<p><strong>table1</strong>是初级版，primary key最简单的定义方式就是这样。此时pri_key就是partition key，clustering key。</p>
+<p><strong>table2</strong>是table1的升级版，格式为（key1，key2，key3，...）。key_part_one, key_part_two共同组成了primary key，这种方式即所谓的composite key（组合键）。其中key_part_one是partition key，key_part_two共同组成了primary是clustering key。</p>
+<p><strong>table2</strong>是高级版。这个primary key的组成最为复杂，格式为（（key1，key2），key3，key4，...）。其中key_part_one,key_part_two 共同组成了partition key。而外边的key_clust_one，key_clust_two, key_clust_three都是clustering key。</p>
+<h2 id="实际的用途">实际的用途</h2>
+<p>Partition Key ：决定了数据在Cassandra各个节点的是如何分区的。</p>
+<p>Clustering Key ： 用于在各个分区内的排序。</p>
+<p>Primary Key ： 主键，决定数据行的唯一性</p>
+<p>Composite Key ：只是一个多字段组合的概念</p>
+<p>跟关系型数据库一样，分区都是为了解决大数据量查询的效率问题，所不同的是Cassandra的分区分布在各个节点上。注意同一个分区的数据是在同一个物理节点上的，这就造成一个问题，假如分区内的数据量过大的话，会造成Cassandra读取负载的不均衡，可以用类似于table3的建表方式，多个字段共同组成一个partition key减小单个分区的大小，使各个分区能够更均匀地分布在节点上，从而实现负载均衡。</p>
+<p>但是，问题又来了, 在查询时，cassandra查询的where语句中必须指定所有的partition key，这是最基本的条件。比如:</p>
+<pre class="prettyprint linenums lang-SQL">PRIMARY KEY((key1，key2)，key3，key4，...)
+</pre>
+<ul>
+<li>合法的查询(不考虑二级索引)</li>
+</ul>
+<p>where key1 and key2</p>
+<p>where key1 and key2 and key3</p>
+<p>where key1 and key2 and key3 and key4</p>
+<ul>
+<li>非法的查询</li>
+</ul>
+<p>where key1</p>
+<p>where key2</p>
+<p>where key1 and key2 and key4</p>
+<p>所以parition key字段过多会对以后的查询造成很大困扰，在建表的时候首先一定要考虑好数据模型，以免后期掉坑。此外假如与spark集成的话，可以在一定程度上规避掉上面非法查询的问题，通过sparksql可以近似实现关系型数据库sql的查询，而不用考虑查询中一定要带上所有partition key字段。</p>
+
+        </div>
+        <!-- 多说评论框 start -->
+<div class="ds-thread" data-thread-key="cassandra-key" data-title="Cassandra partition key, composite key 和 clustering key 的区别" data-url="http://blog.codinglabs.org/articles/cassandra-key.html"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"zxdy8812"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0]
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+
+    </div>
+</div>
+        <div id="footer">
+            <div id="footer-inner">
+                <p id="copyright">Copyright (c) 2011-2014 Ario</p>
+            </div>
+        </div>
+        <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [['$','$'], ['\\(','\\)']],
+            processEscapes: true
+        }
+    });
+</script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+    </body>
+</html>
+
