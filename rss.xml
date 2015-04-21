@@ -4,8 +4,67 @@
         <title>RSS feed title</title>
         <link>Homepage link</link>
         <description>RSS feed description</description>
-        <lastBuildDate>Sat, 21 Mar 2015 11:57:54 +0800</lastBuildDate>
+        <lastBuildDate>Tue, 21 Apr 2015 20:07:39 +0800</lastBuildDate>
         <language>zh-cn</language>
+        
+        <item>
+            <title>Cassandra partition key, composite key 和 clustering key 的区别</title>
+            <link>Homepage link/articles/cassandra-key.html?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</link>
+            <guid>Homepage link/articles/cassandra-key.html</guid>
+            <author>zxdy@vip.qq.com Ario</author>
+            <pubDate>Thu, 12 Mar 2015 00:00:00 +0800</pubDate>
+            <description>&lt;p&gt;在Cassandra中，primary key是一个非常重要的概念。关系型数据库中表可以没有primary key（主键），但是Cassandra中建表时必须指定primary key，它不仅决定了表的结构，而且还对数据查询方式的差异有巨大影响。partition key, composite key 和 clustering key共同组成了Cassandra的primary key。&lt;/p&gt;
+&lt;p&gt;为了说明它们的不同，我们先来看三张表。&lt;/p&gt;
+&lt;pre class=&quot;prettyprint linenums lang-sql&quot;&gt;create table table1 (
+pri_key text PRIMARY KEY,
+data text
+);
+
+create table table2 (
+  key_part_one text,
+  key_part_two int,
+  data text,
+  PRIMARY KEY(key_part_one, key_part_two)
+);
+
+create table table3 (
+  key_part_one text,
+  key_part_two int,
+  key_clust_one text,
+  key_clust_two int,
+  key_clust_three uuid,
+  data text,
+  PRIMARY KEY((key_part_one,key_part_two), key_clust_one, key_clust_two, key_clust_three)
+);
+&lt;/pre&gt;
+&lt;h2 id=&quot;格式区别&quot;&gt;格式区别&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;table1&lt;/strong&gt;是初级版，primary key最简单的定义方式就是这样。此时pri_key就是partition key，clustering key。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;table2&lt;/strong&gt;是table1的升级版，格式为（key1，key2，key3，...）。key_part_one, key_part_two共同组成了primary key，这种方式即所谓的composite key（组合键）。其中key_part_one是partition key，key_part_two共同组成了primary是clustering key。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;table2&lt;/strong&gt;是高级版。这个primary key的组成最为复杂，格式为（（key1，key2），key3，key4，...）。其中key_part_one,key_part_two 共同组成了partition key。而外边的key_clust_one，key_clust_two, key_clust_three都是clustering key。&lt;/p&gt;
+&lt;h2 id=&quot;实际的用途&quot;&gt;实际的用途&lt;/h2&gt;
+&lt;p&gt;Partition Key ：决定了数据在Cassandra各个节点的是如何分区的。&lt;/p&gt;
+&lt;p&gt;Clustering Key ： 用于在各个分区内的排序。&lt;/p&gt;
+&lt;p&gt;Primary Key ： 主键，决定数据行的唯一性&lt;/p&gt;
+&lt;p&gt;Composite Key ：只是一个多字段组合的概念&lt;/p&gt;
+&lt;p&gt;跟关系型数据库一样，分区都是为了解决大数据量查询的效率问题，所不同的是Cassandra的分区分布在各个节点上。注意同一个分区的数据是在同一个物理节点上的，这就造成一个问题，假如分区内的数据量过大的话，会造成Cassandra读取负载的不均衡，可以用类似于table3的建表方式，多个字段共同组成一个partition key减小单个分区的大小，使各个分区能够更均匀地分布在节点上，从而实现负载均衡。&lt;/p&gt;
+&lt;p&gt;但是，问题又来了, 在查询时，cassandra查询的where语句中必须指定所有的partition key，这是最基本的条件。比如:&lt;/p&gt;
+&lt;pre class=&quot;prettyprint linenums lang-SQL&quot;&gt;PRIMARY KEY((key1，key2)，key3，key4，...)
+&lt;/pre&gt;
+&lt;ul&gt;
+&lt;li&gt;合法的查询(不考虑二级索引)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;where key1 and key2&lt;/p&gt;
+&lt;p&gt;where key1 and key2 and key3&lt;/p&gt;
+&lt;p&gt;where key1 and key2 and key3 and key4&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;非法的查询&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;where key1&lt;/p&gt;
+&lt;p&gt;where key2&lt;/p&gt;
+&lt;p&gt;where key1 and key2 and key4&lt;/p&gt;
+&lt;p&gt;所以parition key字段过多会对以后的查询造成很大困扰，在建表的时候首先一定要考虑好数据模型，以免后期掉坑。此外假如与spark集成的话，可以在一定程度上规避掉上面非法查询的问题，通过sparksql可以近似实现关系型数据库sql的查询，而不用考虑查询中一定要带上所有partition key字段。&lt;/p&gt;
+</description>
+        </item>
         
         <item>
             <title>oracle性能优化-CPU篇(下)</title>
@@ -650,49 +709,6 @@ ORA-06512: at &quot;TLSPID.FUNC&quot;, line 10
 Process exited.
 Disconnecting from the database dev74.
 &lt;/pre&gt;
-</description>
-        </item>
-        
-        <item>
-            <title>sql developer怎样调试Pipelined</title>
-            <link>Homepage link/articles/debug-Pipelined.html?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</link>
-            <guid>Homepage link/articles/debug-Pipelined.html</guid>
-            <author>zxdy@vip.qq.com Ario</author>
-            <pubDate>Wed, 18 Dec 2013 00:00:00 +0800</pubDate>
-            <description>&lt;p&gt;在sql developer中，如果直接对pipelined语句进行断点debug会报错，那么怎样可以解决这个问题呢？可以用procedure包住这个函数，再进行单步调试。下面是演示的demo。  &lt;/p&gt;
-&lt;h2 id=&quot;准备pipelined&quot;&gt;准备pipelined&lt;/h2&gt;
-&lt;pre class=&quot;prettyprint linenums lang-pl/sql&quot;&gt;CREATE TYPE t_tf_row AS OBJECT (
-  id           NUMBER,
-  description  VARCHAR2(50)
-);
-/
-
-CREATE TYPE t_tf_tab IS TABLE OF t_tf_row;
-/
-
-CREATE OR REPLACE FUNCTION get_tab_ptf (p_rows IN NUMBER) RETURN t_tf_tab PIPELINED AS
-BEGIN
-  FOR i IN 1 .. p_rows LOOP
-    PIPE ROW(t_tf_row(i, &#39;Description for &#39; || i));   
-  END LOOP;
-
-  RETURN;
-END;
-/
-&lt;/pre&gt;
-&lt;h2 id=&quot;然后用procedure包住这个get_tab_ptf函数&quot;&gt;然后用procedure包住这个get_tab_ptf函数&lt;/h2&gt;
-&lt;pre class=&quot;prettyprint linenums lang-pl/sql&quot;&gt;CREATE OR REPLACE
-PROCEDURE test_pipeline
-IS
-BEGIN
-  FOR cur_rec IN (SELECT *  FROM  TABLE(get_tab_ptf(10)))
-  LOOP
-    dbms_output.put_line(&#39;get one row!&#39;);
-  END LOOP;
-END;
-&lt;/pre&gt;
-&lt;h2 id=&quot;断点位置&quot;&gt;断点位置&lt;/h2&gt;
-&lt;p&gt;最后将断点打在test_pipeline的for循环上，对这个procedure进行单步调试就可以跳转到函数get_tab_ptf内部了。&lt;/p&gt;
 </description>
         </item>
         

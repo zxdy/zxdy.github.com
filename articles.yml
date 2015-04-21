@@ -1,3 +1,11 @@
+- id: cassandra-key
+  title: Cassandra partition key, composite key 和 clustering key 的区别
+  postedOn: !!str 2015-03-12
+  author: Ario
+  tags:
+    - cassandra
+  abstract: 在Cassandra中，primary key是一个非常重要的概念。关系型数据库中表可以没有primary key（主键），但是Cassandra中建表时必须指定primary key，它不仅决定了表的结构，而且还对数据查询方式的差异有巨大影响。partition key, composite key 和 clustering key共同组成了Cassandra的primary key。
+
 - id: oracle-tunning-cpu-2
   title: oracle性能优化-CPU篇(下)
   postedOn: !!str 2015-03-10
