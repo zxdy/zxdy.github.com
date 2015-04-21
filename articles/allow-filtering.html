@@ -1,0 +1,122 @@
+<!doctype html>
+<html>
+    <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <meta name="description" content="Content of description meta tag"/>
+        <meta name="keywords" content="代码,数据库,信息安全"/>
+        <meta name="author" content="Content of author meta tag"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+        <title>离世庭院 - ALLOW FILTERING 之谜
+</title>
+        <link rel="stylesheet" href="/assets/vendor/normalize.css"/>
+        <link rel="stylesheet" href="/assets/vendor/prettify-night.css"/>
+        <link rel="stylesheet" href="/assets/themes/default/main.css"/>
+        <link rel="shortcut icon" href="/fav.ico"/>
+        <script type="text/javascript" src="/assets/vendor/prettify.js"></script>
+        
+    </head>
+    <body onload="prettyPrint()">
+    <div id="header">
+        <div id="header-inner">
+            <div id="title"><a href="/">离世庭院</a></div>
+            <div id="subtitle">To be a builder,not a imitator</div>
+        </div>
+    </div>
+
+<div id="main">
+    <div id="main-inner">
+        <div id="topnav">
+            <ul>
+                <li><a href="/">首页</a></li>
+                <li class="sep"> | </li>
+                <li><a href="/tag.html">标签</a></li>
+                
+<li class="sep"> | </li>
+<li><a href="/pages/about-me.html" target="_self">关于我</a></li>
+
+<li class="sep"> | </li>
+<li><a href="https://github.com/zxdy" target="_blank">github</a></li>
+
+
+            </ul>
+            <div style="clear:both;"></div>
+        </div>
+        <div id="article-title">
+            <a href="/articles/allow-filtering.html">ALLOW FILTERING 之谜</a>
+        </div>
+        <div id="article-meta">
+            作者 Ario | 发布于 2015-03-13
+        </div>
+        <div id="article-tags">
+        
+        <a class="tag" href="/tag.html#cassandra">cassandra</a>
+        
+        </div>
+        <div id="article-content">
+            <p>上篇在讲到cassandra查询语句之坑的时候，有提到一个叫allow filtering的东东，但是令人费解的是，这货有时候出现有时候又不用出现。那到底这是怎么用的呢，让我们来用一个例子说明。首先还是沿用上篇的table2：</p>
+<pre class="prettyprint linenums lang-SQL">create table table2 (
+  key_part_one text,
+  key_part_two int,
+  data text,
+  PRIMARY KEY(key_part_one, key_part_two)
+);
+</pre>
+<p>此时我们有了一个主键（key_part_one, key_part_two），一个分区键:key_part_one，一个clustering key：key_part_two。</p>
+<p>如果你执行下面一个查询：</p>
+<pre class="prettyprint linenums lang-sql">SELECT * FROM table2;
+</pre>
+<p>Cassandra会返回所有table2表中的数据（假如table2表的数据量非常大，这种查询会导致rpc timeout，可以在Cassandra配置文件中适当加大timeout的时间来解决这一问题，但是个人感觉治标不治本。目前发现用spark+Cassandra的方式可以比较好的处理大数据量的存储以及分析，有时间我会写一篇spark+Cassandra的集成攻略）。</p>
+<p>按照关系型数据库的习惯，你可能还会做如下的查询：</p>
+<pre class="prettyprint linenums lang-sql">SELECT * FROM table2 WHERE key_part_two = 1111;
+</pre>
+<p>然后cassandra就提示你要不要allow filtering一下：</p>
+<blockquote>
+<p>Bad Request: Cannot execute this query as it might involve data filtering and thus may have unpredictable performance. If you want to execute this query despite the performance unpredictability, use ALLOW FILTERING.</p>
+</blockquote>
+<p>这是因为Cassandra发现它可能不能很效率地执行这个查询，所以做出了警告：&quot;Be careful. Executing this query as such might not be a good idea as it can use a lot of your computing resources&quot;.</p>
+<p>跟所有的nosql数据库一样，cassandra存储数据的方式是key-value，这决定了它查询数据的模式是根据key一层层往下找数据。cassandra执行这个查询的唯一方式是取出所有的行，然后过滤得到key_part_two = 1111的数据。</p>
+<p>类似于oracle的统计信息直方图倾斜，key_part_two的值分布可能会有两种极端的情况，一种是绝大多数的key_part_two都等于1111。另一种是绝大多数的key_part_two都不等于1111。第一种情况比较适用allow filtering，因为取出的所有行基本已经是最后的需要的结果集，效率还算可以。但是第二种情况因为取出的所有行要过滤掉绝大多数的数据才是最终结果集，所以用allow filtering的性能会非常低下，经常对这个字段查询的话还是对它增加二级索引会更加好一点。</p>
+<p>cassandra提示allow filtering的本质是它认为当前的查询可能会有很大的性能问题，让你决定是不是强制执行，这就是他的意义。因此当你的CQL语句被cassandra拒绝执行的时候，你需要考虑你的数据模型以及你的目的去做出最优的选择，比如说改变数据模型，增加二级索引或者换一张表查询，而不是立刻就不假思索的根据提示加上allow filtering。</p>
+<p>参考文章：
+<a href="http://blog.websudos.com/2014/08/a-series-on-cassandra-part-2-indexes-and-keys/">A series on Cassandra – Part 2: Indexes and keys</a></p>
+
+        </div>
+        <!-- 多说评论框 start -->
+<div class="ds-thread" data-thread-key="allow-filtering" data-title="ALLOW FILTERING 之谜" data-url="http://blog.codinglabs.org/articles/allow-filtering.html"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"zxdy8812"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0]
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+<!-- 多说公共JS代码 end -->
+
+    </div>
+</div>
+        <div id="footer">
+            <div id="footer-inner">
+                <p id="copyright">Copyright (c) 2011-2014 Ario</p>
+            </div>
+        </div>
+        <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [['$','$'], ['\\(','\\)']],
+            processEscapes: true
+        }
+    });
+</script>
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+    </body>
+</html>
+

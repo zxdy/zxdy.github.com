@@ -1,3 +1,11 @@
+- id: allow-filtering
+  title: ALLOW FILTERING 之谜
+  postedOn: !!str 2015-03-13
+  author: Ario
+  tags:
+    - cassandra
+  abstract: 上篇在讲到cassandra查询语句之坑的时候，有提到一个叫allow filtering的东东，但是令人费解的是，这货有时候出现有时候又不用出现。那到底这是怎么用的呢
+
 - id: cassandra-key
   title: Cassandra partition key, composite key 和 clustering key 的区别
   postedOn: !!str 2015-03-12

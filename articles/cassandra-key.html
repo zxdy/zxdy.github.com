@@ -56,7 +56,7 @@
         <div id="article-content">
             <p>在Cassandra中，primary key是一个非常重要的概念。关系型数据库中表可以没有primary key（主键），但是Cassandra中建表时必须指定primary key，它不仅决定了表的结构，而且还对数据查询方式的差异有巨大影响。partition key, composite key 和 clustering key共同组成了Cassandra的primary key。</p>
 <p>为了说明它们的不同，我们先来看三张表。</p>
-<pre class="prettyprint linenums lang-SQL">create table table1 (
+<pre class="prettyprint linenums lang-sql">create table table1 (
 pri_key text PRIMARY KEY,
 data text
 );

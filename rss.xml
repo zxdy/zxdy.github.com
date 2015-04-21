@@ -4,8 +4,43 @@
         <title>RSS feed title</title>
         <link>Homepage link</link>
         <description>RSS feed description</description>
-        <lastBuildDate>Tue, 21 Apr 2015 23:30:13 +0800</lastBuildDate>
+        <lastBuildDate>Wed, 22 Apr 2015 00:18:03 +0800</lastBuildDate>
         <language>zh-cn</language>
+        
+        <item>
+            <title>ALLOW FILTERING 之谜</title>
+            <link>Homepage link/articles/allow-filtering.html?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</link>
+            <guid>Homepage link/articles/allow-filtering.html</guid>
+            <author>zxdy@vip.qq.com Ario</author>
+            <pubDate>Fri, 13 Mar 2015 00:00:00 +0800</pubDate>
+            <description>&lt;p&gt;上篇在讲到cassandra查询语句之坑的时候，有提到一个叫allow filtering的东东，但是令人费解的是，这货有时候出现有时候又不用出现。那到底这是怎么用的呢，让我们来用一个例子说明。首先还是沿用上篇的table2：&lt;/p&gt;
+&lt;pre class=&quot;prettyprint linenums lang-SQL&quot;&gt;create table table2 (
+  key_part_one text,
+  key_part_two int,
+  data text,
+  PRIMARY KEY(key_part_one, key_part_two)
+);
+&lt;/pre&gt;
+&lt;p&gt;此时我们有了一个主键（key_part_one, key_part_two），一个分区键:key_part_one，一个clustering key：key_part_two。&lt;/p&gt;
+&lt;p&gt;如果你执行下面一个查询：&lt;/p&gt;
+&lt;pre class=&quot;prettyprint linenums lang-sql&quot;&gt;SELECT * FROM table2;
+&lt;/pre&gt;
+&lt;p&gt;Cassandra会返回所有table2表中的数据（假如table2表的数据量非常大，这种查询会导致rpc timeout，可以在Cassandra配置文件中适当加大timeout的时间来解决这一问题，但是个人感觉治标不治本。目前发现用spark+Cassandra的方式可以比较好的处理大数据量的存储以及分析，有时间我会写一篇spark+Cassandra的集成攻略）。&lt;/p&gt;
+&lt;p&gt;按照关系型数据库的习惯，你可能还会做如下的查询：&lt;/p&gt;
+&lt;pre class=&quot;prettyprint linenums lang-sql&quot;&gt;SELECT * FROM table2 WHERE key_part_two = 1111;
+&lt;/pre&gt;
+&lt;p&gt;然后cassandra就提示你要不要allow filtering一下：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Bad Request: Cannot execute this query as it might involve data filtering and thus may have unpredictable performance. If you want to execute this query despite the performance unpredictability, use ALLOW FILTERING.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;这是因为Cassandra发现它可能不能很效率地执行这个查询，所以做出了警告：&quot;Be careful. Executing this query as such might not be a good idea as it can use a lot of your computing resources&quot;.&lt;/p&gt;
+&lt;p&gt;跟所有的nosql数据库一样，cassandra存储数据的方式是key-value，这决定了它查询数据的模式是根据key一层层往下找数据。cassandra执行这个查询的唯一方式是取出所有的行，然后过滤得到key_part_two = 1111的数据。&lt;/p&gt;
+&lt;p&gt;类似于oracle的统计信息直方图倾斜，key_part_two的值分布可能会有两种极端的情况，一种是绝大多数的key_part_two都等于1111。另一种是绝大多数的key_part_two都不等于1111。第一种情况比较适用allow filtering，因为取出的所有行基本已经是最后的需要的结果集，效率还算可以。但是第二种情况因为取出的所有行要过滤掉绝大多数的数据才是最终结果集，所以用allow filtering的性能会非常低下，经常对这个字段查询的话还是对它增加二级索引会更加好一点。&lt;/p&gt;
+&lt;p&gt;cassandra提示allow filtering的本质是它认为当前的查询可能会有很大的性能问题，让你决定是不是强制执行，这就是他的意义。因此当你的CQL语句被cassandra拒绝执行的时候，你需要考虑你的数据模型以及你的目的去做出最优的选择，比如说改变数据模型，增加二级索引或者换一张表查询，而不是立刻就不假思索的根据提示加上allow filtering。&lt;/p&gt;
+&lt;p&gt;参考文章：
+&lt;a href=&quot;http://blog.websudos.com/2014/08/a-series-on-cassandra-part-2-indexes-and-keys/&quot;&gt;A series on Cassandra – Part 2: Indexes and keys&lt;/a&gt;&lt;/p&gt;
+</description>
+        </item>
         
         <item>
             <title>Cassandra partition key, composite key 和 clustering key 的区别</title>
@@ -15,7 +50,7 @@
             <pubDate>Thu, 12 Mar 2015 00:00:00 +0800</pubDate>
             <description>&lt;p&gt;在Cassandra中，primary key是一个非常重要的概念。关系型数据库中表可以没有primary key（主键），但是Cassandra中建表时必须指定primary key，它不仅决定了表的结构，而且还对数据查询方式的差异有巨大影响。partition key, composite key 和 clustering key共同组成了Cassandra的primary key。&lt;/p&gt;
 &lt;p&gt;为了说明它们的不同，我们先来看三张表。&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-SQL&quot;&gt;create table table1 (
+&lt;pre class=&quot;prettyprint linenums lang-sql&quot;&gt;create table table1 (
 pri_key text PRIMARY KEY,
 data text
 );
@@ -710,192 +745,6 @@ statistics_level                     string      TYPICAL
 &lt;/ul&gt;
 &lt;pre class=&quot;prettyprint linenums lang-sql&quot;&gt;@$ORACLE_HOME/rdbms/admin/awrsqrpt.sql
 &lt;/pre&gt;
-</description>
-        </item>
-        
-        <item>
-            <title>Web 日志分析</title>
-            <link>Homepage link/articles/web-log-analyze.html?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</link>
-            <guid>Homepage link/articles/web-log-analyze.html</guid>
-            <author>zxdy@vip.qq.com Ario</author>
-            <pubDate>Wed, 23 Apr 2014 00:00:00 +0800</pubDate>
-            <description>&lt;h2 id=&quot;1-web业务分析&quot;&gt;1.    Web业务分析&lt;/h2&gt;
-&lt;p&gt;所有统计分析基于三维原则：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;时间线。所以统计图应有时间线功能。粒度支持到分钟级别。支持时，日，周，月，年切换。支持用户自定义时间&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;在时间线基础上针对某块业务进行分析，如访客行为，流量趋势，页面访问等。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;在以上两个维度上，支持各种基础统计指标（如pv，uv，ip，停留时间等，详见基础统计指标）切换，对比。&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&quot;11-综合报告&quot;&gt;1.1.    综合报告&lt;/h3&gt;
-&lt;h4 id=&quot;111-网站信息&quot;&gt;1.1.1    网站信息&lt;/h4&gt;
-&lt;p&gt;显示网站的基本信息：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;p&gt;网站名称&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;网站地址&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;开始统计时间&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;已经统计时间&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h4 id=&quot;112-最近30天流量趋势&quot;&gt;1.1.2    最近30天流量趋势&lt;/h4&gt;
-&lt;p&gt;分析从当日至前30日内的PV、UV、IP数据及其变化趋势。系统能根据日，周，月，年切换统计。图表方案可以参照以下形式，所有对比分析的三维数据集图都可沿用以下表现形式，保持一致性，同时支持不同类型的图表切换。&lt;/p&gt;
-&lt;p&gt;系统实时更新“网站流量”数据中的“今日”、“昨日此时”和 “预计今日”部分中的数据，帮助客户实时了解网站的流量数据；&lt;/p&gt;
-&lt;h4 id=&quot;113-访客粘度指标&quot;&gt;1.1.3    访客粘度指标&lt;/h4&gt;
-&lt;p&gt;分别统计分析周，月，年回头客的总量，当前时间区间回头率，平均停留时间，平均访问页数。&lt;/p&gt;
-&lt;h3 id=&quot;12-最近访客&quot;&gt;1.2.    最近访客&lt;/h3&gt;
-&lt;h4 id=&quot;121-访客概要&quot;&gt;1.2.1    访客概要&lt;/h4&gt;
-&lt;p&gt;可以通过访问时间、IP地址、来源地区、来源网址、访问最多的网址等多个维度对访问访客的情况及行为进行分析，页面上显示最多100条的最近访客信息。
-以（列表？）形式展现&lt;/p&gt;
-&lt;h4 id=&quot;122-访客跟踪&quot;&gt;1.2.2    访客跟踪&lt;/h4&gt;
-&lt;p&gt;可以查看到对应访客最近30分钟内访问的全部页面，详细了解访客的访问轨迹（以visit为单位，每次进入到离开的url轨迹）、访客地区、进入时间、停留时间、访问来源，探索访客的行为规律。&lt;/p&gt;
-&lt;h3 id=&quot;13-时段分析&quot;&gt;1.3.    时段分析&lt;/h3&gt;
-&lt;p&gt;时段分析功能，客户可以自定义对24小时内PV、UV、IP数据及变化趋势进行分析，系统会每分钟对该数据进行更新。&lt;/p&gt;
-&lt;p&gt;时段分析功能分为：&lt;/p&gt;
-&lt;p&gt;单日流量：可以分析某一天各小时内的PV、UV、IP数据及变化情况。&lt;/p&gt;
-&lt;p&gt;多日对比：可以分别分析对比选定日期内PV、UV、IP数据及变化情况。&lt;/p&gt;
-&lt;p&gt;时段趋势：可以选择某段日期区间内分析某一小时时段的PV、UV、IP数据及变化情况。&lt;/p&gt;
-&lt;h3 id=&quot;14-每日分析&quot;&gt;1.4.    每日分析&lt;/h3&gt;
-&lt;p&gt;可以按照客户选择的时间，对于本周、上周、本月、上月或任意时间，访客每日访问网站的状况及访客行为进行分析，系统每分钟对数据进行更新。使客户可以最简单、直接的了解站点一定时期内的流量和访客情况。&lt;/p&gt;
-&lt;h4 id=&quot;141-每日流量：&quot;&gt;1.4.1    每日流量：&lt;/h4&gt;
-&lt;p&gt;分析当日及30日内PV、UV、IP的数据及变化；&lt;/p&gt;
-&lt;h4 id=&quot;142-访客平均停留时间：&quot;&gt;1.4.2    访客平均停留时间：&lt;/h4&gt;
-&lt;p&gt;针对访客行为分析，分析选定时间内访客平均停留时间；&lt;/p&gt;
-&lt;h4 id=&quot;143-访客平均访问页数：&quot;&gt;1.4.3    访客平均访问页数：&lt;/h4&gt;
-&lt;p&gt;针对访客行为分析，分析选定时间内访客平均访问页数；&lt;/p&gt;
-&lt;h3 id=&quot;15-来源分析&quot;&gt;1.5.    来源分析&lt;/h3&gt;
-&lt;h4 id=&quot;151-ip来源&quot;&gt;1.5.1    ip来源&lt;/h4&gt;
-&lt;p&gt;IP来源分析功能，可以记录并分析访问客户网站的IP信息，记录各IP访问的PV量，此功能可以帮助客户更深入的分析来源IP所对应访客的访问行为，及时发现异常或恶意访问的IP。同时，客户可以通过点击页面显示的IP地址查询出该IP所对应的地区名称，IP构成：分析访客IP构成比例(分为直接输入、搜索引擎导入、其他来源导入)。&lt;/p&gt;
-&lt;h4 id=&quot;152-访问来源分析&quot;&gt;1.5.2    访问来源分析&lt;/h4&gt;
-&lt;p&gt;按照不同时间段
-各访问来源流量：针对所有访客访问来源，对PV、UV、IP、平均访问时间、平均访问页数等访客行为特点进行分析，同时可以显示各来源占总来源的数据比例；
-指定访问来源流量：针对选择的来源分析该来源带来的流量（PV、UV、IP、平均访问时间、平均访问页数）趋势，&lt;/p&gt;
-&lt;h3 id=&quot;16-被访主机分析&quot;&gt;1.6.    被访主机分析&lt;/h3&gt;
-&lt;p&gt;按照不同时间段分析&lt;/p&gt;
-&lt;p&gt;1.6.1    各主机流量&lt;/p&gt;
-&lt;p&gt;对比分析各个主机在PV、UV、IP、平均访问时间、平均访问页数维度上的趋势&lt;/p&gt;
-&lt;p&gt;1.6.2    指定主机流量&lt;/p&gt;
-&lt;p&gt;指定某主机分析在PV、UV、IP、平均访问时间、平均访问页数维度上的趋势&lt;/p&gt;
-&lt;h3 id=&quot;17-被访页面分析&quot;&gt;1.7.    被访页面分析&lt;/h3&gt;
-&lt;p&gt;被访页面分析功能，可以按照不同时间段，分别对站内被访问页面流量及趋势进行分析，系统会每小时对该数据进行更新。&lt;/p&gt;
-&lt;h4 id=&quot;171-被访页面流量&quot;&gt;1.7.1    被访页面流量&lt;/h4&gt;
-&lt;p&gt;用来分析站内被访页面流量比例，并按流量大小排序，目前报表中显示被访最多的100个页面信息；&lt;/p&gt;
-&lt;h4 id=&quot;172-指定被访页面流量趋势&quot;&gt;1.7.2    指定被访页面流量趋势&lt;/h4&gt;
-&lt;p&gt;可以通过输入访问页面url地址，按时间分析该页面流量变化趋势。&lt;/p&gt;
-&lt;h3 id=&quot;18-访问入口分析&quot;&gt;1.8.    访问入口分析&lt;/h3&gt;
-&lt;h4 id=&quot;181-各访问入口流量：&quot;&gt;1.8.1    各访问入口流量：&lt;/h4&gt;
-&lt;p&gt;针对所有访问入口，统计访客从该入口进入网站的次数，并排序显示；&lt;/p&gt;
-&lt;h4 id=&quot;182-指定访问入口流量趋势：&quot;&gt;1.8.2    指定访问入口流量趋势：&lt;/h4&gt;
-&lt;p&gt;输入指定的入口链接，选择统计时间段，可显示该时间段内指定访问入口的入口次数及相应百分比&lt;/p&gt;
-&lt;h3 id=&quot;19-访问出口分析&quot;&gt;1.9.    访问出口分析&lt;/h3&gt;
-&lt;h4 id=&quot;191-各访问出口流量：&quot;&gt;1.9.1    各访问出口流量：&lt;/h4&gt;
-&lt;p&gt;针对所有访问出口，统计访客从该出口离开网站的次数，并排序显示；&lt;/p&gt;
-&lt;h4 id=&quot;192-指定访问出口流量趋势：&quot;&gt;1.9.2    指定访问出口流量趋势：&lt;/h4&gt;
-&lt;p&gt;输入指定的出口链接，选择统计时间段，可显示该时间段内指定访问出口的出口次数及相应百分比。&lt;/p&gt;
-&lt;h3 id=&quot;110-客户端分析&quot;&gt;1.10.    客户端分析&lt;/h3&gt;
-&lt;p&gt;供客户端时间线分析功能，统计和分析访客浏览器内核、浏览器使用情况。帮助客户更有针对性地设计网站，保证网站前端兼容性。&lt;/p&gt;
-&lt;h2 id=&quot;2-基础统计指标&quot;&gt;2.    基础统计指标&lt;/h2&gt;
-&lt;ol&gt;
-&lt;li&gt;PV(访问量)：即Page View, 即页面被打开或请求的次数，访客每次刷新即新增一条web日志就被计算一次，web日志的条数代表PV总量。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;另：唯一页面浏览次数UPV。主要是避免页面的重复加载和刷新导致Pageviews虚高的情况，所以在同一个Visit当中重复打开同一个页面，该页面的Unique Pageviews始终只被记为1次。&lt;/p&gt;
-&lt;p&gt;定义visit：
-同一个访问者（同ip，同浏览器）的两个相邻pageviews之间的时间间隔如果超过了30分钟，会被记录为一个新的visit。
-一天结束时，持续的浏览行为自动被切分为两个visit。
-一个访问者更换了与原先来源不同的其他来源再次访问这个网站，也会被记为一个新的visit，即使在30分钟内更换也如此。但更换为直接流量除外，即referer字段为空。&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;UV(独立访客)：即Unique Visitor,访问客户网站的一台电脑客户端（相同ip相同浏览器）为一个访客。00:00-24:00内相同的客户端只被计算一次。主流应使用cookie计算&lt;/li&gt;
-&lt;li&gt;IP(独立IP)：指独立来源IP。00:00-24:00内相同IP地址只被计算一次。&lt;/li&gt;
-&lt;li&gt;24小时独立IP：指每小时独立的IP地址。该数据每个小时独立去重。&lt;/li&gt;
-&lt;li&gt;最高IP : 指选择时间段范围内（用户指定），访问最多的ip&lt;/li&gt;
-&lt;li&gt;最高PV：指选择时间段范围内（用户指定），某页面访问量最高的数值&lt;/li&gt;
-&lt;li&gt;新访客：某客户端首次访问（从未访问）为一个新访客。&lt;/li&gt;
-&lt;li&gt;最近访客：最近一段时间内访问客户网站的客户端。显示100条。&lt;/li&gt;
-&lt;li&gt;常驻访客：指7天内，一个月内，一年visit高于平均值访问网站的访客。&lt;/li&gt;
-&lt;li&gt;进入页面：单个访客每一次visit的第一个页面为进入页面。&lt;/li&gt;
-&lt;li&gt;离开页面：单个访客每一次visit所查看的最后一个页面为离开页面。&lt;/li&gt;
-&lt;li&gt;进入人次：指从某页面进入网站的人次。&lt;/li&gt;
-&lt;li&gt;离开人次：指从某页面离开网站的人次。&lt;/li&gt;
-&lt;li&gt;进入时间：访客每次发起visit进入网站的时间。&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;停留时间：单个访客每次visit从第一个页面到最后离开停留的时间。注：涉及停留时间需要算法支持，主流算法有两种。Google Analytics 采用线性化访问过程的方法。将如下的访问过程线性化，离开的页面停留时间记为0.&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;http://zxdy-blog.qiniudn.com/stay_time.png&quot; alt=&quot;stay&quot;&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;按时间顺序转化为&lt;/p&gt;
-&lt;p&gt; &lt;img src=&quot;http://zxdy-blog.qiniudn.com/stay_time2.png&quot; alt=&quot;stay2&quot;&gt;&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;平均停留时间：所有访客的访问过程，访问持续时间的平均值。&lt;/li&gt;
-&lt;li&gt;平均访问页数：所有访客的访问过程，连续访问页面数的平均值。&lt;/li&gt;
-&lt;li&gt;回头率：指7天内，一个月内，一年内常驻访客数占总访客数的百分比。&lt;/li&gt;
-&lt;li&gt;跳失率：表示访客只访问了一个页面就离开的访问次数占该页面总访问次数的比例。&lt;/li&gt;
-&lt;li&gt;访问来源：访客来访问网站的途径，即访客通过哪种方式进入网站。&lt;/li&gt;
-&lt;li&gt;访客跟踪：可以查看到对应访客最近30分钟内访问的全部页面，详细了解访客的访问轨迹、访客地区、进入时间、停留时间，访问来源，探索访客的行为规律。
-22．访客地区比例：每个省市访客占总访客人数的百分比，帮助分析访客地域来源。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h2 id=&quot;3-日志解析&quot;&gt;3.    日志解析&lt;/h2&gt;
-&lt;p&gt;以下是一条标准的web访问日志。&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-text&quot;&gt;218.19.140.242 – - [11/Dec/2013:09:31:17 +0800] “GET /query/p/1/s/-1/ver/ver.html HTTP/1.1″ 200 1933 “-” “Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.2.8) Gecko/20100722 Firefox/3.6.8 (.NET CLR 3.5.30729)”
-&lt;/pre&gt;
-&lt;table&gt;
-&lt;thead&gt;
-&lt;tr&gt;
-&lt;th&gt;字段&lt;/th&gt;
-&lt;th style=&quot;text-align:left&quot;&gt;字段值&lt;/th&gt;
-&lt;th style=&quot;text-align:left&quot;&gt;字段意义&lt;/th&gt;
-&lt;/tr&gt;
-&lt;/thead&gt;
-&lt;tbody&gt;
-&lt;tr&gt;
-&lt;td&gt;1&lt;/td&gt;
-&lt;td style=&quot;text-align:left&quot;&gt;218.19.140.242&lt;/td&gt;
-&lt;td style=&quot;text-align:left&quot;&gt;来源ip地址&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;2&lt;/td&gt;
-&lt;td style=&quot;text-align:left&quot;&gt;-&lt;/td&gt;
-&lt;td style=&quot;text-align:left&quot;&gt;-&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;3&lt;/td&gt;
-&lt;td style=&quot;text-align:left&quot;&gt;-&lt;/td&gt;
-&lt;td style=&quot;text-align:left&quot;&gt;-&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;4&lt;/td&gt;
-&lt;td style=&quot;text-align:left&quot;&gt;[11/Dec/2013:09:31:17 +0800]&lt;/td&gt;
-&lt;td style=&quot;text-align:left&quot;&gt;访问时间&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;5&lt;/td&gt;
-&lt;td style=&quot;text-align:left&quot;&gt;GET /query/p/1/s/-1/ver/ver.html HTTP/1.1&lt;/td&gt;
-&lt;td style=&quot;text-align:left&quot;&gt;访问方法，url地址，http协议版本&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;6&lt;/td&gt;
-&lt;td style=&quot;text-align:left&quot;&gt;200&lt;/td&gt;
-&lt;td style=&quot;text-align:left&quot;&gt;由服务器端发送回客户端状态码&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;7&lt;/td&gt;
-&lt;td style=&quot;text-align:left&quot;&gt;1933&lt;/td&gt;
-&lt;td style=&quot;text-align:left&quot;&gt;这项表示服务器向客户端发送了多少的字节&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;8&lt;/td&gt;
-&lt;td style=&quot;text-align:left&quot;&gt;-&lt;/td&gt;
-&lt;td style=&quot;text-align:left&quot;&gt;-&lt;/td&gt;
-&lt;/tr&gt;
-&lt;tr&gt;
-&lt;td&gt;9&lt;/td&gt;
-&lt;td style=&quot;text-align:left&quot;&gt;Mozilla/5.0 (Windows; U; Windows NT 5.1; zh-CN; rv:1.9.2.8) Gecko/20100722 Firefox/3.6.8 (.NET CLR 3.5.30729)&lt;/td&gt;
-&lt;td style=&quot;text-align:left&quot;&gt;记录客户端的浏览器信息&lt;/td&gt;
-&lt;/tr&gt;
-&lt;/tbody&gt;
-&lt;/table&gt;
 </description>
         </item>
         
