@@ -51,6 +51,15 @@
     - python
   abstract: 其实我本意是就贴一段代码完事，但又觉得确实有点干巴巴，还是稍微灌点水吧。way1和way2分别代表了两种不同的计时方
 
+- id: oracle-tunning-index
+  title : oracle性能优化-索引篇
+  postedOn: !!str 2014-12-19
+  author: Ario
+  tags:
+    - Oracle
+    - 优化
+  abstract: 索引是每种数据库都避不开的一个话题。很多人不管是DBA还是开发，对于索引的印象就是：sql慢？加个索引吧。但是为什么加了索引sql就能变快呢？加了索引是不是一定就会变快？怎么加索引效率会最高？
+
 
 - id: speed-up-create-index
   title : oracle 如何加快建立索引的速度
