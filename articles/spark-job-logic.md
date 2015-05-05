@@ -3,7 +3,7 @@
 本文基于**spark 1.3.0**
 
 ## Job 提交
-当我们向spark提交一个application的时候，首先都会调用程序里的`val sc = new SparkContext(sparkConf)`语句，这一句创建了一个SparkContext实例，确立整个程序作为driver的地位。
+当我们向spark提交一个application的时候，首先都会调用程序里的val sc = new SparkContext(sparkConf)语句，这一句创建了一个SparkContext实例，确立整个程序作为driver的地位。
 
 我们知道数据在spark中的处理主要分为[Transformations][1]和[action][2]两种类型。
 
@@ -80,7 +80,7 @@
                     serializedDirectResult
                 execBackend.statusUpdate(taskId, TaskState.FINISHED, serializedResult)
     ```
-    Executor 收到序列化后的task，首先进行反序列化，然后运行 task 得到执行结果 directResult。序列化directResult后，得到其大小，如果大于 spark.driver.maxResultSize 或者`akkaFrameSize - AkkaUtils.reservedSizeBytes`，将结果写入内存或磁盘（根据conf配置），由 blockManager 管理，只返回存储位置信息的IndirectTaskResult。否则就将结果serializedDirectResult直接返回给driver。task结束调用execBackend.statusUpdate()。
+    Executor 收到序列化后的task，首先进行反序列化，然后运行 task 得到执行结果 directResult。序列化directResult后，得到其大小，如果大于 spark.driver.maxResultSize 或者akkaFrameSize - AkkaUtils.reservedSizeBytes，将结果写入内存或磁盘（根据conf配置），由 blockManager 管理，只返回存储位置信息的IndirectTaskResult。否则就将结果serializedDirectResult直接返回给driver。task结束调用execBackend.statusUpdate()。
 
 2.  LocalBackend
     ```java
