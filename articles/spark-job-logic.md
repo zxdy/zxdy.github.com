@@ -45,9 +45,10 @@
                 taskScheduler.submitTasks
     ```
     DAGScheduler在spark中是非常重要的一个组件，spark任务所谓的有向无环图就是通过这个组件生成。
+    
     *  **finalStage = newStage()** 将整个job根据宽依赖和窄依赖进行stage划分（总体的思想是从最后的finallRDD出发反向递归逻辑执行图，每遇到宽依赖就断开，把之前沿途的窄依赖都加入同一个stage）。同时，将每个stage中的最后一个RDD通过mapOutputTracker.registerShuffle注册到MapOutputTrackerMaster，用于指示ShuffleMapTask最后输出数据的位置。
     
-    * **submitStage** 首先调用getMissingParentStages(),确定有没有parentStage，如果有的话，先递归提交parentStage，并将自己加入到 waitingStages 里，直到当前stage没有parentStage，此时stage 可以立即执行，调用submitMissingTasks，根据当前stage的类型（ShuffleMapStage或ResultStage）生成数量跟当前stage最后一个RDD的partition数一样的Tasks（ShuffleMapTasks或ResultTasks）。打包Tasks交给taskScheduler处理。
+    *  **submitStage** 首先调用getMissingParentStages(),确定有没有parentStage，如果有的话，先递归提交parentStage，并将自己加入到 waitingStages 里，直到当前stage没有parentStage，此时stage 可以立即执行，调用submitMissingTasks，根据当前stage的类型（ShuffleMapStage或ResultStage）生成数量跟当前stage最后一个RDD的partition数一样的Tasks（ShuffleMapTasks或ResultTasks）。打包Tasks交给taskScheduler处理。
     
 3.  TaskSchedulerImpl
     ```java
@@ -55,7 +56,6 @@
          backend.reviveOffers()
     ```
     TaskSchedulerImpl实现了taskScheduler的接口，这个TaskSchedulerImpl就是之前在第一步产生的TaskSchedulerImpl实例。最后将Tasks交给backend（同样是第一步产生的实例，本文中为了方便使用LocalBackend）处理。
-
 
 4.  LocalBackend
     ```java

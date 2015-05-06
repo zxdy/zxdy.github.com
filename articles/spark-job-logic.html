@@ -107,13 +107,13 @@
 </pre>
 <p>TaskSchedulerImpl实现了taskScheduler的接口，这个TaskSchedulerImpl就是之前在第一步产生的TaskSchedulerImpl实例。最后将Tasks交给backend（同样是第一步产生的实例，本文中为了方便使用LocalBackend）处理。</p>
 </li>
-</ol>
-<ol>
-<li>LocalBackend<pre class="prettyprint linenums lang-java">receiveWithLogging
+<li><p>LocalBackend</p>
+<pre class="prettyprint linenums lang-java">receiveWithLogging
     reviveOffers
         executor.launchTask(..., task.serializedTask)
 </pre>
-Backend 接收到 taskSet 后,将序列化后之后的 task 分发到调度器指定的 worker node 上执行</li>
+<p>Backend 接收到 taskSet 后,将序列化后之后的 task 分发到调度器指定的 worker node 上执行</p>
+</li>
 </ol>
 <h2 id="job-接收">Job 接收</h2>
 <ol>

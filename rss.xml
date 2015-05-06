@@ -4,7 +4,7 @@
         <title>RSS feed title</title>
         <link>Homepage link</link>
         <description>RSS feed description</description>
-        <lastBuildDate>Tue, 05 May 2015 17:52:25 +0800</lastBuildDate>
+        <lastBuildDate>Wed, 06 May 2015 09:09:46 +0800</lastBuildDate>
         <language>zh-cn</language>
         
         <item>
@@ -66,13 +66,13 @@
 &lt;/pre&gt;
 &lt;p&gt;TaskSchedulerImpl实现了taskScheduler的接口，这个TaskSchedulerImpl就是之前在第一步产生的TaskSchedulerImpl实例。最后将Tasks交给backend（同样是第一步产生的实例，本文中为了方便使用LocalBackend）处理。&lt;/p&gt;
 &lt;/li&gt;
-&lt;/ol&gt;
-&lt;ol&gt;
-&lt;li&gt;LocalBackend&lt;pre class=&quot;prettyprint linenums lang-java&quot;&gt;receiveWithLogging
+&lt;li&gt;&lt;p&gt;LocalBackend&lt;/p&gt;
+&lt;pre class=&quot;prettyprint linenums lang-java&quot;&gt;receiveWithLogging
     reviveOffers
         executor.launchTask(..., task.serializedTask)
 &lt;/pre&gt;
-Backend 接收到 taskSet 后,将序列化后之后的 task 分发到调度器指定的 worker node 上执行&lt;/li&gt;
+&lt;p&gt;Backend 接收到 taskSet 后,将序列化后之后的 task 分发到调度器指定的 worker node 上执行&lt;/p&gt;
+&lt;/li&gt;
 &lt;/ol&gt;
 &lt;h2 id=&quot;job-接收&quot;&gt;Job 接收&lt;/h2&gt;
 &lt;ol&gt;
