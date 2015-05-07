@@ -4,8 +4,305 @@
         <title>RSS feed title</title>
         <link>Homepage link</link>
         <description>RSS feed description</description>
-        <lastBuildDate>Wed, 06 May 2015 09:09:46 +0800</lastBuildDate>
+        <lastBuildDate>Thu, 07 May 2015 10:21:05 +0800</lastBuildDate>
         <language>zh-cn</language>
+        
+        <item>
+            <title>spark job物理执行图实战</title>
+            <link>Homepage link/articles/spark-job-real-play.html?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</link>
+            <guid>Homepage link/articles/spark-job-real-play.html</guid>
+            <author>zxdy@vip.qq.com Ario</author>
+            <pubDate>Tue, 28 Apr 2015 00:00:00 +0800</pubDate>
+            <description>&lt;p&gt;本文主要通过一个具体的spark application来讲述spark job执行过程中关于stage划分，stage提交，task运行的流程。主要也是因为上篇的源码阅读只有纯粹的理论，所以希望能通过这篇实战将理论讲的更清楚一点。&lt;/p&gt;
+&lt;!-- toc --&gt;
+
+
+&lt;h2 id=&quot;rdd&quot;&gt;RDD&lt;/h2&gt;
+&lt;p&gt;RDD，全称为Resilient Distributed Datasets，是一个容错的、并行的数据结构，可以让用户显式地将数据存储到磁盘和内存中，并能控制数据的分区。同时，RDD还提供了一组丰富的操作来操作这些数据。在这些操作中，诸如map、flatMap、filter等转换操作，很好地契合了Scala的集合操作。除此之外，RDD还提供了诸如join、groupBy、reduceByKey等更为方便的操作（注意，reduceByKey是action，而非transformation），以支持常见的数据运算。&lt;/p&gt;
+&lt;p&gt;RDD作为数据结构，本质上是一个只读的分区记录集合。一个RDD可以包含多个分区（partition），每个分区就是一个dataset片段。RDD可以相互依赖。&lt;/p&gt;
+&lt;p&gt;如图是一个比较简单的RDD数据流转图，P1,P2 代表各个RDD内的分区。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://zxdy-blog.qiniudn.com/RDD.png&quot; alt=&quot;RDD&quot;&gt;&lt;/p&gt;
+&lt;p&gt;总结：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;它是不变的数据结构存储&lt;/li&gt;
+&lt;li&gt;它是支持跨集群的分布式数据结构&lt;/li&gt;
+&lt;li&gt;可以根据数据记录的key对结构进行分区&lt;/li&gt;
+&lt;li&gt;提供了粗粒度的操作，且这些操作都支持分区&lt;/li&gt;
+&lt;li&gt;它将数据存储在内存中，从而提供了低延迟性&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;partition&quot;&gt;Partition&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;什么是partition&lt;/p&gt;
+&lt;p&gt;每个 partition 就是一个RDD的dataset片段，他支持比RDD更细粒度的操作&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;RDD 中有几个partition&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;初始由并行度决定。&lt;/p&gt;
+&lt;pre class=&quot;prettyprint linenums lang-java&quot;&gt;scala&gt; val data1=Array(1,2,3,4,5,6)
+data1: Array[Int] = Array(1, 2, 3, 4, 5, 6)
+
+scala&gt; val rangePairs1 = sc.parallelize(data1, 3)
+rangePairs1: org.apache.spark.rdd.RDD[Int] = ParallelCollectionRDD[0] at parallelize at &lt;console&gt;:23
+scala&gt; rangePairs1.partitions.size
+res2: Int = 3   //设置并行度为3之后，RDD rangePairs1 的partition个数也为3
+&lt;/pre&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;More&lt;/strong&gt;：spark 在读取 cassandra 表数据时，RDD 的 partition 的数量和cassandra 表分区数无关， 而是取决于cassandra 节点数。但是我们可以在读取完数据后修改partition的数量。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;修改partition个数。&lt;/p&gt;
+&lt;p&gt;下面使用了两种修改partition数量的操作repartition和partitionBy。
+从DebugString来看，partitionBy的操作代价要小于repartition，但是repartition的适用性比partitionBy广，具体怎么用根据实际情况来吧。&lt;/p&gt;
+&lt;pre class=&quot;prettyprint linenums lang-java&quot;&gt;1.repartition---
+scala&gt; val hashPairs1 = rangePairs1.repartition(6)
+hashPairs1: org.apache.spark.rdd.RDD[Int] = MapPartitionsRDD[4] at repartition at &lt;console&gt;:25
+
+scala&gt; hashPairs1.partitions.size
+res0: Int = 6
+
+scala&gt; println(hashPairs1.toDebugString)
+(6) MapPartitionsRDD[21] at repartition at &lt;console&gt;:25 []
+|  CoalescedRDD[20] at repartition at &lt;console&gt;:25 []
+|  ShuffledRDD[19] at repartition at &lt;console&gt;:25 []
++-(3) MapPartitionsRDD[18] at repartition at &lt;console&gt;:25 []
+|  ParallelCollectionRDD[17] at parallelize at &lt;console&gt;:23 []
+
+2.partitionBy----
+scala&gt;  val hashPairs1 = rangePairs1.partitionBy(new HashPartitioner(6))
+hashPairs1: org.apache.spark.rdd.RDD[(Int, Char)] = ShuffledRDD[1] at partitionBy at &lt;console&gt;:28
+
+scala&gt; hashPairs1.partitions.size
+res0: Int = 6
+
+scala&gt; println(hashPairs1.toDebugString)
+(6) ShuffledRDD[4] at partitionBy at &lt;console&gt;:32 []
++-(3) MapPartitionsRDD[3] at map at &lt;console&gt;:30 []
+|  ParallelCollectionRDD[2] at parallelize at &lt;console&gt;:26 []
+&lt;/pre&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;partition 与 task 关系
+spark 的每一个stage都包含了一个或多个task，task的数量取决于每个stage中最后一个RDD的partition数量。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;dependency&quot;&gt;Dependency&lt;/h3&gt;
+&lt;p&gt;RDD 本身的依赖关系由 transformation() 生成的每一个 RDD 本身语义决定，每个RDD的getDependencies()定义RDD之间的数据依赖关系。&lt;/p&gt;
+&lt;p&gt;RDD 中 partition 依赖关系分为 NarrowDependency（窄依赖） 和 ShuffleDependency（宽依赖）&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;窄依赖&lt;/strong&gt; 指父RDD的每一个分区最多被一个子RDD的分区所用，表现为&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;一个父RDD的分区对应于一个子RDD的分区&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;两个父RDD的分区对应于一个子RDD 的分区。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;宽依赖&lt;/strong&gt; 指子RDD的每个分区都要依赖于父RDD的所有分区，&lt;/p&gt;
+&lt;h2 id=&quot;stage&quot;&gt;Stage&lt;/h2&gt;
+&lt;p&gt;DAGScheduler对Stage的划分是spark任务调度的核心，在上篇 &lt;a href=&quot;http://zxdy.github.io/articles/spark-job-logic.html&quot;&gt;spark 源码阅读--job提交与执行过程&lt;/a&gt; 提到spark划分stage的总体思想是从最后的finallRDD出发反向递归访问逻辑执行图，每遇到宽依赖就断开，把之前沿途的窄依赖都加入同一个stage。于是对于本文开始的那个RDD数据流转图可以进行如下的划分。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://zxdy-blog.qiniudn.com/simple_stage.png&quot; alt=&quot;simpe_stage&quot;&gt;&lt;/p&gt;
+&lt;h2 id=&quot;实战&quot;&gt;实战&lt;/h2&gt;
+&lt;p&gt;讲了这么多理论知识，下面准备结合一个具体的例子来验证一下spark job提交之后的各个过程。&lt;/p&gt;
+&lt;p&gt;首先构造一个稍复杂的spark job。代码如下：&lt;/p&gt;
+&lt;pre class=&quot;prettyprint linenums lang-JAVA&quot;&gt;import org.apache.log4j.{Level, Logger}
+import org.apache.spark._
+
+object complexJob {
+  def main(args: Array[String]) {
+    //开启debug日志
+    Logger.getLogger(&quot;org&quot;).setLevel(Level.DEBUG)
+    Logger.getLogger(&quot;akka&quot;).setLevel(Level.DEBUG)
+    val sc = new SparkContext(&quot;local[3]&quot;, &quot;ComplexJob test&quot;)
+
+    val data1 = Array[Int](1, 2, 3, 4, 5, 4, 3, 2, 1)
+    val data2 = Array[Char](&#39;a&#39;, &#39;b&#39;, &#39;c&#39;, &#39;d&#39;, &#39;e&#39;, &#39;f&#39;, &#39;g&#39;, &#39;h&#39;, &#39;i&#39;)
+
+    val dataRdd1 = sc.parallelize(data1, 3)
+    val dataRdd2 = sc.parallelize(data2, 3)
+
+    val dataRdd3 = dataRdd1.zip(dataRdd2)
+    val dataRdd4 = dataRdd3.groupByKey()
+    val dataRdd5 = dataRdd4.map(i =&gt; (i._1 + 1, i._2))
+
+    val data3 = Array[(Int, String)]((1, &quot;A&quot;), (2, &quot;B&quot;),
+      (3, &quot;C&quot;), (4, &quot;D&quot;))
+    val dataRdd6 = sc.parallelize(data3, 2)
+    val dataRdd7 = dataRdd6.map(x =&gt; (x._1, x._2.charAt(0)))
+
+    val data4 = Array[(Int, Char)]((1, &#39;X&#39;), (2, &#39;Y&#39;))
+    val dataRdd8 = sc.parallelize(data4, 2)
+
+    val dataRdd9 = dataRdd7.union(dataRdd8)
+
+    val result = dataRdd5.join(dataRdd9)
+    result.foreach(println)
+    println(result.toDebugString)
+  }
+}
+&lt;/pre&gt;
+&lt;p&gt;执行后打印DebugString如下：&lt;/p&gt;
+&lt;pre class=&quot;prettyprint linenums lang-text&quot;&gt;(4) MapPartitionsRDD[11] at join at complexJob.scala:31 []
+ |  MapPartitionsRDD[10] at join at complexJob.scala:31 []
+ |  CoGroupedRDD[9] at join at complexJob.scala:31 []
+ +-(3) MapPartitionsRDD[4] at map at complexJob.scala:19 []
+ |  |  ShuffledRDD[3] at groupByKey at complexJob.scala:18 []
+ |  +-(3) ZippedPartitionsRDD2[2] at zip at complexJob.scala:17 []
+ |     |  ParallelCollectionRDD[0] at parallelize at complexJob.scala:14 []
+ |     |  ParallelCollectionRDD[1] at parallelize at complexJob.scala:15 []
+ +-(4) UnionRDD[8] at union at complexJob.scala:29 []
+    |  MapPartitionsRDD[6] at map at complexJob.scala:24 []
+    |  ParallelCollectionRDD[5] at parallelize at complexJob.scala:23 []
+    |  ParallelCollectionRDD[7] at parallelize at complexJob.scala:27 []
+&lt;/pre&gt;
+&lt;p&gt;从上面的DebugString中，已经可以获取很多信息包括&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;RDD的转换&lt;/li&gt;
+&lt;li&gt;stage的划分：每一个缺口的同级可以分为一个stage&lt;/li&gt;
+&lt;li&gt;partition的数量：在RDD前面括号里的数字就代表当前stage最后一个RDD的paritition数量，由此也可知每个stage的task数量&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;DebugString有点像oracle的执行计划，虽然我们已经可以根据这个来划分stage，但是并没有太多的细节信息，所以还是想从代码出发，来详细解释一下stage为什么要这么划分，以及stage提交的流程，顺便也可以与DebugString相互验证。&lt;/p&gt;
+&lt;h3 id=&quot;流程图&quot;&gt;流程图&lt;/h3&gt;
+&lt;p&gt;根据代码，最终的流程图如下：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://zxdy-blog.qiniudn.com/complex_stage.png&quot; alt=&quot;compex_stage&quot;&gt;&lt;/p&gt;
+&lt;h3 id=&quot;代码解读&quot;&gt;代码解读&lt;/h3&gt;
+&lt;p&gt;从整体上看，最后的结果result来自dataRdd5.join(dataRdd9)，所以我们可以首先将整个job拆成A,B两条线，分别对应dataRdd5和dataRdd9的处理流程。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;A线:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;A1. 数组data1生成类型为ParallelCollectionRDD的dataRdd1，分区数为3。&lt;/p&gt;
+&lt;p&gt;A2. 数组data2生成类型为ParallelCollectionRDD的dataRdd2，分区数为3。&lt;/p&gt;
+&lt;p&gt;A3. 将dataRdd1和dataRdd2通过Transformation(zip)生成新的ZipPartitionsRDD(dataRdd3)。zip是一种变形的map，可以将两个数组根据相同的下标map成一个新的数组结构[(key1,value1),(key2,value2)..(keyN,valueN)]。要注意的是两个RDD的partition数必须相等，否则不能zip。&lt;/p&gt;
+&lt;p&gt;A4. dataRdd3通过Transformation(groupBykey)生成ShuffledRDD(dataRdd4)。注意此处有shuffle。&lt;/p&gt;
+&lt;p&gt;A5. dataRdd4通过Transformation(map)将所有的key值加1后生成新的MapPartitionsRDD(dataRdd5)，分区数为3。&lt;/p&gt;
+&lt;p&gt;dataRdd5生成完毕&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;B线:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;B1. 数组data3生成类型为ParallelCollectionRDD的dataRdd6，分区数为2。&lt;/p&gt;
+&lt;p&gt;B2. dataRdd6通过Transformation(map)生成MapPartitionsRDD(dataRdd7)&lt;/p&gt;
+&lt;p&gt;B3. 数组data4生成类型为ParallelCollectionRDD的dataRdd8，分区数为2。&lt;/p&gt;
+&lt;p&gt;B4. dataRdd7 与dataRdd8通过Transformation(union)生成新的UnionRDD(dataRdd9)，分区数为4&lt;/p&gt;
+&lt;p&gt;dataRdd9生成完毕&lt;/p&gt;
+&lt;p&gt;最后得到result=dataRdd5.join(dataRdd9)，分区数为4。注意此处有shuffle。调用join()的时候并不是一次性生成最后的&lt;/p&gt;
+&lt;p&gt;MapPartitionsRDD，而是首先会进行 cogroup()，得到&lt;K, (Iterable[V1], Iterable[V2])&gt;类型的MapPartitionsRDD，然后对 Iterable[V1] 和 Iterable[V2] 做笛卡尔集，最后生成新的MapPartitionsRDD，所以在join后会产生3个RDD。&lt;/p&gt;
+&lt;h3 id=&quot;stage-划分&quot;&gt;stage 划分&lt;/h3&gt;
+&lt;p&gt;根据DAGScheduler的逻辑，首先从最后的finalRDD(本文为result)开始向前递归访问。&lt;/p&gt;
+&lt;p&gt;当到达join时，发现有子RDD(result)的每个分区都要依赖于父RDD(dataRdd5和dataRdd9)的所有分区，所以是shuffleDependency,。于是把join之后的所有RDD划分为一个stage，标记为&lt;strong&gt;stage3&lt;/strong&gt;。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;注意，假如dataRdd5,dataRdd9的partitioner也是HashPartitioner，且partition数量与result的相同，那么他们之间的依赖就变成了narrowDependency，属于两个(会有多个吗？不,spark只支持两两join)父RDD的分区对应于一个子RDD的分区的情况，这个join()变成了hashjoin()。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;继续往前，先看A线部分，当递归访问到A4步骤(groupBykey)时，判断dataRdd3--&gt;dataRdd4之间的依赖为shuffleDependency，于是将dataRdd4和dataRdd5划分为新的stage，标记为&lt;strong&gt;stage1&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;A线继续往前，到zip又遇到依赖，属于两个父RDD(dataRdd1&amp;dataRdd2)的分区对应于一个子RDD(dataRdd3)的分区的情况，判断为narrowDependency，而dataRdd1和dataRdd2之前已经没有别的RDD存在，于是将dataRdd1，dataRdd2，dataRdd3划分为一个新的stage，标记为&lt;strong&gt;stage0&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;A线已经结束，现在看B线部分。在B线的递归路径中发现有union()，union()是将两个RDD简单合并在一起，并不改变 partition里面的数据。它是一种RangeDependency，属于narrowDependency的一种。继续往前遍历，发现整个B线中都不存在shuffleDependency，所以可以将整个B线划分为新的stage，标记为&lt;strong&gt;stage2&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;到此对整个job的stage划分已经结束，总共分为4个stage。&lt;/p&gt;
+&lt;h3 id=&quot;stage提交&quot;&gt;stage提交&lt;/h3&gt;
+&lt;p&gt;stage提交的过程，也就是job执行的过程。根据前一篇的spark源代码解读，DAGScheduler首先会调用finalStage = newStage()进行stage划分，这一步已经在上文完成，那么接下来就是DAGScheduler调用submitStage，提交finalStage。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;在本文中例子中的finalStage就是最后的stage3，提交stage3之后，递归查找parentStage，发现stage3依赖于stage1和stage2。&lt;/p&gt;
+&lt;pre class=&quot;prettyprint linenums lang-text&quot;&gt; 15/04/27 19:03:28 INFO DAGScheduler: Registering RDD 2 (zip at complexJob.scala:17)
+ 15/04/27 19:03:28 INFO DAGScheduler: Registering RDD 4 (map at complexJob.scala:19)
+ 15/04/27 19:03:28 INFO DAGScheduler: Registering RDD 8 (union at complexJob.scala:29)
+ 15/04/27 19:03:28 INFO DAGScheduler: Got job 0 (foreach at complexJob.scala:32) with 4 output partitions (allowLocal=false)
+ 15/04/27 19:03:28 INFO DAGScheduler: Final stage: Stage 3(foreach at complexJob.scala:32)
+ 15/04/27 19:03:28 INFO DAGScheduler: Parents of final stage: List(Stage 1, Stage 2)
+ 15/04/27 19:03:28 DEBUG DAGScheduler: submitStage(Stage 3)
+15/04/27 19:03:28 DEBUG DAGScheduler: missing: List(Stage 1, Stage 2)
+&lt;/pre&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;提交stage1和stage2，将stage3放入waitingStages。&lt;/p&gt;
+&lt;pre class=&quot;prettyprint linenums lang-text&quot;&gt; 15/04/27 19:03:28 DEBUG DAGScheduler: submitStage(Stage 1)
+ 15/04/27 19:03:28 DEBUG DAGScheduler: submitStage(Stage 2)
+&lt;/pre&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;stage1 发现parentStage：stage0,提交stage0，将stage1放入waitingStages。&lt;/p&gt;
+&lt;pre class=&quot;prettyprint linenums lang-text&quot;&gt; 15/04/27 19:03:28 DEBUG DAGScheduler: submitStage(Stage 1)
+ 15/04/27 19:03:28 DEBUG DAGScheduler: missing: List(Stage 0)
+ 15/04/27 19:03:28 DEBUG DAGScheduler: submitStage(Stage 0)
+&lt;/pre&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;stage0没有找到parentStage,可以立即执行，调用submitMissingTasks，生成类型为ShuffleMapTask的tasks，task的数量与stage0中最后一个Rdd partition数量相等为3。&lt;/p&gt;
+&lt;pre class=&quot;prettyprint linenums lang-text&quot;&gt; 15/04/27 19:03:28 DEBUG DAGScheduler: submitStage(Stage 0)
+ 15/04/27 19:03:28 DEBUG DAGScheduler: missing: List()
+ 15/04/27 19:03:28 INFO DAGScheduler: Submitting Stage 0 (ZippedPartitionsRDD2[2] at zip at complexJob.scala:17), which has no missing parents
+ 15/04/27 19:03:28 DEBUG DAGScheduler: submitMissingTasks(Stage 0)
+ 15/04/27 19:03:28 INFO DAGScheduler: Submitting 3 missing tasks from Stage 0 (ZippedPartitionsRDD2[2] at zip at complexJob.scala:17)
+ 15/04/27 19:03:28 DEBUG DAGScheduler: New pending tasks: Set(ShuffleMapTask(0, 2), ShuffleMapTask(0, 1), ShuffleMapTask(0, 0))
+ 15/04/27 19:03:28 INFO TaskSchedulerImpl: Adding task set 0.0 with 3 tasks
+&lt;/pre&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;stage2没有找到parentStage,可以立即执行，调用submitMissingTasks，生成类型为ShuffleMapTask的tasks，task的数量与stage2中最后一个Rdd partition数量相等为4。&lt;/p&gt;
+&lt;pre class=&quot;prettyprint linenums lang-text&quot;&gt; 15/04/27 19:03:28 DEBUG DAGScheduler: submitStage(Stage 2)
+ 15/04/27 19:03:28 DEBUG DAGScheduler: missing: List()
+ 15/04/27 19:03:28 DEBUG DAGScheduler: submitMissingTasks(Stage 2)
+ 15/04/27 19:03:28 INFO DAGScheduler: Submitting 4 missing tasks from Stage 2 (UnionRDD[8] at union at complexJob.scala:29)
+ 15/04/27 19:03:28 DEBUG DAGScheduler: New pending tasks: Set(ShuffleMapTask(2, 0), ShuffleMapTask(2, 3), ShuffleMapTask(2, 2), ShuffleMapTask(2, 1))
+15/04/27 19:03:28 INFO TaskSchedulerImpl: Adding task set 2.0 with 4 tasks
+&lt;/pre&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;stage0的task完成后通知dagScheduler，当stage0中所有的task都完成后，将stage0的执行结果注册到mapOutputTrackerMaster给下一个被依赖的stage1使用。然后提交等待中的stage1。&lt;/p&gt;
+&lt;pre class=&quot;prettyprint linenums lang-text&quot;&gt;15/04/27 19:03:28 INFO Executor: Running task 0.0 in stage 0.0 (TID 0)
+15/04/27 19:03:28 INFO Executor: Running task 1.0 in stage 0.0 (TID 1)
+15/04/27 19:03:28 INFO Executor: Running task 2.0 in stage 0.0 (TID 2)
+15/04/27 19:03:28 INFO Executor: Finished task 1.0 in stage 0.0 (TID 1). 883 bytes result sent to driver
+15/04/27 19:03:28 INFO Executor: Finished task 2.0 in stage 0.0 (TID 2). 883 bytes result sent to driver
+15/04/27 19:03:28 INFO Executor: Finished task 0.0 in stage 0.0 (TID 0). 883 bytes result sent to driver
+&lt;/pre&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;stage2的task全部完成后将结果注册到mapOutputTrackerMaster给下一个被依赖的stage3使用。等待stage1的tasks结束&lt;/p&gt;
+&lt;pre class=&quot;prettyprint linenums lang-text&quot;&gt; 15/04/27 19:03:28 INFO Executor: Running task 0.0 in stage 2.0 (TID 3)
+ 15/04/27 19:03:29 INFO Executor: Running task 1.0 in stage 2.0 (TID 4)
+ 15/04/27 19:03:29 INFO Executor: Running task 2.0 in stage 2.0 (TID 5)
+ 15/04/27 19:03:29 INFO Executor: Running task 3.0 in stage 2.0 (TID 6)
+ 15/04/27 19:03:29 INFO Executor: Finished task 1.0 in stage 2.0 (TID 4). 884 bytes result sent to driver
+ 15/04/27 19:03:29 INFO Executor: Finished task 2.0 in stage 2.0 (TID 5). 884 bytes result sent to driver
+ 15/04/27 19:03:29 INFO Executor: Finished task 0.0 in stage 2.0 (TID 3). 884 bytes result sent to driver
+ 15/04/27 19:03:29 INFO Executor: Finished task 3.0 in stage 2.0 (TID 6). 884 bytes result sent to driver
+&lt;/pre&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;stage0结束之后，stage1调用submitMissingTasks，生成类型为ShuffleMapTask的tasks，task的数量与stage1中最后一个Rdd partition数量相等为3。&lt;/p&gt;
+&lt;pre class=&quot;prettyprint linenums lang-text&quot;&gt; 15/04/27 19:03:29 INFO DAGScheduler: Submitting Stage 1 (MapPartitionsRDD[4] at map at complexJob.scala:19), which is now runnable
+ 15/04/27 19:03:29 DEBUG DAGScheduler: submitMissingTasks(Stage 1)
+ 15/04/27 19:03:29 INFO DAGScheduler: Submitting 3 missing tasks from Stage 1 (MapPartitionsRDD[4] at map at complexJob.scala:19)
+ 15/04/27 19:03:29 DEBUG DAGScheduler: New pending tasks: Set(ShuffleMapTask(1, 2), ShuffleMapTask(1, 1), ShuffleMapTask(1, 0))
+ 15/04/27 19:03:29 INFO TaskSchedulerImpl: Adding task set 1.0 with 3 tasks
+&lt;/pre&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;stage1的tasks全部完成后将结果注册到mapOutputTrackerMaster给下一个被依赖的stage3使用。&lt;/p&gt;
+&lt;pre class=&quot;prettyprint linenums lang-text&quot;&gt; 15/04/27 19:03:29 INFO Executor: Running task 1.0 in stage 1.0 (TID 8)
+ 15/04/27 19:03:29 INFO Executor: Running task 0.0 in stage 1.0 (TID 7)
+ 15/04/27 19:03:29 INFO Executor: Running task 2.0 in stage 1.0 (TID 9)
+ 15/04/27 19:03:29 INFO Executor: Finished task 1.0 in stage 1.0 (TID 8). 1100 bytes result sent to driver
+ 15/04/27 19:03:29 INFO Executor: Finished task 2.0 in stage 1.0 (TID 9). 1100 bytes result sent to driver
+ 15/04/27 19:03:29 INFO Executor: Finished task 0.0 in stage 1.0 (TID 7). 1100 bytes result sent to driver
+&lt;/pre&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;stage3的parentStage已经全部结束任务，提交stage3，生成类型为ResultTask的tasks，task的数量与stage3中最后一个Rdd partition数量相等为4。&lt;/p&gt;
+&lt;pre class=&quot;prettyprint linenums lang-text&quot;&gt;15/04/27 19:03:29 INFO DAGScheduler: Stage 1 (map at complexJob.scala:19) finished in 0.149 s
+15/04/27 19:03:29 INFO DAGScheduler: looking for newly runnable stages
+15/04/27 19:03:29 INFO DAGScheduler: running: Set()
+15/04/27 19:03:29 INFO DAGScheduler: waiting: Set(Stage 3)
+15/04/27 19:03:29 INFO DAGScheduler: failed: Set()
+15/04/27 19:03:29 INFO DAGScheduler: Missing parents for Stage 3: List()
+15/04/27 19:03:29 INFO DAGScheduler: Submitting Stage 3 (MapPartitionsRDD[11] at join at complexJob.scala:31), which is now runnable
+15/04/27 19:03:29 DEBUG DAGScheduler: submitMissingTasks(Stage 3)
+15/04/27 19:03:29 INFO DAGScheduler: Submitting 4 missing tasks from Stage 3 (MapPartitionsRDD[11] at join at complexJob.scala:31)
+15/04/27 19:03:29 DEBUG DAGScheduler: New pending tasks: Set(ResultTask(3, 2), ResultTask(3, 0), ResultTask(3, 1), ResultTask(3, 3))
+15/04/27 19:03:29 INFO TaskSchedulerImpl: Adding task set 3.0 with 4 tasks
+&lt;/pre&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;stage3的task的结束时判断此task是不是最后一个task，如果是则job结束。&lt;/p&gt;
+&lt;pre class=&quot;prettyprint linenums lang-text&quot;&gt;--output result on each task finish
+15/04/27 19:03:29 INFO Executor: Finished task 1.0 in stage 3.0 (TID 11). 886 bytes result sent to driver
+15/04/27 19:03:29 INFO Executor: Finished task 2.0 in stage 3.0 (TID 12). 886 bytes result sent to driver
+15/04/27 19:03:29 INFO Executor: Finished task 3.0 in stage 3.0 (TID 13). 886 bytes result sent to driver
+15/04/27 19:03:29 INFO Executor: Finished task 0.0 in stage 3.0 (TID 10). 886 bytes result sent to driver
+15/04/27 19:03:29 INFO DAGScheduler: Job 0 finished: foreach at complexJob.scala:32, took 1.004075 s
+&lt;/pre&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&quot;尾声&quot;&gt;尾声&lt;/h3&gt;
+&lt;p&gt;本文对于spark job执行过程中关于stage划分，stage提交，task运行的流程已经全部讲解完毕。
+由于本人才疏学浅以及时间的关系，如有错漏之处，请指出来我会重新修改。&lt;/p&gt;
+</description>
+        </item>
         
         <item>
             <title>spark 源码阅读--job提交与执行过程</title>
@@ -725,93 +1022,6 @@ alter index f_regs_idx1 nomonitoring usage;
 &lt;h2 id=&quot;怎样加快建索引的速度&quot;&gt;怎样加快建索引的速度&lt;/h2&gt;
 &lt;p&gt;参见 &lt;a href=&quot;http://zxdy.github.io/articles/speed-up-create-index.html&quot;&gt;oracle 如何加快建立索引的速度
 &lt;/a&gt;&lt;/p&gt;
-</description>
-        </item>
-        
-        <item>
-            <title>oracle 如何加快建立索引的速度</title>
-            <link>Homepage link/articles/speed-up-create-index.html?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</link>
-            <guid>Homepage link/articles/speed-up-create-index.html</guid>
-            <author>zxdy@vip.qq.com Ario</author>
-            <pubDate>Fri, 19 Sep 2014 00:00:00 +0800</pubDate>
-            <description>&lt;p&gt;通常情况下对oracle的表建立索引的时候并不需要考虑效率问题，这个通常情况指的是相应的表数据在百万级以下。但是一旦数据量大到千万级，亿级甚至更大的时候，我们就不能不考虑新建索引的效率问题，因为当表在建立索引的时候，会产生锁阻塞新数据的更新，如果索引不能很快地建立完毕，会对生产环境造成影响。&lt;/p&gt;
-&lt;h1 id=&quot;1-pga设置&quot;&gt;1. PGA设置&lt;/h1&gt;
-&lt;p&gt;hash_area_size： 这个参数控制每个会话的hash内存空间有多大。它也可以在会话级和实例级被修改。默认值是sort area空间大小的两倍
-sort_area_size:  因为排序通常是在PGA中进行的，需要防止因空间或内存不足导致需要disk排序。&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-sql&quot;&gt;alter session set workarea_size_policy=manual;
-alter session set hash_area_size=100000; 
-alter session set sort_area_size=2000000000; -- 在系统可用内存足够的情况下，最大可以到2G
-&lt;/pre&gt;
-&lt;p&gt;&lt;em&gt;question&lt;/em&gt;&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;ol&gt;
-&lt;li&gt;什么是PGA&lt;/li&gt;
-&lt;li&gt;什么是SGA&lt;/li&gt;
-&lt;/ol&gt;
-&lt;/blockquote&gt;
-&lt;h1 id=&quot;2-增加temp表空间&quot;&gt;2. 增加temp表空间&lt;/h1&gt;
-&lt;p&gt;因为大表的数据量比较大，导致建索引时需要的temp表空间也比较大，一般来说接近索引的大小，没把握的情况下可以估算一下索引的大小先：&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-sql&quot;&gt;set serveroutput on
-declare  
- v_ddl varchar(1024);  
- v_used_bytes number;  
- v_alloc_bytes number;  
- begin  
- dbms_space.create_index_cost(  
- ddl =&gt;&#39; create index ids_t on user(userid)&#39;,used_bytes=&gt;v_used_bytes,alloc_bytes =&gt;v_alloc_bytes);  
- dbms_output.put_line(&#39;used_bytes=&#39;||v_used_bytes||&#39; bytes&#39;||&#39; alloc_bytes=&#39;|| v_alloc_bytes || &#39; bytes&#39;);  
- end;  
- /
-&lt;/pre&gt;
-&lt;p&gt;另外在建索引的过程中也可以随时监控表空间的使用情况，一旦发现temp表空间不够，可以随时加大&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-sql&quot;&gt;--查询表空间使用情况
-SELECT UPPER(F.TABLESPACE_NAME) &quot;表空间名&quot;,
-D.TOT_GROOTTE_MB &quot;表空间大小(M)&quot;,
-D.TOT_GROOTTE_MB - F.TOTAL_BYTES &quot;已使用空间(M)&quot;,
-TO_CHAR(ROUND((D.TOT_GROOTTE_MB - F.TOTAL_BYTES) / D.TOT_GROOTTE_MB * 100,2),&#39;990.99&#39;) &quot;使用比&quot;,
-F.TOTAL_BYTES &quot;空闲空间(M)&quot;,
-F.MAX_BYTES &quot;最大块(M)&quot;
-FROM (SELECT TABLESPACE_NAME,
-ROUND(SUM(BYTES) / (1024 * 1024), 2) TOTAL_BYTES,
-ROUND(MAX(BYTES) / (1024 * 1024), 2) MAX_BYTES
-FROM SYS.DBA_FREE_SPACE
-GROUP BY TABLESPACE_NAME) F,
-(SELECT DD.TABLESPACE_NAME,
-ROUND(SUM(DD.BYTES) / (1024 * 1024), 2) TOT_GROOTTE_MB
-FROM SYS.DBA_DATA_FILES DD
-GROUP BY DD.TABLESPACE_NAME) D
-WHERE D.TABLESPACE_NAME = F.TABLESPACE_NAME
-ORDER BY 4 DESC;
-
-select file_name,bytes/1024/1024 &quot;MB&quot;,autoextensible,tablespace_name from dba_temp_files;
-
---增加表空间大小
-alter tablespace USERS add datafile &#39;/opt/ora9/users02.dbf&#39; size 50M autoextend on next 50M maxsize UNLIMITED;
-&lt;/pre&gt;
-&lt;h1 id=&quot;3-使用并行参数&quot;&gt;3. 使用并行参数&lt;/h1&gt;
-&lt;p&gt;关于利用并行度创建索引，前提是多个CPU，单CPU下用并行度创建索引，可能会造成资源的争用。理论上来说8个CPU, 可以用parallel 6 ,最多占用6个CPU,另外留下两个CPU供其他进程使用。
-查看CPU核数的方法有很多，详细见（oracle性能优化-CPU篇）。最简单地就是用下面这个sql直接查&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-sql&quot;&gt;SELECT * FROM v$osstat where stat_name=&#39;NUM_CPUS&#39;;
-&lt;/pre&gt;
-&lt;h1 id=&quot;4-使用nologging&quot;&gt;4. 使用nologging&lt;/h1&gt;
-&lt;p&gt;nologging, 绝对应该使用，能减少大量redo log，使速度大幅上升。&lt;/p&gt;
-&lt;p&gt;于是一个比较标准的并行nologging建索引语句就出炉了。对于生产环境，保险的办法是再加上online参数，避免建索引时的锁对dml产生阻塞。&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-sql&quot;&gt;CREATE INDEX  table_idx ON table (col )  NOLOGGING PARALLEL 6;
-&lt;/pre&gt;
-&lt;p&gt;&lt;em&gt;Note&lt;/em&gt;&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;对于一个比较大的操作，oracle可能会有等待事件发生
-首先可以通过sql developer查看等待时间的信息，得到等待时间的p1，p2，p3。然后通过下面的sql转换p1，p2得到具体等待的object。&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-sql&quot;&gt;select 
-   owner,
-   segment_name,
-   segment_type
-from 
-   dba_extents
-where 
-   file_id = &amp;P1 and &amp;P2 between block_id and block_id + blocks -1;
-&lt;/pre&gt;
-&lt;/blockquote&gt;
 </description>
         </item>
         

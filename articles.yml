@@ -1,3 +1,11 @@
+- id: spark-job-real-play
+  title: spark job物理执行图实战
+  postedOn: !!str 2015-04-28
+  author: Ario
+  tags:
+    - spark
+  abstract: 本文主要通过一个具体的spark application来讲述spark job执行过程中关于stage划分，stage提交，task运行的流程。主要也是因为上篇的源码阅读只有纯粹的理论，所以希望能通过这篇实战将理论讲的更清楚一点。
+
 - id: spark-job-logic
   title: spark 源码阅读--job提交与执行过程
   postedOn: !!str 2015-04-07
