@@ -201,9 +201,7 @@ B4. dataRdd7 与dataRdd8通过Transformation(union)生成新的UnionRDD(dataRdd9
 
 dataRdd9生成完毕
 
-最后得到result=dataRdd5.join(dataRdd9)，分区数为4。注意此处有shuffle。调用join()的时候并不是一次性生成最后的
-
-MapPartitionsRDD，而是首先会进行 cogroup()，得到<K, (Iterable[V1], Iterable[V2])>类型的MapPartitionsRDD，然后对 Iterable[V1] 和 Iterable[V2] 做笛卡尔集，最后生成新的MapPartitionsRDD，所以在join后会产生3个RDD。
+最后得到result=dataRdd5.join(dataRdd9)，分区数为4。注意此处有shuffle。调用join()的时候并不是一次性生成最后的MapPartitionsRDD，而是首先会进行 cogroup()，得到<K, (Iterable[V1], Iterable[V2])>类型的MapPartitionsRDD，然后对 Iterable[V1] 和 Iterable[V2] 做笛卡尔集，最后生成新的MapPartitionsRDD，所以在join后会产生3个RDD。
 
 ### stage 划分
 根据DAGScheduler的逻辑，首先从最后的finalRDD(本文为result)开始向前递归访问。

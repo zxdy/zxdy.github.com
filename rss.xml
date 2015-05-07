@@ -4,7 +4,7 @@
         <title>RSS feed title</title>
         <link>Homepage link</link>
         <description>RSS feed description</description>
-        <lastBuildDate>Thu, 07 May 2015 10:21:05 +0800</lastBuildDate>
+        <lastBuildDate>Thu, 07 May 2015 17:00:36 +0800</lastBuildDate>
         <language>zh-cn</language>
         
         <item>
@@ -181,8 +181,7 @@ object complexJob {
 &lt;p&gt;B3. 数组data4生成类型为ParallelCollectionRDD的dataRdd8，分区数为2。&lt;/p&gt;
 &lt;p&gt;B4. dataRdd7 与dataRdd8通过Transformation(union)生成新的UnionRDD(dataRdd9)，分区数为4&lt;/p&gt;
 &lt;p&gt;dataRdd9生成完毕&lt;/p&gt;
-&lt;p&gt;最后得到result=dataRdd5.join(dataRdd9)，分区数为4。注意此处有shuffle。调用join()的时候并不是一次性生成最后的&lt;/p&gt;
-&lt;p&gt;MapPartitionsRDD，而是首先会进行 cogroup()，得到&lt;K, (Iterable[V1], Iterable[V2])&gt;类型的MapPartitionsRDD，然后对 Iterable[V1] 和 Iterable[V2] 做笛卡尔集，最后生成新的MapPartitionsRDD，所以在join后会产生3个RDD。&lt;/p&gt;
+&lt;p&gt;最后得到result=dataRdd5.join(dataRdd9)，分区数为4。注意此处有shuffle。调用join()的时候并不是一次性生成最后的MapPartitionsRDD，而是首先会进行 cogroup()，得到&lt;K, (Iterable[V1], Iterable[V2])&gt;类型的MapPartitionsRDD，然后对 Iterable[V1] 和 Iterable[V2] 做笛卡尔集，最后生成新的MapPartitionsRDD，所以在join后会产生3个RDD。&lt;/p&gt;
 &lt;h3 id=&quot;stage-划分&quot;&gt;stage 划分&lt;/h3&gt;
 &lt;p&gt;根据DAGScheduler的逻辑，首先从最后的finalRDD(本文为result)开始向前递归访问。&lt;/p&gt;
 &lt;p&gt;当到达join时，发现有子RDD(result)的每个分区都要依赖于父RDD(dataRdd5和dataRdd9)的所有分区，所以是shuffleDependency,。于是把join之后的所有RDD划分为一个stage，标记为&lt;strong&gt;stage3&lt;/strong&gt;。&lt;/p&gt;
