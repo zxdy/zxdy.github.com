@@ -1,3 +1,11 @@
+- id: how-to-save-rdd-to-postgresql
+  title: 如何保存spark结果到postgreSQL
+  postedOn: !!str 2015-05-06
+  author: Ario
+  tags:
+    - spark
+  abstract: 在spark的实际使用中，生成的结果集可能还会做为其他流程的数据源，进行再次分析处理，本文主要提供一个将spark结果集持久化到关系型数据库（postgresql）中的思路，毕竟对于小规模的数据，使用关系型数据库的sql处理展现数据比起nosql数据库会更加方便。
+
 - id: spark-job-real-play
   title: spark job物理执行图实战
   postedOn: !!str 2015-04-28
