@@ -22,6 +22,15 @@
     - spark
   abstract: 今天终于有时间把spark的源代码看了下，因为之前一直对spark的任务调度流程比较模糊，而网上关于spark的设计实现文档又不太完整，所以这篇文章主要用于梳理这方面的逻辑关系，并不会对代码的细节实现作过多的讨论，我对scala来说，也只能算个新手，许多复杂的语法和实现，无法太深入解读，只能比较宏观地介绍一下其中的逻辑和目的...
 
+- id: soc-doc
+  title: 综合安全分析
+  postedOn: !!str 2015-03-24
+  author: Ario
+  tags:
+    - spark
+  abstract: 这篇文档主要从五个方面来审计企业内部的信息安全事件，用于发现和防范黑客的入侵，对企业当前的安全风险有直观的统计
+
+
 - id: allow-filtering
   title: ALLOW FILTERING 之谜
   postedOn: !!str 2015-03-13
@@ -123,7 +132,7 @@
   postedOn: !!str 2014-04-14
   author: Ario
   tags:
-    - Hack
+    - 信息安全
   abstract: 为什么要使用虚拟机+tor+vpn的形式来隐藏自己的上网痕迹
 
 - id: locate-exception-line

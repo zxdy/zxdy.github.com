@@ -4,7 +4,7 @@
         <title>RSS feed title</title>
         <link>Homepage link</link>
         <description>RSS feed description</description>
-        <lastBuildDate>Fri, 15 May 2015 00:19:38 +0800</lastBuildDate>
+        <lastBuildDate>Sun, 17 May 2015 23:40:07 +0800</lastBuildDate>
         <language>zh-cn</language>
         
         <item>
@@ -481,6 +481,26 @@ object complexJob {
 &lt;/ol&gt;
 &lt;h2 id=&quot;结束&quot;&gt;结束&lt;/h2&gt;
 &lt;p&gt;本文主要介绍了spark job的一个完整生命周期（抱歉没有画图，有空补），下一篇准备结合一个具体的例子来继续讲一下。目前对stage之间的shuffle连接没有做深入研究，shuffle write在task结束后，但是没有发现task开始时的shuffle read，不知是不是被封装在各个RDD的compute里了。&lt;/p&gt;
+</description>
+        </item>
+        
+        <item>
+            <title>综合安全分析</title>
+            <link>Homepage link/articles/soc-doc.html?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</link>
+            <guid>Homepage link/articles/soc-doc.html</guid>
+            <author>zxdy@vip.qq.com Ario</author>
+            <pubDate>Tue, 24 Mar 2015 00:00:00 +0800</pubDate>
+            <description>&lt;p&gt;今天翻文档的时候，偶然发现自己去年还写过一篇关于信息安全综合分析的审计方案文档草稿，真是不胜唏嘘。&lt;/p&gt;
+&lt;p&gt;这篇文档主要从五个方面来审计企业内部的信息安全事件，用于发现和防范黑客的入侵，对企业当前的安全风险有直观的统计&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;网络入侵&lt;/li&gt;
+&lt;li&gt;账户管理&lt;/li&gt;
+&lt;li&gt;地理资源&lt;/li&gt;
+&lt;li&gt;用户操作&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;写这篇文档的时候参考了许多其他soc日志审计平台的设计思想，但是由于时间和一些其他的原因，并没有细化到具体实现，只能算是一份概要设计草稿。&lt;/p&gt;
+&lt;p&gt;以上，随意感受下就好。&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;http://zxdy-blog.qiniudn.com/%E7%BB%BC%E5%90%88%E5%AE%89%E5%85%A8%E5%88%86%E6%9E%90%E6%96%87%E6%A1%A3part2v1.1.pdf&quot;&gt;综合安全分析方案文档&lt;/a&gt;&lt;/p&gt;
 </description>
         </item>
         
@@ -967,46 +987,6 @@ if __name__ == &#39;__main__&#39;:
 &lt;p&gt;read line: 30.3610920906&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;有意思的是，虽然一次性读入内存效率比line by line读取的效率差，但是假如重复处理同一个文件，一次性读取的总体效率反而高，所以python应该做了类似于缓存的机制。所以当我们用python处理大文本文件的时候需要综合考虑服务器内存，文件处理次数来决定使用哪种方式。&lt;/p&gt;
-</description>
-        </item>
-        
-        <item>
-            <title>python的两种计时方法</title>
-            <link>Homepage link/articles/python-timeit.html?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</link>
-            <guid>Homepage link/articles/python-timeit.html</guid>
-            <author>zxdy@vip.qq.com Ario</author>
-            <pubDate>Tue, 13 Jan 2015 00:00:00 +0800</pubDate>
-            <description>&lt;p&gt;其实我本意是就贴一段代码完事，但又觉得确实有点干巴巴，还是稍微灌点水吧。&lt;/p&gt;
-&lt;p&gt;way1和way2分别代表了两种不同的计时方式，同时也展现了两种不同的用途。&lt;/p&gt;
-&lt;p&gt;way1是使用了timeit包。Python 社区有句俗语：&quot;Python 自己带着电池。&quot; 别自己写计时框架。Python 2.7 具备一个叫做 timeit 的完美计时工具。看demo代码可以发现，它不仅支持对单个方法计时，还支持方法传参，更支持重复计时。我觉得这个计时方法更加适用于测试，特别是性能测试的时候。&lt;/p&gt;
-&lt;p&gt;way2没什么好说的，一种很简单粗暴傻瓜化的计时方法，换种编程语言也是相同的套路。这个计时方法相比way1来说，更加浅显易懂，操作也简单，就是代码量相对较多，不够简洁。但它也不是没有市场，比较适合在python脚本中写日志。&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-python&quot;&gt;#!/usr/bin/env python
-import time
-from timeit import Timer
-def func1(x):
-    sum=0
-    for i in  xrange(x*10000):
-        sum=sum+i
-
-def func2(x,y):
-    sum=0
-    for i in  xrange((x+y)*10000):
-        sum=sum+i
-
-if __name__ == &#39;__main__&#39;:
-    #way1
-    t1=Timer(&quot;func1(2)&quot;,&quot;from __main__ import func1&quot;)
-    t2=Timer(&quot;func2(3,4)&quot;,&quot;from __main__ import func2&quot;)
-    print(t1.timeit(1))
-    print(t2.timeit(1))
-    print(t1.repeat(4,10)) //第一个参数是重复整个测试的次数，第二个参数是每个测试中调用被计时语句的次数
-
-    #way2
-    start = time.clock()
-    func1(2)
-    elapsed = (time.clock() - start)
-    print(&quot;Time used:&quot;, elapsed)
-&lt;/pre&gt;
 </description>
         </item>
         
