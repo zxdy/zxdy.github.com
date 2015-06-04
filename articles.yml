@@ -1,3 +1,13 @@
+- id: unsupported-feature-of-cassandar-spark
+  title: spark cassandraSql之坑
+  postedOn: !!str 2015-05-24
+  author: Ario
+  tags:
+    - spark
+    - cassandra
+  abstract: 简单记录一下在使用cassandra与spark集成时踩到的坑
+
+
 - id: how-to-save-rdd-to-postgresql
   title: 如何保存spark结果到postgreSQL
   postedOn: !!str 2015-05-06
