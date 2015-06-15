@@ -18,7 +18,7 @@
 
 6. 不支持update。考虑新建dataframe代替。
 
-7. spark读取cassandra某个表的并行度由cassandra的物理节点数决定，和spark worker节点数无关。但是SparkContext可以被多个线程使用，这意味着同个Spark Application中的Job可以同时提交到Spark Cluster中，所以可以并行读取不同的表减少整体的等待时间，前提是spark有空闲的资源。
+7. spark读取cassandra某个表的并行度由"spark.cassandra.input.split.size"决定,这个参数会动态计算最后的分区数,和spark worker节点数无关。但是SparkContext可以被多个线程使用，这意味着同个Spark Application中的Job可以同时提交到Spark Cluster中，所以可以并行读取不同的表减少整体的等待时间，前提是spark有空闲的资源。
 
 8. 不支持类似以下的查询
 

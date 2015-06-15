@@ -56,6 +56,7 @@
         <div id="article-content">
             <p>本文主要通过一个具体的spark application来讲述spark job执行过程中关于stage划分，stage提交，task运行的流程。主要也是因为上篇的源码阅读只有纯粹的理论，所以希望能通过这篇实战将理论讲的更清楚一点。</p>
 <!-- toc -->
+
 <ul>
 <li><a href="#rdd">RDD</a><ul>
 <li><a href="#partition">Partition</a></li>
@@ -73,6 +74,9 @@
 </li>
 </ul>
 <!-- toc stop -->
+
+
+
 <h2 id="rdd">RDD</h2>
 <p>RDD，全称为Resilient Distributed Datasets，是一个容错的、并行的数据结构，可以让用户显式地将数据存储到磁盘和内存中，并能控制数据的分区。同时，RDD还提供了一组丰富的操作来操作这些数据。在这些操作中，诸如map、flatMap、filter等转换操作，很好地契合了Scala的集合操作。除此之外，RDD还提供了诸如join、groupBy、reduceByKey等更为方便的操作（注意，reduceByKey是action，而非transformation），以支持常见的数据运算。</p>
 <p>RDD作为数据结构，本质上是一个只读的分区记录集合。一个RDD可以包含多个分区（partition），每个分区就是一个dataset片段。RDD可以相互依赖。</p>
