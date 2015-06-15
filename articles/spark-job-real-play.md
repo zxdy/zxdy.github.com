@@ -40,7 +40,6 @@ RDD作为数据结构，本质上是一个只读的分区记录集合。一个RD
     scala> rangePairs1.partitions.size
     res2: Int = 3   //设置并行度为3之后，RDD rangePairs1 的partition个数也为3
     ```
-    >**More**：spark 在读取 cassandra 表数据时，RDD 的 partition 的数量和cassandra 表分区数无关， 而是取决于cassandra 节点数。但是我们可以在读取完数据后修改partition的数量。
 
  - 修改partition个数。
  
