@@ -56,6 +56,23 @@
         <div id="article-content">
             <p>本文主要通过一个具体的spark application来讲述spark job执行过程中关于stage划分，stage提交，task运行的流程。主要也是因为上篇的源码阅读只有纯粹的理论，所以希望能通过这篇实战将理论讲的更清楚一点。</p>
 <!-- toc -->
+<ul>
+<li><a href="#rdd">RDD</a><ul>
+<li><a href="#partition">Partition</a></li>
+<li><a href="#dependency">Dependency</a></li>
+</ul>
+</li>
+<li><a href="#stage">Stage</a></li>
+<li><a href="#实战">实战</a><ul>
+<li><a href="#流程图">流程图</a></li>
+<li><a href="#代码解读">代码解读</a></li>
+<li><a href="#stage-划分">stage 划分</a></li>
+<li><a href="#stage提交">stage提交</a></li>
+<li><a href="#尾声">尾声</a></li>
+</ul>
+</li>
+</ul>
+<!-- toc stop -->
 <h2 id="rdd">RDD</h2>
 <p>RDD，全称为Resilient Distributed Datasets，是一个容错的、并行的数据结构，可以让用户显式地将数据存储到磁盘和内存中，并能控制数据的分区。同时，RDD还提供了一组丰富的操作来操作这些数据。在这些操作中，诸如map、flatMap、filter等转换操作，很好地契合了Scala的集合操作。除此之外，RDD还提供了诸如join、groupBy、reduceByKey等更为方便的操作（注意，reduceByKey是action，而非transformation），以支持常见的数据运算。</p>
 <p>RDD作为数据结构，本质上是一个只读的分区记录集合。一个RDD可以包含多个分区（partition），每个分区就是一个dataset片段。RDD可以相互依赖。</p>
@@ -89,7 +106,7 @@ res2: Int = 3   //设置并行度为3之后，RDD rangePairs1 的partition个数
 <li><p>修改partition个数。</p>
 <p>下面使用了两种修改partition数量的操作repartition和partitionBy。
 从DebugString来看，partitionBy的操作代价要小于repartition，但是repartition的适用性比partitionBy广，具体怎么用根据实际情况来吧。</p>
-<pre><code class="prettyprint linenums lang-java">1.repartition---
+<pre class="prettyprint linenums lang-java">1.repartition---
 scala&gt; val hashPairs1 = rangePairs1.repartition(6)
 hashPairs1: org.apache.spark.rdd.RDD[Int] = MapPartitionsRDD[4] at repartition at &lt;console&gt;:25
 
@@ -114,7 +131,7 @@ scala&gt; println(hashPairs1.toDebugString)
 (6) ShuffledRDD[4] at partitionBy at &lt;console&gt;:32 []
 +-(3) MapPartitionsRDD[3] at map at &lt;console&gt;:30 []
 |  ParallelCollectionRDD[2] at parallelize at &lt;console&gt;:26 []
-</code></pre>
+</pre>
 </li>
 </ul>
 </li>
@@ -135,10 +152,10 @@ spark 的每一个stage都包含了一个或多个task，task的数量取决于�
 <h2 id="stage">Stage</h2>
 <p>DAGScheduler对Stage的划分是spark任务调度的核心，在上篇 <a href="http://zxdy.github.io/articles/spark-job-logic.html">spark 源码阅读--job提交与执行过程</a> 提到spark划分stage的总体思想是从最后的finallRDD出发反向递归访问逻辑执行图，每遇到宽依赖就断开，把之前沿途的窄依赖都加入同一个stage。于是对于本文开始的那个RDD数据流转图可以进行如下的划分。</p>
 <p><img src="http://7x2wf2.com1.z0.glb.clouddn.com/simple_stage.png" alt="simpe_stage"></p>
-<h2 id="-">实战</h2>
+<h2 id="实战">实战</h2>
 <p>讲了这么多理论知识，下面准备结合一个具体的例子来验证一下spark job提交之后的各个过程。</p>
 <p>首先构造一个稍复杂的spark job。代码如下：</p>
-<pre><code class="prettyprint linenums lang-JAVA">import org.apache.log4j.{Level, Logger}
+<pre class="prettyprint linenums lang-JAVA">import org.apache.log4j.{Level, Logger}
 import org.apache.spark._
 
 object complexJob {
@@ -173,9 +190,9 @@ object complexJob {
     println(result.toDebugString)
   }
 }
-</code></pre>
+</pre>
 <p>执行后打印DebugString如下：</p>
-<pre><code class="prettyprint linenums lang-text">(4) MapPartitionsRDD[11] at join at complexJob.scala:31 []
+<pre class="prettyprint linenums lang-text">(4) MapPartitionsRDD[11] at join at complexJob.scala:31 []
  |  MapPartitionsRDD[10] at join at complexJob.scala:31 []
  |  CoGroupedRDD[9] at join at complexJob.scala:31 []
  +-(3) MapPartitionsRDD[4] at map at complexJob.scala:19 []
@@ -187,7 +204,7 @@ object complexJob {
     |  MapPartitionsRDD[6] at map at complexJob.scala:24 []
     |  ParallelCollectionRDD[5] at parallelize at complexJob.scala:23 []
     |  ParallelCollectionRDD[7] at parallelize at complexJob.scala:27 []
-</code></pre>
+</pre>
 <p>从上面的DebugString中，已经可以获取很多信息包括</p>
 <ol>
 <li>RDD的转换</li>
@@ -195,10 +212,10 @@ object complexJob {
 <li>partition的数量：在RDD前面括号里的数字就代表当前stage最后一个RDD的paritition数量，由此也可知每个stage的task数量</li>
 </ol>
 <p>DebugString有点像oracle的执行计划，虽然我们已经可以根据这个来划分stage，但是并没有太多的细节信息，所以还是想从代码出发，来详细解释一下stage为什么要这么划分，以及stage提交的流程，顺便也可以与DebugString相互验证。</p>
-<h3 id="-">流程图</h3>
+<h3 id="流程图">流程图</h3>
 <p>根据代码，最终的流程图如下：</p>
 <p><img src="http://7x2wf2.com1.z0.glb.clouddn.com/complex_stage.png" alt="compex_stage"></p>
-<h3 id="-">代码解读</h3>
+<h3 id="代码解读">代码解读</h3>
 <p>从整体上看，最后的结果result来自dataRdd5.join(dataRdd9)，所以我们可以首先将整个job拆成A,B两条线，分别对应dataRdd5和dataRdd9的处理流程。</p>
 <ul>
 <li>A线:</li>
@@ -218,7 +235,7 @@ object complexJob {
 <p>B4. dataRdd7 与dataRdd8通过Transformation(union)生成新的UnionRDD(dataRdd9)，分区数为4</p>
 <p>dataRdd9生成完毕</p>
 <p>最后得到result=dataRdd5.join(dataRdd9)，分区数为4。注意此处有shuffle。调用join()的时候并不是一次性生成最后的MapPartitionsRDD，而是首先会进行 cogroup()，得到<K, (Iterable[V1], Iterable[V2])>类型的MapPartitionsRDD，然后对 Iterable[V1] 和 Iterable[V2] 做笛卡尔集，最后生成新的MapPartitionsRDD，所以在join后会产生3个RDD。</p>
-<h3 id="stage-">stage 划分</h3>
+<h3 id="stage-划分">stage 划分</h3>
 <p>根据DAGScheduler的逻辑，首先从最后的finalRDD(本文为result)开始向前递归访问。</p>
 <p>当到达join时，发现有子RDD(result)的每个分区都要依赖于父RDD(dataRdd5和dataRdd9)的所有分区，所以是shuffleDependency,。于是把join之后的所有RDD划分为一个stage，标记为<strong>stage3</strong>。</p>
 <blockquote>
@@ -228,11 +245,11 @@ object complexJob {
 <p>A线继续往前，到zip又遇到依赖，属于两个父RDD(dataRdd1&amp;dataRdd2)的分区对应于一个子RDD(dataRdd3)的分区的情况，判断为narrowDependency，而dataRdd1和dataRdd2之前已经没有别的RDD存在，于是将dataRdd1，dataRdd2，dataRdd3划分为一个新的stage，标记为<strong>stage0</strong>。</p>
 <p>A线已经结束，现在看B线部分。在B线的递归路径中发现有union()，union()是将两个RDD简单合并在一起，并不改变 partition里面的数据。它是一种RangeDependency，属于narrowDependency的一种。继续往前遍历，发现整个B线中都不存在shuffleDependency，所以可以将整个B线划分为新的stage，标记为<strong>stage2</strong>。</p>
 <p>到此对整个job的stage划分已经结束，总共分为4个stage。</p>
-<h3 id="stage-">stage提交</h3>
+<h3 id="stage提交">stage提交</h3>
 <p>stage提交的过程，也就是job执行的过程。根据前一篇的spark源代码解读，DAGScheduler首先会调用finalStage = newStage()进行stage划分，这一步已经在上文完成，那么接下来就是DAGScheduler调用submitStage，提交finalStage。</p>
 <ol>
 <li><p>在本文中例子中的finalStage就是最后的stage3，提交stage3之后，递归查找parentStage，发现stage3依赖于stage1和stage2。</p>
-<pre><code class="prettyprint linenums lang-text"> 15/04/27 19:03:28 INFO DAGScheduler: Registering RDD 2 (zip at complexJob.scala:17)
+<pre class="prettyprint linenums lang-text"> 15/04/27 19:03:28 INFO DAGScheduler: Registering RDD 2 (zip at complexJob.scala:17)
  15/04/27 19:03:28 INFO DAGScheduler: Registering RDD 4 (map at complexJob.scala:19)
  15/04/27 19:03:28 INFO DAGScheduler: Registering RDD 8 (union at complexJob.scala:29)
  15/04/27 19:03:28 INFO DAGScheduler: Got job 0 (foreach at complexJob.scala:32) with 4 output partitions (allowLocal=false)
@@ -240,49 +257,49 @@ object complexJob {
  15/04/27 19:03:28 INFO DAGScheduler: Parents of final stage: List(Stage 1, Stage 2)
  15/04/27 19:03:28 DEBUG DAGScheduler: submitStage(Stage 3)
 15/04/27 19:03:28 DEBUG DAGScheduler: missing: List(Stage 1, Stage 2)
-</code></pre>
+</pre>
 </li>
 <li><p>提交stage1和stage2，将stage3放入waitingStages。</p>
-<pre><code class="prettyprint linenums lang-text"> 15/04/27 19:03:28 DEBUG DAGScheduler: submitStage(Stage 1)
+<pre class="prettyprint linenums lang-text"> 15/04/27 19:03:28 DEBUG DAGScheduler: submitStage(Stage 1)
  15/04/27 19:03:28 DEBUG DAGScheduler: submitStage(Stage 2)
-</code></pre>
+</pre>
 </li>
 <li><p>stage1 发现parentStage：stage0,提交stage0，将stage1放入waitingStages。</p>
-<pre><code class="prettyprint linenums lang-text"> 15/04/27 19:03:28 DEBUG DAGScheduler: submitStage(Stage 1)
+<pre class="prettyprint linenums lang-text"> 15/04/27 19:03:28 DEBUG DAGScheduler: submitStage(Stage 1)
  15/04/27 19:03:28 DEBUG DAGScheduler: missing: List(Stage 0)
  15/04/27 19:03:28 DEBUG DAGScheduler: submitStage(Stage 0)
-</code></pre>
+</pre>
 </li>
 <li><p>stage0没有找到parentStage,可以立即执行，调用submitMissingTasks，生成类型为ShuffleMapTask的tasks，task的数量与stage0中最后一个Rdd partition数量相等为3。</p>
-<pre><code class="prettyprint linenums lang-text"> 15/04/27 19:03:28 DEBUG DAGScheduler: submitStage(Stage 0)
+<pre class="prettyprint linenums lang-text"> 15/04/27 19:03:28 DEBUG DAGScheduler: submitStage(Stage 0)
  15/04/27 19:03:28 DEBUG DAGScheduler: missing: List()
  15/04/27 19:03:28 INFO DAGScheduler: Submitting Stage 0 (ZippedPartitionsRDD2[2] at zip at complexJob.scala:17), which has no missing parents
  15/04/27 19:03:28 DEBUG DAGScheduler: submitMissingTasks(Stage 0)
  15/04/27 19:03:28 INFO DAGScheduler: Submitting 3 missing tasks from Stage 0 (ZippedPartitionsRDD2[2] at zip at complexJob.scala:17)
  15/04/27 19:03:28 DEBUG DAGScheduler: New pending tasks: Set(ShuffleMapTask(0, 2), ShuffleMapTask(0, 1), ShuffleMapTask(0, 0))
  15/04/27 19:03:28 INFO TaskSchedulerImpl: Adding task set 0.0 with 3 tasks
-</code></pre>
+</pre>
 </li>
 <li><p>stage2没有找到parentStage,可以立即执行，调用submitMissingTasks，生成类型为ShuffleMapTask的tasks，task的数量与stage2中最后一个Rdd partition数量相等为4。</p>
-<pre><code class="prettyprint linenums lang-text"> 15/04/27 19:03:28 DEBUG DAGScheduler: submitStage(Stage 2)
+<pre class="prettyprint linenums lang-text"> 15/04/27 19:03:28 DEBUG DAGScheduler: submitStage(Stage 2)
  15/04/27 19:03:28 DEBUG DAGScheduler: missing: List()
  15/04/27 19:03:28 DEBUG DAGScheduler: submitMissingTasks(Stage 2)
  15/04/27 19:03:28 INFO DAGScheduler: Submitting 4 missing tasks from Stage 2 (UnionRDD[8] at union at complexJob.scala:29)
  15/04/27 19:03:28 DEBUG DAGScheduler: New pending tasks: Set(ShuffleMapTask(2, 0), ShuffleMapTask(2, 3), ShuffleMapTask(2, 2), ShuffleMapTask(2, 1))
 15/04/27 19:03:28 INFO TaskSchedulerImpl: Adding task set 2.0 with 4 tasks
-</code></pre>
+</pre>
 </li>
 <li><p>stage0的task完成后通知dagScheduler，当stage0中所有的task都完成后，将stage0的执行结果注册到mapOutputTrackerMaster给下一个被依赖的stage1使用。然后提交等待中的stage1。</p>
-<pre><code class="prettyprint linenums lang-text">15/04/27 19:03:28 INFO Executor: Running task 0.0 in stage 0.0 (TID 0)
+<pre class="prettyprint linenums lang-text">15/04/27 19:03:28 INFO Executor: Running task 0.0 in stage 0.0 (TID 0)
 15/04/27 19:03:28 INFO Executor: Running task 1.0 in stage 0.0 (TID 1)
 15/04/27 19:03:28 INFO Executor: Running task 2.0 in stage 0.0 (TID 2)
 15/04/27 19:03:28 INFO Executor: Finished task 1.0 in stage 0.0 (TID 1). 883 bytes result sent to driver
 15/04/27 19:03:28 INFO Executor: Finished task 2.0 in stage 0.0 (TID 2). 883 bytes result sent to driver
 15/04/27 19:03:28 INFO Executor: Finished task 0.0 in stage 0.0 (TID 0). 883 bytes result sent to driver
-</code></pre>
+</pre>
 </li>
 <li><p>stage2的task全部完成后将结果注册到mapOutputTrackerMaster给下一个被依赖的stage3使用。等待stage1的tasks结束</p>
-<pre><code class="prettyprint linenums lang-text"> 15/04/27 19:03:28 INFO Executor: Running task 0.0 in stage 2.0 (TID 3)
+<pre class="prettyprint linenums lang-text"> 15/04/27 19:03:28 INFO Executor: Running task 0.0 in stage 2.0 (TID 3)
  15/04/27 19:03:29 INFO Executor: Running task 1.0 in stage 2.0 (TID 4)
  15/04/27 19:03:29 INFO Executor: Running task 2.0 in stage 2.0 (TID 5)
  15/04/27 19:03:29 INFO Executor: Running task 3.0 in stage 2.0 (TID 6)
@@ -290,27 +307,27 @@ object complexJob {
  15/04/27 19:03:29 INFO Executor: Finished task 2.0 in stage 2.0 (TID 5). 884 bytes result sent to driver
  15/04/27 19:03:29 INFO Executor: Finished task 0.0 in stage 2.0 (TID 3). 884 bytes result sent to driver
  15/04/27 19:03:29 INFO Executor: Finished task 3.0 in stage 2.0 (TID 6). 884 bytes result sent to driver
-</code></pre>
+</pre>
 </li>
 <li><p>stage0结束之后，stage1调用submitMissingTasks，生成类型为ShuffleMapTask的tasks，task的数量与stage1中最后一个Rdd partition数量相等为3。</p>
-<pre><code class="prettyprint linenums lang-text"> 15/04/27 19:03:29 INFO DAGScheduler: Submitting Stage 1 (MapPartitionsRDD[4] at map at complexJob.scala:19), which is now runnable
+<pre class="prettyprint linenums lang-text"> 15/04/27 19:03:29 INFO DAGScheduler: Submitting Stage 1 (MapPartitionsRDD[4] at map at complexJob.scala:19), which is now runnable
  15/04/27 19:03:29 DEBUG DAGScheduler: submitMissingTasks(Stage 1)
  15/04/27 19:03:29 INFO DAGScheduler: Submitting 3 missing tasks from Stage 1 (MapPartitionsRDD[4] at map at complexJob.scala:19)
  15/04/27 19:03:29 DEBUG DAGScheduler: New pending tasks: Set(ShuffleMapTask(1, 2), ShuffleMapTask(1, 1), ShuffleMapTask(1, 0))
  15/04/27 19:03:29 INFO TaskSchedulerImpl: Adding task set 1.0 with 3 tasks
-</code></pre>
+</pre>
 </li>
 <li><p>stage1的tasks全部完成后将结果注册到mapOutputTrackerMaster给下一个被依赖的stage3使用。</p>
-<pre><code class="prettyprint linenums lang-text"> 15/04/27 19:03:29 INFO Executor: Running task 1.0 in stage 1.0 (TID 8)
+<pre class="prettyprint linenums lang-text"> 15/04/27 19:03:29 INFO Executor: Running task 1.0 in stage 1.0 (TID 8)
  15/04/27 19:03:29 INFO Executor: Running task 0.0 in stage 1.0 (TID 7)
  15/04/27 19:03:29 INFO Executor: Running task 2.0 in stage 1.0 (TID 9)
  15/04/27 19:03:29 INFO Executor: Finished task 1.0 in stage 1.0 (TID 8). 1100 bytes result sent to driver
  15/04/27 19:03:29 INFO Executor: Finished task 2.0 in stage 1.0 (TID 9). 1100 bytes result sent to driver
  15/04/27 19:03:29 INFO Executor: Finished task 0.0 in stage 1.0 (TID 7). 1100 bytes result sent to driver
-</code></pre>
+</pre>
 </li>
 <li><p>stage3的parentStage已经全部结束任务，提交stage3，生成类型为ResultTask的tasks，task的数量与stage3中最后一个Rdd partition数量相等为4。</p>
-<pre><code class="prettyprint linenums lang-text">15/04/27 19:03:29 INFO DAGScheduler: Stage 1 (map at complexJob.scala:19) finished in 0.149 s
+<pre class="prettyprint linenums lang-text">15/04/27 19:03:29 INFO DAGScheduler: Stage 1 (map at complexJob.scala:19) finished in 0.149 s
 15/04/27 19:03:29 INFO DAGScheduler: looking for newly runnable stages
 15/04/27 19:03:29 INFO DAGScheduler: running: Set()
 15/04/27 19:03:29 INFO DAGScheduler: waiting: Set(Stage 3)
@@ -321,19 +338,19 @@ object complexJob {
 15/04/27 19:03:29 INFO DAGScheduler: Submitting 4 missing tasks from Stage 3 (MapPartitionsRDD[11] at join at complexJob.scala:31)
 15/04/27 19:03:29 DEBUG DAGScheduler: New pending tasks: Set(ResultTask(3, 2), ResultTask(3, 0), ResultTask(3, 1), ResultTask(3, 3))
 15/04/27 19:03:29 INFO TaskSchedulerImpl: Adding task set 3.0 with 4 tasks
-</code></pre>
+</pre>
 </li>
 <li><p>stage3的task的结束时判断此task是不是最后一个task，如果是则job结束。</p>
-<pre><code class="prettyprint linenums lang-text">--output result on each task finish
+<pre class="prettyprint linenums lang-text">--output result on each task finish
 15/04/27 19:03:29 INFO Executor: Finished task 1.0 in stage 3.0 (TID 11). 886 bytes result sent to driver
 15/04/27 19:03:29 INFO Executor: Finished task 2.0 in stage 3.0 (TID 12). 886 bytes result sent to driver
 15/04/27 19:03:29 INFO Executor: Finished task 3.0 in stage 3.0 (TID 13). 886 bytes result sent to driver
 15/04/27 19:03:29 INFO Executor: Finished task 0.0 in stage 3.0 (TID 10). 886 bytes result sent to driver
 15/04/27 19:03:29 INFO DAGScheduler: Job 0 finished: foreach at complexJob.scala:32, took 1.004075 s
-</code></pre>
+</pre>
 </li>
 </ol>
-<h3 id="-">尾声</h3>
+<h3 id="尾声">尾声</h3>
 <p>本文对于spark job执行过程中关于stage划分，stage提交，task运行的流程已经全部讲解完毕。
 由于本人才疏学浅以及时间的关系，如有错漏之处，请指出来我会重新修改。</p>
 
