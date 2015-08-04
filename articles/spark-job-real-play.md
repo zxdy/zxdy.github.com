@@ -346,7 +346,7 @@ stage提交的过程，也就是job执行的过程。根据前一篇的spark源�
 由于本人才疏学浅以及时间的关系，如有错漏之处，请指出来我会重新修改。
 
 
-  [1]: http://zxdy-blog.qiniudn.com/RDD.png
+  [1]: http://7x2wf2.com1.z0.glb.clouddn.com/RDD.png
   [2]: http://zxdy.github.io/articles/spark-job-logic.html
-  [3]: http://zxdy-blog.qiniudn.com/simple_stage.png
-  [4]: http://zxdy-blog.qiniudn.com/complex_stage.png
+  [3]: http://7x2wf2.com1.z0.glb.clouddn.com/simple_stage.png
+  [4]: http://7x2wf2.com1.z0.glb.clouddn.com/complex_stage.png

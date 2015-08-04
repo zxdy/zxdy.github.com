@@ -118,12 +118,12 @@ toad看这个最方便，可以直接显示执行顺序。如图中的12345678�
 3. [oracle 11g 架构图][9]
 
 
-  [1]: http://zxdy-blog.qiniudn.com/sql%20plan.png
+  [1]: http://7x2wf2.com1.z0.glb.clouddn.com/sql%20plan.png
   [2]: https://docs.oracle.com/database/121/TGSQL/tgsql_profiles.htm#TGSQL599
   [3]: https://docs.oracle.com/database/121/TGSQL/tgsql_spm.htm#TGSQL617
-  [4]: http://zxdy-blog.qiniudn.com/sqlplan_toad.png
-  [5]: http://zxdy-blog.qiniudn.com/sqlplan_sqldeveloper.png
-  [6]: http://zxdy-blog.qiniudn.com/tree.png
+  [4]: http://7x2wf2.com1.z0.glb.clouddn.com/sqlplan_toad.png
+  [5]: http://7x2wf2.com1.z0.glb.clouddn.com/sqlplan_sqldeveloper.png
+  [6]: http://7x2wf2.com1.z0.glb.clouddn.com/tree.png
   [7]: http://t.askmaclean.com/thread-3237-1-1.html
   [8]: http://blog.itpub.net/22664653/viewspace-701711/
   [9]: http://files.cnblogs.com/files/kerrycode/ORACLE_11g_ARCHITECTURE.pdf

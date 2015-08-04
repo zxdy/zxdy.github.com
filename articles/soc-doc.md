@@ -13,4 +13,4 @@
 
 [综合安全分析方案文档][1]
 
-  [1]: http://zxdy-blog.qiniudn.com/%E7%BB%BC%E5%90%88%E5%AE%89%E5%85%A8%E5%88%86%E6%9E%90%E6%96%87%E6%A1%A3part2v1.1.pdf
+  [1]: http://7x2wf2.com1.z0.glb.clouddn.com/%E7%BB%BC%E5%90%88%E5%AE%89%E5%85%A8%E5%88%86%E6%9E%90%E6%96%87%E6%A1%A3part2v1.1.pdf

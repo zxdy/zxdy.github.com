@@ -79,7 +79,7 @@ val testdata=sqlContext.jsonFile(&quot;people.json&quot;)
 <li>别忘了jdbc包</li>
 </ol>
 <p><strong>代码：</strong></p>
-<pre class="prettyprint linenums lang-java">def main(args: Array[String]) {
+<pre><code class="prettyprint linenums lang-java">def main(args: Array[String]) {
     ....
     val testdata=sqlContext.jsonFile(&quot;people.json&quot;)
     testdata.repartition(4).mapPartitions(saveToPostgres).collect()
@@ -103,7 +103,7 @@ private def insertRow(row:Row,stmt:PreparedStatement): Unit ={
     stmt.setString(2,name)
     stmt.executeUpdate()
 }
-</pre>
+</code></pre>
 <p>最后</p>
 <p>还有没有更好的方法？从效率上讲，导数据到数据库最快的应该是通过批量load的方法（postgresql的copy api），像demo中的方式虽然做到了并行，但是本质还是一条条记录插入，速度肯定不如批量从文本导入。spark的saveAsTextFile可以用于生成文本文件，但它是一个action方法，所以要等到文本生成完才能导数据，这样一来的话，之后的事情其实跟spark已经关系不大了。只要新写个程序，将spark生成的文本拆分然后并行load即可。个人感觉，还是推荐这种方式，耦合性低，扩展性好，效率也高，而且对于异常数据的处理也都可以交给jdbc完成。</p>
 

@@ -81,9 +81,9 @@
 <li><p>spark读取cassandra某个表的并行度由&quot;spark.cassandra.input.split.size&quot;决定,这个参数会动态计算最后的分区数,和spark worker节点数无关。但是SparkContext可以被多个线程使用，这意味着同个Spark Application中的Job可以同时提交到Spark Cluster中，所以可以并行读取不同的表减少整体的等待时间，前提是spark有空闲的资源。</p>
 </li>
 <li><p>不支持类似以下的查询</p>
-<pre class="prettyprint linenums lang-SQL"> cc.cassandraSql(&quot;select a.* from test.stackoverflow as a&quot;)
+<pre><code class="prettyprint linenums lang-SQL"> cc.cassandraSql(&quot;select a.* from test.stackoverflow as a&quot;)
  cc.cassandraSql(&quot;select * from test.stackoverflow as a where k_part_two in(select value from test.stackoverflow)&quot;)
-</pre>
+</code></pre>
 </li>
 <li>sparksql 语句中对子查询和表名尽量设置别名。</li>
 </ol>

@@ -58,12 +58,12 @@
         <div id="article-content">
             <p>在任何一样计算机软件产品中，当我们需要考虑其性能的时候，往往都会从CPU，IO，Network这三个方面考虑。CPU代表着处理问题的能力，IO代表着存储的吞吐能力，Network代表着数据传输的能力。oracle当然也不例外。</p>
 <p>下图反映的是一个应用程序总体的响应时间的分布情况。用户在前端发出数据的请求之后，经过网络层，到达数据库服务器。数据库服务器接收请求，然后对SQL进行语法语义分析，然后生成执行计划，接着执行sql，取得数据最后再次经过网络层返回到前端展现给用户。</p>
-<p><img src="http://zxdy-blog.qiniudn.com/bottle-neck-of-oracle.png" alt="bottle-neck-of-oracle"></p>
+<p><img src="http://7x2wf2.com1.z0.glb.clouddn.com/bottle-neck-of-oracle.png" alt="bottle-neck-of-oracle"></p>
 <p>很显然 <strong>oracle的处理时间=cpu处理时间+[资源等待时间+Disk IO 等待时间]</strong>。</p>
 <p>根据以上公式，我们可以发现只要能有效地利用cpu资源和降低等待时间就可以提高数据库的性能，使它处理得更快。</p>
 <p>这篇文章主要关注oracle sql在cpu上的性能优化。个人感觉相比等待上的优化简单一些，等待很多时候涉及到并发，资源争用，数据块等知识，优化也更加复杂不好下手。</p>
 <p><strong>那么问题来了：</strong></p>
-<h2 id="1-首先，怎么查看cpu信息">1. 首先，怎么查看CPU信息</h2>
+<h2 id="1-cpu-">1. 首先，怎么查看CPU信息</h2>
 <p>CPU的多少在很大程度上（质量也是很重要滴）决定了数据库性能的好坏。越多的CPU，可以并发的数目就越多。</p>
 <ul>
 <li><p>用系统命令查看。这里我默认认为oracle是安装在linux服务器上，当然装在windows上的不是没有，只是略奇葩了。</p>
@@ -78,13 +78,13 @@
 <ul>
 <li>awr报告。在awr中会有cpu相关的各种报告，包括硬件信息以及更重要的性能信息。关于cpu的性能分析我会在后面展开。下面这张图展现了当前实例使用的cpu硬件信息。</li>
 </ul>
-<p><img src="http://zxdy-blog.qiniudn.com/awr_cpu.png" alt="awr cpu"></p>
+<p><img src="http://7x2wf2.com1.z0.glb.clouddn.com/awr_cpu.png" alt="awr cpu"></p>
 <blockquote>
 <p>CPUs: 逻辑cpu数
 Cores: cpu核数
 Sockets: 物理cpu数</p>
 </blockquote>
-<h2 id="2-怎么看cpu的性能">2. 怎么看CPU的性能</h2>
+<h2 id="2-cpu-">2. 怎么看CPU的性能</h2>
 <p>上面的CPU硬件信息只是帮助我们有个初步的概念，如果说你的数据库性能很差，CPU又很烂，很烂还没几个，那你真的该先换CPU了。。</p>
 <p>换完CPU，我们先来了解下下面这两个概念：</p>
 <ul>
@@ -92,9 +92,9 @@ Sockets: 物理cpu数</p>
 <li>instance cpu</li>
 </ul>
 <p>在AWR报告中会有这样两个不同的分类，像是这样</p>
-<p><img src="http://zxdy-blog.qiniudn.com/awr_cpu.png" alt="host cpu"></p>
+<p><img src="http://7x2wf2.com1.z0.glb.clouddn.com/awr_cpu.png" alt="host cpu"></p>
 <p>还有这样</p>
-<p><img src="http://zxdy-blog.qiniudn.com/instance_cpu.png" alt="instance cpu"></p>
+<p><img src="http://7x2wf2.com1.z0.glb.clouddn.com/instance_cpu.png" alt="instance cpu"></p>
 <p>它们其实是分别代表了服务器cpu的负载和oracle实例的负载情况。</p>
 <p>对于host cpu：</p>
 <ul>
@@ -115,12 +115,12 @@ Instance</li>
 <ol>
 <li>AWR SQL ordered by Elapsed Time：</li>
 </ol>
-<p><img src="http://zxdy-blog.qiniudn.com/sql_order_by_elapsed_time.png" alt="AWR SQL ordered by Elapsed Time"></p>
+<p><img src="http://7x2wf2.com1.z0.glb.clouddn.com/sql_order_by_elapsed_time.png" alt="AWR SQL ordered by Elapsed Time"></p>
 <blockquote>
 <p>%CPU - CPU Time as a percentage of Elapsed Time -&gt; 这个语句耗费的DB TIME里CPU TIME占多少比例 -&gt; 这个语句是否是CPU敏感的</p>
 </blockquote>
 <p>2.AWR SQL ordered by CPU Time：</p>
-<p><img src="http://zxdy-blog.qiniudn.com/sql_order_by_cpu_time.png" alt="AWR SQL order by cpu time"></p>
+<p><img src="http://7x2wf2.com1.z0.glb.clouddn.com/sql_order_by_cpu_time.png" alt="AWR SQL order by cpu time"></p>
 <blockquote>
 <p>第一列CPU TIME统计这个sql总共在快照时间内总共花费的cpu时间，在这个值比较高的情况下，如果相应的%CPU值也很高， 说明这个sql在cpu上的负载很高，需要考虑优化。</p>
 </blockquote>

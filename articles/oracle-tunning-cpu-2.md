@@ -62,6 +62,6 @@ Merge Join 是先将关联表的关联列各自做排序，然后从各自的排
 
 
   [1]: http://zxdy.github.io/articles/oracle-tunning-cpu-1.html
-  [2]: http://zxdy-blog.qiniudn.com/hard_prase.png
-  [3]: http://zxdy-blog.qiniudn.com/bind_var.png
+  [2]: http://7x2wf2.com1.z0.glb.clouddn.com/hard_prase.png
+  [3]: http://7x2wf2.com1.z0.glb.clouddn.com/bind_var.png
   [4]: http://blog.csdn.net/tianlesoftware/article/details/5826546

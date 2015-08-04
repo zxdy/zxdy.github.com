@@ -4,878 +4,97 @@
         <title>RSS feed title</title>
         <link>Homepage link</link>
         <description>RSS feed description</description>
-        <lastBuildDate>Mon, 15 Jun 2015 14:28:45 +0800</lastBuildDate>
+        <lastBuildDate>Tue, 04 Aug 2015 20:26:46 +0800</lastBuildDate>
         <language>zh-cn</language>
         
         <item>
             <title>spark cassandraSql之坑</title>
-            <link>Homepage link/articles/unsupported-feature-of-cassandar-spark.html?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</link>
+            <link>Homepage link/articles/unsupported-feature-of-cassandar-spark.html?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss</link>
             <guid>Homepage link/articles/unsupported-feature-of-cassandar-spark.html</guid>
             <author>zxdy@vip.qq.com Ario</author>
             <pubDate>Sun, 24 May 2015 00:00:00 +0800</pubDate>
-            <description>&lt;p&gt;简单记录一下在使用cassandra与spark集成时踩到的坑&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;p&gt;cassandra建表时注意全部使用小写，否则在使用cassandrasql时会抛错（这不科学。。）&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;Exception in thread &quot;main&quot; java.util.NoSuchElementException: key not found:&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;尽量不要使用decimal，否则会抛出错误。而使用int或者是double，基本已经够用。 &lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;Java.lang.ClassCastException: java.math.BigDecimal cannot be cast to org.apache.spark.sql.types.Decimal&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;不能一次使用多表关联，仅支持两表关联。（在sparksql的测试用例中发现三表关联的例子，但是我在实际使用中始终会报错，为了不引起麻烦还是将多表关联拆分成两两关联进行处理）&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;条件查询时，谓词列值为null的行不会被查询，必须要加上 is null或is not null&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;不支持nvl，decode，但是可以用case when 或者if代替。&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-SQL&quot;&gt; cc.cassandraSql(&quot;select case when d_value is NULL then 1 else d_value end as d_value from test.stackoverflow&quot;)
-&lt;/pre&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;不支持update。考虑新建dataframe代替。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;spark读取cassandra某个表的并行度由&quot;spark.cassandra.input.split.size&quot;决定,这个参数会动态计算最后的分区数,和spark worker节点数无关。但是SparkContext可以被多个线程使用，这意味着同个Spark Application中的Job可以同时提交到Spark Cluster中，所以可以并行读取不同的表减少整体的等待时间，前提是spark有空闲的资源。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;不支持类似以下的查询&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-SQL&quot;&gt; cc.cassandraSql(&quot;select a.* from test.stackoverflow as a&quot;)
- cc.cassandraSql(&quot;select * from test.stackoverflow as a where k_part_two in(select value from test.stackoverflow)&quot;)
-&lt;/pre&gt;
-&lt;/li&gt;
-&lt;li&gt;sparksql 语句中对子查询和表名尽量设置别名。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;&lt;a href=&quot;https://github.com/apache/spark/blob/master/sql/catalyst/src/main/scala/org/apache/spark/sql/catalyst/SqlParser.scala&quot;&gt;sparksql 关键字&lt;/a&gt;&lt;/p&gt;
-</description>
+            <description>简单记录一下在使用cassandra与spark集成时踩到的坑</description>
         </item>
         
         <item>
             <title>如何保存spark结果到postgreSQL</title>
-            <link>Homepage link/articles/how-to-save-rdd-to-postgresql.html?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</link>
+            <link>Homepage link/articles/how-to-save-rdd-to-postgresql.html?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss</link>
             <guid>Homepage link/articles/how-to-save-rdd-to-postgresql.html</guid>
             <author>zxdy@vip.qq.com Ario</author>
             <pubDate>Wed, 06 May 2015 00:00:00 +0800</pubDate>
-            <description>&lt;p&gt;在spark的实际使用中，生成的结果集可能还会做为其他流程的数据源，进行再次分析处理，本文主要提供一个将spark结果集持久化到关系型数据库（postgresql）中的思路，毕竟对于小规模的数据，使用关系型数据库的sql处理展现数据比起nosql数据库会更加方便。&lt;/p&gt;
-&lt;p&gt;以spark自带的people.json为例，首先用它生成一个dataframe&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-JAVA&quot;&gt;//people.json
-{&quot;name&quot;:&quot;Michael&quot;}
-{&quot;name&quot;:&quot;Andy&quot;, &quot;age&quot;:30}
-{&quot;name&quot;:&quot;Justin&quot;, &quot;age&quot;:19}
-//生成dataframe
-val testdata=sqlContext.jsonFile(&quot;people.json&quot;)
-&lt;/pre&gt;
-&lt;p&gt;现在我们有了一个类型为dataframe的testdata，假设这个就是处理到最后的结果集，那么如何将它保存到数据库呢？一个比较简单的想法是轮询testdata的所有rows，然后将每一个row中的值插入到数据库。&lt;/p&gt;
-&lt;p&gt;但是带来一个问题是，假如结果集很大，那这个单线程方案的效率就比较值得商榷了，最后的瓶颈很可能是出现在最后的数据库插入上。所以要想办法将其并行。&lt;/p&gt;
-&lt;p&gt;于是我想到spark的数据处理本身就是并行的，最后的结果集是按照分区分开生成，所以我们可以不用等最后完整的结果集生成之后再去存数据库，而是可以在每一个分区数据生成时就插数据，从而实现了存数据库的并行。 &lt;/p&gt;
-&lt;p&gt;但是在此之前，我们还需要考虑并行度的问题。因为数据库的连接数是有限制的，而RDD的最后分区数可能很大，假如一个分区就有一个数据库连接的话，最后会导致连接数不足而插入失败。所以在插入数据库之前，我们首先要修改RDD的分区数，保证它在一个合理的范围内，一般来说50个左右。&lt;/p&gt;
-&lt;p&gt;关于如何修改分区个数，在前一篇&lt;a href=&quot;http://zxdy.github.io/articles/spark-job-real-play.html&quot;&gt;spark job物理执行图实战&lt;/a&gt;中，已经提到过修改分区个数的方法&lt;strong&gt;repartition&lt;/strong&gt;，在此就不做过多介绍了。&lt;/p&gt;
-&lt;p&gt;下面是个简单的demo。要注意几点&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;demo中首先将testdata的分区数修改为4，然后调用mapPartitions对每个分区执行saveToPostgres方法，所以最终会有4个数据库连接。&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;为什么有个collect()尾巴:因为mapPartitions只是个Transformation，而spark application job的触发是需要通过action来完成，光有mapPartitions还不够。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;这个demo比较简陋，没有考虑异常处理情况，在本文所用的数据源people.json中，有一行没有age，所以会抛空指针错误，要想正常运行的话，需要在people.json中补上age值。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;记得先在postgresql上新建一个对应的表&lt;/li&gt;
-&lt;li&gt;别忘了jdbc包&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;&lt;strong&gt;代码：&lt;/strong&gt;&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-java&quot;&gt;def main(args: Array[String]) {
-    ....
-    val testdata=sqlContext.jsonFile(&quot;people.json&quot;)
-    testdata.repartition(4).mapPartitions(saveToPostgres).collect()
-}
-
-private def saveToPostgres(rows:Iterator[Row]): Iterator[Row] ={
-    val url = &quot;jdbc:postgresql://localhost/postgres&quot;
-    val user = &quot;postgres&quot;
-    val password = &quot;1234&quot;
-    val con = DriverManager.getConnection(url, user, password)
-    val sqlstr = &quot;INSERT INTO public.people(age,name) VALUES(?,?)&quot;
-    val stmt = con.prepareStatement(sqlstr)
-    rows.foreach(insertRow(_,stmt))
-    rows
-  }
-
-private def insertRow(row:Row,stmt:PreparedStatement): Unit ={
-    var age=row.get(0).toString.toInt
-    var name=row.get(1).toString
-    stmt.setInt(1,age)
-    stmt.setString(2,name)
-    stmt.executeUpdate()
-}
-&lt;/pre&gt;
-&lt;p&gt;最后&lt;/p&gt;
-&lt;p&gt;还有没有更好的方法？从效率上讲，导数据到数据库最快的应该是通过批量load的方法（postgresql的copy api），像demo中的方式虽然做到了并行，但是本质还是一条条记录插入，速度肯定不如批量从文本导入。spark的saveAsTextFile可以用于生成文本文件，但它是一个action方法，所以要等到文本生成完才能导数据，这样一来的话，之后的事情其实跟spark已经关系不大了。只要新写个程序，将spark生成的文本拆分然后并行load即可。个人感觉，还是推荐这种方式，耦合性低，扩展性好，效率也高，而且对于异常数据的处理也都可以交给jdbc完成。&lt;/p&gt;
-</description>
+            <description>在spark的实际使用中，生成的结果集可能还会做为其他流程的数据源，进行再次分析处理，本文主要提供一个将spark结果集持久化到关系型数据库（postgresql）中的思路，毕竟对于小规模的数据，使用关系型数据库的sql处理展现数据比起nosql数据库会更加方便。</description>
         </item>
         
         <item>
             <title>spark job物理执行图实战</title>
-            <link>Homepage link/articles/spark-job-real-play.html?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</link>
+            <link>Homepage link/articles/spark-job-real-play.html?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss</link>
             <guid>Homepage link/articles/spark-job-real-play.html</guid>
             <author>zxdy@vip.qq.com Ario</author>
             <pubDate>Tue, 28 Apr 2015 00:00:00 +0800</pubDate>
-            <description>&lt;p&gt;本文主要通过一个具体的spark application来讲述spark job执行过程中关于stage划分，stage提交，task运行的流程。主要也是因为上篇的源码阅读只有纯粹的理论，所以希望能通过这篇实战将理论讲的更清楚一点。&lt;/p&gt;
-&lt;!-- toc --&gt;
-
-
-&lt;h2 id=&quot;rdd&quot;&gt;RDD&lt;/h2&gt;
-&lt;p&gt;RDD，全称为Resilient Distributed Datasets，是一个容错的、并行的数据结构，可以让用户显式地将数据存储到磁盘和内存中，并能控制数据的分区。同时，RDD还提供了一组丰富的操作来操作这些数据。在这些操作中，诸如map、flatMap、filter等转换操作，很好地契合了Scala的集合操作。除此之外，RDD还提供了诸如join、groupBy、reduceByKey等更为方便的操作（注意，reduceByKey是action，而非transformation），以支持常见的数据运算。&lt;/p&gt;
-&lt;p&gt;RDD作为数据结构，本质上是一个只读的分区记录集合。一个RDD可以包含多个分区（partition），每个分区就是一个dataset片段。RDD可以相互依赖。&lt;/p&gt;
-&lt;p&gt;如图是一个比较简单的RDD数据流转图，P1,P2 代表各个RDD内的分区。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;http://zxdy-blog.qiniudn.com/RDD.png&quot; alt=&quot;RDD&quot;&gt;&lt;/p&gt;
-&lt;p&gt;总结：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;它是不变的数据结构存储&lt;/li&gt;
-&lt;li&gt;它是支持跨集群的分布式数据结构&lt;/li&gt;
-&lt;li&gt;可以根据数据记录的key对结构进行分区&lt;/li&gt;
-&lt;li&gt;提供了粗粒度的操作，且这些操作都支持分区&lt;/li&gt;
-&lt;li&gt;它将数据存储在内存中，从而提供了低延迟性&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&quot;partition&quot;&gt;Partition&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;什么是partition&lt;/p&gt;
-&lt;p&gt;每个 partition 就是一个RDD的dataset片段，他支持比RDD更细粒度的操作&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;RDD 中有几个partition&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;初始由并行度决定。&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-java&quot;&gt;scala&gt; val data1=Array(1,2,3,4,5,6)
-data1: Array[Int] = Array(1, 2, 3, 4, 5, 6)
-
-scala&gt; val rangePairs1 = sc.parallelize(data1, 3)
-rangePairs1: org.apache.spark.rdd.RDD[Int] = ParallelCollectionRDD[0] at parallelize at &lt;console&gt;:23
-scala&gt; rangePairs1.partitions.size
-res2: Int = 3   //设置并行度为3之后，RDD rangePairs1 的partition个数也为3
-&lt;/pre&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;修改partition个数。&lt;/p&gt;
-&lt;p&gt;下面使用了两种修改partition数量的操作repartition和partitionBy。
-从DebugString来看，partitionBy的操作代价要小于repartition，但是repartition的适用性比partitionBy广，具体怎么用根据实际情况来吧。&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-java&quot;&gt;1.repartition---
-scala&gt; val hashPairs1 = rangePairs1.repartition(6)
-hashPairs1: org.apache.spark.rdd.RDD[Int] = MapPartitionsRDD[4] at repartition at &lt;console&gt;:25
-
-scala&gt; hashPairs1.partitions.size
-res0: Int = 6
-
-scala&gt; println(hashPairs1.toDebugString)
-(6) MapPartitionsRDD[21] at repartition at &lt;console&gt;:25 []
-|  CoalescedRDD[20] at repartition at &lt;console&gt;:25 []
-|  ShuffledRDD[19] at repartition at &lt;console&gt;:25 []
-+-(3) MapPartitionsRDD[18] at repartition at &lt;console&gt;:25 []
-|  ParallelCollectionRDD[17] at parallelize at &lt;console&gt;:23 []
-
-2.partitionBy----
-scala&gt;  val hashPairs1 = rangePairs1.partitionBy(new HashPartitioner(6))
-hashPairs1: org.apache.spark.rdd.RDD[(Int, Char)] = ShuffledRDD[1] at partitionBy at &lt;console&gt;:28
-
-scala&gt; hashPairs1.partitions.size
-res0: Int = 6
-
-scala&gt; println(hashPairs1.toDebugString)
-(6) ShuffledRDD[4] at partitionBy at &lt;console&gt;:32 []
-+-(3) MapPartitionsRDD[3] at map at &lt;console&gt;:30 []
-|  ParallelCollectionRDD[2] at parallelize at &lt;console&gt;:26 []
-&lt;/pre&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;partition 与 task 关系
-spark 的每一个stage都包含了一个或多个task，task的数量取决于每个stage中最后一个RDD的partition数量。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&quot;dependency&quot;&gt;Dependency&lt;/h3&gt;
-&lt;p&gt;RDD 本身的依赖关系由 transformation() 生成的每一个 RDD 本身语义决定，每个RDD的getDependencies()定义RDD之间的数据依赖关系。&lt;/p&gt;
-&lt;p&gt;RDD 中 partition 依赖关系分为 NarrowDependency（窄依赖） 和 ShuffleDependency（宽依赖）&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;窄依赖&lt;/strong&gt; 指父RDD的每一个分区最多被一个子RDD的分区所用，表现为&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;一个父RDD的分区对应于一个子RDD的分区&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;两个父RDD的分区对应于一个子RDD 的分区。&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;strong&gt;宽依赖&lt;/strong&gt; 指子RDD的每个分区都要依赖于父RDD的所有分区，&lt;/p&gt;
-&lt;h2 id=&quot;stage&quot;&gt;Stage&lt;/h2&gt;
-&lt;p&gt;DAGScheduler对Stage的划分是spark任务调度的核心，在上篇 &lt;a href=&quot;http://zxdy.github.io/articles/spark-job-logic.html&quot;&gt;spark 源码阅读--job提交与执行过程&lt;/a&gt; 提到spark划分stage的总体思想是从最后的finallRDD出发反向递归访问逻辑执行图，每遇到宽依赖就断开，把之前沿途的窄依赖都加入同一个stage。于是对于本文开始的那个RDD数据流转图可以进行如下的划分。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;http://zxdy-blog.qiniudn.com/simple_stage.png&quot; alt=&quot;simpe_stage&quot;&gt;&lt;/p&gt;
-&lt;h2 id=&quot;实战&quot;&gt;实战&lt;/h2&gt;
-&lt;p&gt;讲了这么多理论知识，下面准备结合一个具体的例子来验证一下spark job提交之后的各个过程。&lt;/p&gt;
-&lt;p&gt;首先构造一个稍复杂的spark job。代码如下：&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-JAVA&quot;&gt;import org.apache.log4j.{Level, Logger}
-import org.apache.spark._
-
-object complexJob {
-  def main(args: Array[String]) {
-    //开启debug日志
-    Logger.getLogger(&quot;org&quot;).setLevel(Level.DEBUG)
-    Logger.getLogger(&quot;akka&quot;).setLevel(Level.DEBUG)
-    val sc = new SparkContext(&quot;local[3]&quot;, &quot;ComplexJob test&quot;)
-
-    val data1 = Array[Int](1, 2, 3, 4, 5, 4, 3, 2, 1)
-    val data2 = Array[Char](&#39;a&#39;, &#39;b&#39;, &#39;c&#39;, &#39;d&#39;, &#39;e&#39;, &#39;f&#39;, &#39;g&#39;, &#39;h&#39;, &#39;i&#39;)
-
-    val dataRdd1 = sc.parallelize(data1, 3)
-    val dataRdd2 = sc.parallelize(data2, 3)
-
-    val dataRdd3 = dataRdd1.zip(dataRdd2)
-    val dataRdd4 = dataRdd3.groupByKey()
-    val dataRdd5 = dataRdd4.map(i =&gt; (i._1 + 1, i._2))
-
-    val data3 = Array[(Int, String)]((1, &quot;A&quot;), (2, &quot;B&quot;),
-      (3, &quot;C&quot;), (4, &quot;D&quot;))
-    val dataRdd6 = sc.parallelize(data3, 2)
-    val dataRdd7 = dataRdd6.map(x =&gt; (x._1, x._2.charAt(0)))
-
-    val data4 = Array[(Int, Char)]((1, &#39;X&#39;), (2, &#39;Y&#39;))
-    val dataRdd8 = sc.parallelize(data4, 2)
-
-    val dataRdd9 = dataRdd7.union(dataRdd8)
-
-    val result = dataRdd5.join(dataRdd9)
-    result.foreach(println)
-    println(result.toDebugString)
-  }
-}
-&lt;/pre&gt;
-&lt;p&gt;执行后打印DebugString如下：&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-text&quot;&gt;(4) MapPartitionsRDD[11] at join at complexJob.scala:31 []
- |  MapPartitionsRDD[10] at join at complexJob.scala:31 []
- |  CoGroupedRDD[9] at join at complexJob.scala:31 []
- +-(3) MapPartitionsRDD[4] at map at complexJob.scala:19 []
- |  |  ShuffledRDD[3] at groupByKey at complexJob.scala:18 []
- |  +-(3) ZippedPartitionsRDD2[2] at zip at complexJob.scala:17 []
- |     |  ParallelCollectionRDD[0] at parallelize at complexJob.scala:14 []
- |     |  ParallelCollectionRDD[1] at parallelize at complexJob.scala:15 []
- +-(4) UnionRDD[8] at union at complexJob.scala:29 []
-    |  MapPartitionsRDD[6] at map at complexJob.scala:24 []
-    |  ParallelCollectionRDD[5] at parallelize at complexJob.scala:23 []
-    |  ParallelCollectionRDD[7] at parallelize at complexJob.scala:27 []
-&lt;/pre&gt;
-&lt;p&gt;从上面的DebugString中，已经可以获取很多信息包括&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;RDD的转换&lt;/li&gt;
-&lt;li&gt;stage的划分：每一个缺口的同级可以分为一个stage&lt;/li&gt;
-&lt;li&gt;partition的数量：在RDD前面括号里的数字就代表当前stage最后一个RDD的paritition数量，由此也可知每个stage的task数量&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;DebugString有点像oracle的执行计划，虽然我们已经可以根据这个来划分stage，但是并没有太多的细节信息，所以还是想从代码出发，来详细解释一下stage为什么要这么划分，以及stage提交的流程，顺便也可以与DebugString相互验证。&lt;/p&gt;
-&lt;h3 id=&quot;流程图&quot;&gt;流程图&lt;/h3&gt;
-&lt;p&gt;根据代码，最终的流程图如下：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;http://zxdy-blog.qiniudn.com/complex_stage.png&quot; alt=&quot;compex_stage&quot;&gt;&lt;/p&gt;
-&lt;h3 id=&quot;代码解读&quot;&gt;代码解读&lt;/h3&gt;
-&lt;p&gt;从整体上看，最后的结果result来自dataRdd5.join(dataRdd9)，所以我们可以首先将整个job拆成A,B两条线，分别对应dataRdd5和dataRdd9的处理流程。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;A线:&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;A1. 数组data1生成类型为ParallelCollectionRDD的dataRdd1，分区数为3。&lt;/p&gt;
-&lt;p&gt;A2. 数组data2生成类型为ParallelCollectionRDD的dataRdd2，分区数为3。&lt;/p&gt;
-&lt;p&gt;A3. 将dataRdd1和dataRdd2通过Transformation(zip)生成新的ZipPartitionsRDD(dataRdd3)。zip是一种变形的map，可以将两个数组根据相同的下标map成一个新的数组结构[(key1,value1),(key2,value2)..(keyN,valueN)]。要注意的是两个RDD的partition数必须相等，否则不能zip。&lt;/p&gt;
-&lt;p&gt;A4. dataRdd3通过Transformation(groupBykey)生成ShuffledRDD(dataRdd4)。注意此处有shuffle。&lt;/p&gt;
-&lt;p&gt;A5. dataRdd4通过Transformation(map)将所有的key值加1后生成新的MapPartitionsRDD(dataRdd5)，分区数为3。&lt;/p&gt;
-&lt;p&gt;dataRdd5生成完毕&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;B线:&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;B1. 数组data3生成类型为ParallelCollectionRDD的dataRdd6，分区数为2。&lt;/p&gt;
-&lt;p&gt;B2. dataRdd6通过Transformation(map)生成MapPartitionsRDD(dataRdd7)&lt;/p&gt;
-&lt;p&gt;B3. 数组data4生成类型为ParallelCollectionRDD的dataRdd8，分区数为2。&lt;/p&gt;
-&lt;p&gt;B4. dataRdd7 与dataRdd8通过Transformation(union)生成新的UnionRDD(dataRdd9)，分区数为4&lt;/p&gt;
-&lt;p&gt;dataRdd9生成完毕&lt;/p&gt;
-&lt;p&gt;最后得到result=dataRdd5.join(dataRdd9)，分区数为4。注意此处有shuffle。调用join()的时候并不是一次性生成最后的MapPartitionsRDD，而是首先会进行 cogroup()，得到&lt;K, (Iterable[V1], Iterable[V2])&gt;类型的MapPartitionsRDD，然后对 Iterable[V1] 和 Iterable[V2] 做笛卡尔集，最后生成新的MapPartitionsRDD，所以在join后会产生3个RDD。&lt;/p&gt;
-&lt;h3 id=&quot;stage-划分&quot;&gt;stage 划分&lt;/h3&gt;
-&lt;p&gt;根据DAGScheduler的逻辑，首先从最后的finalRDD(本文为result)开始向前递归访问。&lt;/p&gt;
-&lt;p&gt;当到达join时，发现有子RDD(result)的每个分区都要依赖于父RDD(dataRdd5和dataRdd9)的所有分区，所以是shuffleDependency,。于是把join之后的所有RDD划分为一个stage，标记为&lt;strong&gt;stage3&lt;/strong&gt;。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;注意，假如dataRdd5,dataRdd9的partitioner也是HashPartitioner，且partition数量与result的相同，那么他们之间的依赖就变成了narrowDependency，属于两个(会有多个吗？不,spark只支持两两join)父RDD的分区对应于一个子RDD的分区的情况，这个join()变成了hashjoin()。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;继续往前，先看A线部分，当递归访问到A4步骤(groupBykey)时，判断dataRdd3--&gt;dataRdd4之间的依赖为shuffleDependency，于是将dataRdd4和dataRdd5划分为新的stage，标记为&lt;strong&gt;stage1&lt;/strong&gt;。&lt;/p&gt;
-&lt;p&gt;A线继续往前，到zip又遇到依赖，属于两个父RDD(dataRdd1&amp;dataRdd2)的分区对应于一个子RDD(dataRdd3)的分区的情况，判断为narrowDependency，而dataRdd1和dataRdd2之前已经没有别的RDD存在，于是将dataRdd1，dataRdd2，dataRdd3划分为一个新的stage，标记为&lt;strong&gt;stage0&lt;/strong&gt;。&lt;/p&gt;
-&lt;p&gt;A线已经结束，现在看B线部分。在B线的递归路径中发现有union()，union()是将两个RDD简单合并在一起，并不改变 partition里面的数据。它是一种RangeDependency，属于narrowDependency的一种。继续往前遍历，发现整个B线中都不存在shuffleDependency，所以可以将整个B线划分为新的stage，标记为&lt;strong&gt;stage2&lt;/strong&gt;。&lt;/p&gt;
-&lt;p&gt;到此对整个job的stage划分已经结束，总共分为4个stage。&lt;/p&gt;
-&lt;h3 id=&quot;stage提交&quot;&gt;stage提交&lt;/h3&gt;
-&lt;p&gt;stage提交的过程，也就是job执行的过程。根据前一篇的spark源代码解读，DAGScheduler首先会调用finalStage = newStage()进行stage划分，这一步已经在上文完成，那么接下来就是DAGScheduler调用submitStage，提交finalStage。&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;p&gt;在本文中例子中的finalStage就是最后的stage3，提交stage3之后，递归查找parentStage，发现stage3依赖于stage1和stage2。&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-text&quot;&gt; 15/04/27 19:03:28 INFO DAGScheduler: Registering RDD 2 (zip at complexJob.scala:17)
- 15/04/27 19:03:28 INFO DAGScheduler: Registering RDD 4 (map at complexJob.scala:19)
- 15/04/27 19:03:28 INFO DAGScheduler: Registering RDD 8 (union at complexJob.scala:29)
- 15/04/27 19:03:28 INFO DAGScheduler: Got job 0 (foreach at complexJob.scala:32) with 4 output partitions (allowLocal=false)
- 15/04/27 19:03:28 INFO DAGScheduler: Final stage: Stage 3(foreach at complexJob.scala:32)
- 15/04/27 19:03:28 INFO DAGScheduler: Parents of final stage: List(Stage 1, Stage 2)
- 15/04/27 19:03:28 DEBUG DAGScheduler: submitStage(Stage 3)
-15/04/27 19:03:28 DEBUG DAGScheduler: missing: List(Stage 1, Stage 2)
-&lt;/pre&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;提交stage1和stage2，将stage3放入waitingStages。&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-text&quot;&gt; 15/04/27 19:03:28 DEBUG DAGScheduler: submitStage(Stage 1)
- 15/04/27 19:03:28 DEBUG DAGScheduler: submitStage(Stage 2)
-&lt;/pre&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;stage1 发现parentStage：stage0,提交stage0，将stage1放入waitingStages。&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-text&quot;&gt; 15/04/27 19:03:28 DEBUG DAGScheduler: submitStage(Stage 1)
- 15/04/27 19:03:28 DEBUG DAGScheduler: missing: List(Stage 0)
- 15/04/27 19:03:28 DEBUG DAGScheduler: submitStage(Stage 0)
-&lt;/pre&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;stage0没有找到parentStage,可以立即执行，调用submitMissingTasks，生成类型为ShuffleMapTask的tasks，task的数量与stage0中最后一个Rdd partition数量相等为3。&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-text&quot;&gt; 15/04/27 19:03:28 DEBUG DAGScheduler: submitStage(Stage 0)
- 15/04/27 19:03:28 DEBUG DAGScheduler: missing: List()
- 15/04/27 19:03:28 INFO DAGScheduler: Submitting Stage 0 (ZippedPartitionsRDD2[2] at zip at complexJob.scala:17), which has no missing parents
- 15/04/27 19:03:28 DEBUG DAGScheduler: submitMissingTasks(Stage 0)
- 15/04/27 19:03:28 INFO DAGScheduler: Submitting 3 missing tasks from Stage 0 (ZippedPartitionsRDD2[2] at zip at complexJob.scala:17)
- 15/04/27 19:03:28 DEBUG DAGScheduler: New pending tasks: Set(ShuffleMapTask(0, 2), ShuffleMapTask(0, 1), ShuffleMapTask(0, 0))
- 15/04/27 19:03:28 INFO TaskSchedulerImpl: Adding task set 0.0 with 3 tasks
-&lt;/pre&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;stage2没有找到parentStage,可以立即执行，调用submitMissingTasks，生成类型为ShuffleMapTask的tasks，task的数量与stage2中最后一个Rdd partition数量相等为4。&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-text&quot;&gt; 15/04/27 19:03:28 DEBUG DAGScheduler: submitStage(Stage 2)
- 15/04/27 19:03:28 DEBUG DAGScheduler: missing: List()
- 15/04/27 19:03:28 DEBUG DAGScheduler: submitMissingTasks(Stage 2)
- 15/04/27 19:03:28 INFO DAGScheduler: Submitting 4 missing tasks from Stage 2 (UnionRDD[8] at union at complexJob.scala:29)
- 15/04/27 19:03:28 DEBUG DAGScheduler: New pending tasks: Set(ShuffleMapTask(2, 0), ShuffleMapTask(2, 3), ShuffleMapTask(2, 2), ShuffleMapTask(2, 1))
-15/04/27 19:03:28 INFO TaskSchedulerImpl: Adding task set 2.0 with 4 tasks
-&lt;/pre&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;stage0的task完成后通知dagScheduler，当stage0中所有的task都完成后，将stage0的执行结果注册到mapOutputTrackerMaster给下一个被依赖的stage1使用。然后提交等待中的stage1。&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-text&quot;&gt;15/04/27 19:03:28 INFO Executor: Running task 0.0 in stage 0.0 (TID 0)
-15/04/27 19:03:28 INFO Executor: Running task 1.0 in stage 0.0 (TID 1)
-15/04/27 19:03:28 INFO Executor: Running task 2.0 in stage 0.0 (TID 2)
-15/04/27 19:03:28 INFO Executor: Finished task 1.0 in stage 0.0 (TID 1). 883 bytes result sent to driver
-15/04/27 19:03:28 INFO Executor: Finished task 2.0 in stage 0.0 (TID 2). 883 bytes result sent to driver
-15/04/27 19:03:28 INFO Executor: Finished task 0.0 in stage 0.0 (TID 0). 883 bytes result sent to driver
-&lt;/pre&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;stage2的task全部完成后将结果注册到mapOutputTrackerMaster给下一个被依赖的stage3使用。等待stage1的tasks结束&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-text&quot;&gt; 15/04/27 19:03:28 INFO Executor: Running task 0.0 in stage 2.0 (TID 3)
- 15/04/27 19:03:29 INFO Executor: Running task 1.0 in stage 2.0 (TID 4)
- 15/04/27 19:03:29 INFO Executor: Running task 2.0 in stage 2.0 (TID 5)
- 15/04/27 19:03:29 INFO Executor: Running task 3.0 in stage 2.0 (TID 6)
- 15/04/27 19:03:29 INFO Executor: Finished task 1.0 in stage 2.0 (TID 4). 884 bytes result sent to driver
- 15/04/27 19:03:29 INFO Executor: Finished task 2.0 in stage 2.0 (TID 5). 884 bytes result sent to driver
- 15/04/27 19:03:29 INFO Executor: Finished task 0.0 in stage 2.0 (TID 3). 884 bytes result sent to driver
- 15/04/27 19:03:29 INFO Executor: Finished task 3.0 in stage 2.0 (TID 6). 884 bytes result sent to driver
-&lt;/pre&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;stage0结束之后，stage1调用submitMissingTasks，生成类型为ShuffleMapTask的tasks，task的数量与stage1中最后一个Rdd partition数量相等为3。&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-text&quot;&gt; 15/04/27 19:03:29 INFO DAGScheduler: Submitting Stage 1 (MapPartitionsRDD[4] at map at complexJob.scala:19), which is now runnable
- 15/04/27 19:03:29 DEBUG DAGScheduler: submitMissingTasks(Stage 1)
- 15/04/27 19:03:29 INFO DAGScheduler: Submitting 3 missing tasks from Stage 1 (MapPartitionsRDD[4] at map at complexJob.scala:19)
- 15/04/27 19:03:29 DEBUG DAGScheduler: New pending tasks: Set(ShuffleMapTask(1, 2), ShuffleMapTask(1, 1), ShuffleMapTask(1, 0))
- 15/04/27 19:03:29 INFO TaskSchedulerImpl: Adding task set 1.0 with 3 tasks
-&lt;/pre&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;stage1的tasks全部完成后将结果注册到mapOutputTrackerMaster给下一个被依赖的stage3使用。&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-text&quot;&gt; 15/04/27 19:03:29 INFO Executor: Running task 1.0 in stage 1.0 (TID 8)
- 15/04/27 19:03:29 INFO Executor: Running task 0.0 in stage 1.0 (TID 7)
- 15/04/27 19:03:29 INFO Executor: Running task 2.0 in stage 1.0 (TID 9)
- 15/04/27 19:03:29 INFO Executor: Finished task 1.0 in stage 1.0 (TID 8). 1100 bytes result sent to driver
- 15/04/27 19:03:29 INFO Executor: Finished task 2.0 in stage 1.0 (TID 9). 1100 bytes result sent to driver
- 15/04/27 19:03:29 INFO Executor: Finished task 0.0 in stage 1.0 (TID 7). 1100 bytes result sent to driver
-&lt;/pre&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;stage3的parentStage已经全部结束任务，提交stage3，生成类型为ResultTask的tasks，task的数量与stage3中最后一个Rdd partition数量相等为4。&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-text&quot;&gt;15/04/27 19:03:29 INFO DAGScheduler: Stage 1 (map at complexJob.scala:19) finished in 0.149 s
-15/04/27 19:03:29 INFO DAGScheduler: looking for newly runnable stages
-15/04/27 19:03:29 INFO DAGScheduler: running: Set()
-15/04/27 19:03:29 INFO DAGScheduler: waiting: Set(Stage 3)
-15/04/27 19:03:29 INFO DAGScheduler: failed: Set()
-15/04/27 19:03:29 INFO DAGScheduler: Missing parents for Stage 3: List()
-15/04/27 19:03:29 INFO DAGScheduler: Submitting Stage 3 (MapPartitionsRDD[11] at join at complexJob.scala:31), which is now runnable
-15/04/27 19:03:29 DEBUG DAGScheduler: submitMissingTasks(Stage 3)
-15/04/27 19:03:29 INFO DAGScheduler: Submitting 4 missing tasks from Stage 3 (MapPartitionsRDD[11] at join at complexJob.scala:31)
-15/04/27 19:03:29 DEBUG DAGScheduler: New pending tasks: Set(ResultTask(3, 2), ResultTask(3, 0), ResultTask(3, 1), ResultTask(3, 3))
-15/04/27 19:03:29 INFO TaskSchedulerImpl: Adding task set 3.0 with 4 tasks
-&lt;/pre&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;stage3的task的结束时判断此task是不是最后一个task，如果是则job结束。&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-text&quot;&gt;--output result on each task finish
-15/04/27 19:03:29 INFO Executor: Finished task 1.0 in stage 3.0 (TID 11). 886 bytes result sent to driver
-15/04/27 19:03:29 INFO Executor: Finished task 2.0 in stage 3.0 (TID 12). 886 bytes result sent to driver
-15/04/27 19:03:29 INFO Executor: Finished task 3.0 in stage 3.0 (TID 13). 886 bytes result sent to driver
-15/04/27 19:03:29 INFO Executor: Finished task 0.0 in stage 3.0 (TID 10). 886 bytes result sent to driver
-15/04/27 19:03:29 INFO DAGScheduler: Job 0 finished: foreach at complexJob.scala:32, took 1.004075 s
-&lt;/pre&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h3 id=&quot;尾声&quot;&gt;尾声&lt;/h3&gt;
-&lt;p&gt;本文对于spark job执行过程中关于stage划分，stage提交，task运行的流程已经全部讲解完毕。
-由于本人才疏学浅以及时间的关系，如有错漏之处，请指出来我会重新修改。&lt;/p&gt;
-</description>
+            <description>本文主要通过一个具体的spark application来讲述spark job执行过程中关于stage划分，stage提交，task运行的流程。主要也是因为上篇的源码阅读只有纯粹的理论，所以希望能通过这篇实战将理论讲的更清楚一点。</description>
         </item>
         
         <item>
             <title>spark 源码阅读--job提交与执行过程</title>
-            <link>Homepage link/articles/spark-job-logic.html?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</link>
+            <link>Homepage link/articles/spark-job-logic.html?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss</link>
             <guid>Homepage link/articles/spark-job-logic.html</guid>
             <author>zxdy@vip.qq.com Ario</author>
             <pubDate>Tue, 07 Apr 2015 00:00:00 +0800</pubDate>
-            <description>&lt;p&gt;今天终于有时间把spark的源代码看了下，因为之前一直对spark的任务调度流程比较模糊，而网上关于spark的设计实现文档又不太完整，所以这篇文章主要用于梳理这方面的逻辑关系，并不会对代码的细节实现作过多的讨论，我对scala来说，也只能算个新手，许多复杂的语法和实现，无法太深入解读，只能比较宏观地介绍一下其中的逻辑和目的，如果有错漏之处，请多指教。顺便吐槽一下看源代码真是望山跑死马啊，短短一句代码隐藏N多细节。&lt;/p&gt;
-&lt;p&gt;本文基于&lt;strong&gt;spark 1.3.0&lt;/strong&gt;&lt;/p&gt;
-&lt;h2 id=&quot;job-提交&quot;&gt;Job 提交&lt;/h2&gt;
-&lt;p&gt;当我们向spark提交一个application的时候，首先都会调用程序里的val sc = new SparkContext(sparkConf)语句，这一句创建了一个SparkContext实例，确立整个程序作为driver的地位。&lt;/p&gt;
-&lt;p&gt;我们知道数据在spark中的处理主要分为&lt;a href=&quot;http://spark.apache.org/docs/latest/programming-guide.html#transformations&quot;&gt;Transformations&lt;/a&gt;和&lt;a href=&quot;http://spark.apache.org/docs/latest/programming-guide.html#actions&quot;&gt;action&lt;/a&gt;两种类型。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;ul&gt;
-&lt;li&gt;Transformations：属于懒加载，他会先建立一系列的RDD，每个RDD的compute() 定义如何根据上游数据计算当前RDD的结果。每个RDD的getDependencies()定义RDD之间的数据依赖关系。&lt;/li&gt;
-&lt;li&gt;action：是数据最后的reduce过程，只有当程序运行到action的时候才会真正触发生成一个job，即application中有几个action就会提交几个job。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;从SparkContext的实例来出发，原始的RDD经过一连串的transformation操作，转换成为其它类型的RDD，直到遇到action，触发调用SparkContext的runJob方法   &lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;p&gt;SparkContext&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-java&quot;&gt; createTaskScheduler
-         scheduler = new TaskSchedulerImpl
-         backend=?
-             LocalBackend
-             SparkDeploySchedulerBackend
-             CoarseGrainedSchedulerBackend
- SparkContext.runjob
-     dagScheduler.runJob
-         submitJob
-             eventProcessLoop.post(JobSubmitted())
-             onReceive
-                 dagScheduler.handleJobSubmitted
-&lt;/pre&gt;
-&lt;p&gt; SparkContext在初始化的时候会新建TaskSchedulerImpl和LocalBackend（本文以local模式为例，如果是standalone或是yarn则分别为SparkDeploySchedulerBackend和CoarseGrainedSchedulerBackend）实例。这两个实例会在之后task执行时用到。&lt;/p&gt;
-&lt;p&gt; SparkContext.runjob是后面一系列反应的起点，它最终调用的是dagScheduler.handleJobSubmitted方法。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;DAGScheduler&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-java&quot;&gt; dagScheduler.handleJobSubmitted
-     finalStage = newStage()
-     submitStage(finalStage)
-         getMissingParentStages
-         submitMissingTasks
-             tasks:Seq[]=new ShuffleMapTask or ResultTask
-             taskScheduler.submitTasks
-&lt;/pre&gt;
-&lt;p&gt; DAGScheduler在spark中是非常重要的一个组件，spark任务所谓的有向无环图就是通过这个组件生成。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;&lt;strong&gt;finalStage = newStage()&lt;/strong&gt; 将整个job根据宽依赖和窄依赖进行stage划分（总体的思想是从最后的finallRDD出发反向递归逻辑执行图，每遇到宽依赖就断开，把之前沿途的窄依赖都加入同一个stage）。同时，将每个stage中的最后一个RDD通过mapOutputTracker.registerShuffle注册到MapOutputTrackerMaster，用于指示ShuffleMapTask最后输出数据的位置。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;&lt;strong&gt;submitStage&lt;/strong&gt; 首先调用getMissingParentStages(),确定有没有parentStage，如果有的话，先递归提交parentStage，并将自己加入到 waitingStages 里，直到当前stage没有parentStage，此时stage 可以立即执行，调用submitMissingTasks，根据当前stage的类型（ShuffleMapStage或ResultStage）生成数量跟当前stage最后一个RDD的partition数一样的Tasks（ShuffleMapTasks或ResultTasks）。打包Tasks交给taskScheduler处理。&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;TaskSchedulerImpl&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-java&quot;&gt;TaskSchedulerImpl.submitTasks
-     backend.reviveOffers()
-&lt;/pre&gt;
-&lt;p&gt;TaskSchedulerImpl实现了taskScheduler的接口，这个TaskSchedulerImpl就是之前在第一步产生的TaskSchedulerImpl实例。最后将Tasks交给backend（同样是第一步产生的实例，本文中为了方便使用LocalBackend）处理。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;LocalBackend&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-java&quot;&gt;receiveWithLogging
-    reviveOffers
-        executor.launchTask(..., task.serializedTask)
-&lt;/pre&gt;
-&lt;p&gt;Backend 接收到 taskSet 后,将序列化后之后的 task 分发到调度器指定的 worker node 上执行&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h2 id=&quot;job-接收&quot;&gt;Job 接收&lt;/h2&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;p&gt;Executor&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-java&quot;&gt;executor.launchTask()
-    new TaskRunner()
-        run()
-            task = ser.deserialize
-            value = task.run()
-            serializedResult=?
-                IndirectTaskResult
-                    write to mem&amp;disk
-                serializedDirectResult
-            execBackend.statusUpdate(taskId, TaskState.FINISHED, serializedResult)
-&lt;/pre&gt;
-&lt;p&gt;Executor 收到序列化后的task，首先进行反序列化，然后运行 task 得到执行结果 directResult。序列化directResult后，得到其大小，如果大于 spark.driver.maxResultSize 或者akkaFrameSize - AkkaUtils.reservedSizeBytes，将结果写入内存或磁盘（根据conf配置），由 blockManager 管理，只返回存储位置信息的IndirectTaskResult。否则就将结果serializedDirectResult直接返回给driver。task结束调用execBackend.statusUpdate()。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;LocalBackend&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-java&quot;&gt;receiveWithLogging
-    scheduler.statusUpdate
-&lt;/pre&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;TaskSchedulerImpl&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-java&quot;&gt;statusUpdate
-    //IF TaskState.FINISHED
-    taskResultGetter.enqueueSuccessfulTask()
-        serializedTaskResult=blockManager.getRemoteBytes()
-        scheduler.handleSuccessfulTask
-    taskSetManager.handleSuccessfulTask
-         sched.dagScheduler.taskEnded()
-&lt;/pre&gt;
-&lt;p&gt;通知TaskSchedulerImpl task已经执行完，最后result如果是IndirectTaskResult，则还需调用 blockManager.getRemoteBytes() 去拿到实际的 result。通知dagScheduler Task执行结束。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;dagScheduler&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-java&quot;&gt;dagScheduler.handleTaskCompletion
-    //IF TASK IS ResultTask
-        // If the whole job has finished, remove it
-        markStageAsFinished
-        listenerBus.post(SparkListenerJobEnd)
-        job.listener.taskSucceeded
-    //IF TASK IS ShuffleMapTask
-        //IF ALL TASKS DONE IN CURRENT STAGE
-        stage.addOutputLoc(smt.partitionId, status)
-        mapOutputTracker.registerMapOutputs()
-        submitMissingTasks
-&lt;/pre&gt;
-&lt;p&gt;dagScheduler 判断当前结束的task类型，假如是ResultTask，继续判断是不是job已经执行完毕。假如是task类型是ShuffleMapTask，判断当前stage的所有task是不是都已经运行完毕，如果是的话将当前stage的执行结果注册到mapOutputTrackerMaster给下一个被依赖的stage使用，并继续提交等待中的stage。&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h2 id=&quot;结束&quot;&gt;结束&lt;/h2&gt;
-&lt;p&gt;本文主要介绍了spark job的一个完整生命周期（抱歉没有画图，有空补），下一篇准备结合一个具体的例子来继续讲一下。目前对stage之间的shuffle连接没有做深入研究，shuffle write在task结束后，但是没有发现task开始时的shuffle read，不知是不是被封装在各个RDD的compute里了。&lt;/p&gt;
-</description>
+            <description>今天终于有时间把spark的源代码看了下，因为之前一直对spark的任务调度流程比较模糊，而网上关于spark的设计实现文档又不太完整，所以这篇文章主要用于梳理这方面的逻辑关系，并不会对代码的细节实现作过多的讨论，我对scala来说，也只能算个新手，许多复杂的语法和实现，无法太深入解读，只能比较宏观地介绍一下其中的逻辑和目的...</description>
         </item>
         
         <item>
             <title>综合安全分析</title>
-            <link>Homepage link/articles/soc-doc.html?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</link>
+            <link>Homepage link/articles/soc-doc.html?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss</link>
             <guid>Homepage link/articles/soc-doc.html</guid>
             <author>zxdy@vip.qq.com Ario</author>
             <pubDate>Tue, 24 Mar 2015 00:00:00 +0800</pubDate>
-            <description>&lt;p&gt;今天翻文档的时候，偶然发现自己去年还写过一篇关于信息安全综合分析的审计方案文档草稿，真是不胜唏嘘。&lt;/p&gt;
-&lt;p&gt;这篇文档主要从五个方面来审计企业内部的信息安全事件，用于发现和防范黑客的入侵，对企业当前的安全风险有直观的统计&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;网络入侵&lt;/li&gt;
-&lt;li&gt;账户管理&lt;/li&gt;
-&lt;li&gt;地理资源&lt;/li&gt;
-&lt;li&gt;用户操作&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;写这篇文档的时候参考了许多其他soc日志审计平台的设计思想，但是由于时间和一些其他的原因，并没有细化到具体实现，只能算是一份概要设计草稿。&lt;/p&gt;
-&lt;p&gt;以上，随意感受下就好。&lt;/p&gt;
-&lt;p&gt;&lt;a href=&quot;http://zxdy-blog.qiniudn.com/%E7%BB%BC%E5%90%88%E5%AE%89%E5%85%A8%E5%88%86%E6%9E%90%E6%96%87%E6%A1%A3part2v1.1.pdf&quot;&gt;综合安全分析方案文档&lt;/a&gt;&lt;/p&gt;
-</description>
+            <description>这篇文档主要从五个方面来审计企业内部的信息安全事件，用于发现和防范黑客的入侵，对企业当前的安全风险有直观的统计</description>
         </item>
         
         <item>
             <title>ALLOW FILTERING 之谜</title>
-            <link>Homepage link/articles/allow-filtering.html?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</link>
+            <link>Homepage link/articles/allow-filtering.html?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss</link>
             <guid>Homepage link/articles/allow-filtering.html</guid>
             <author>zxdy@vip.qq.com Ario</author>
             <pubDate>Fri, 13 Mar 2015 00:00:00 +0800</pubDate>
-            <description>&lt;p&gt;上篇在讲到cassandra查询语句之坑的时候，有提到一个叫allow filtering的东东，但是令人费解的是，这货有时候出现有时候又不用出现。那到底这是怎么用的呢，让我们来用一个例子说明。首先还是沿用上篇的table2：&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-SQL&quot;&gt;create table table2 (
-  key_part_one text,
-  key_part_two int,
-  data text,
-  PRIMARY KEY(key_part_one, key_part_two)
-);
-&lt;/pre&gt;
-&lt;p&gt;此时我们有了一个主键（key_part_one, key_part_two），一个分区键:key_part_one，一个clustering key：key_part_two。&lt;/p&gt;
-&lt;p&gt;如果你执行下面一个查询：&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-sql&quot;&gt;SELECT * FROM table2;
-&lt;/pre&gt;
-&lt;p&gt;Cassandra会返回所有table2表中的数据（假如table2表的数据量非常大，这种查询会导致rpc timeout，可以在Cassandra配置文件中适当加大timeout的时间来解决这一问题，但是个人感觉治标不治本。目前发现用spark+Cassandra的方式可以比较好的处理大数据量的存储以及分析，有时间我会写一篇spark+Cassandra的集成攻略）。&lt;/p&gt;
-&lt;p&gt;按照关系型数据库的习惯，你可能还会做如下的查询：&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-sql&quot;&gt;SELECT * FROM table2 WHERE key_part_two = 1111;
-&lt;/pre&gt;
-&lt;p&gt;然后cassandra就提示你要不要allow filtering一下：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;Bad Request: Cannot execute this query as it might involve data filtering and thus may have unpredictable performance. If you want to execute this query despite the performance unpredictability, use ALLOW FILTERING.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;这是因为Cassandra发现它可能不能很效率地执行这个查询，所以做出了警告：&quot;Be careful. Executing this query as such might not be a good idea as it can use a lot of your computing resources&quot;.&lt;/p&gt;
-&lt;p&gt;跟所有的nosql数据库一样，cassandra存储数据的方式是key-value，这决定了它查询数据的模式是根据key一层层往下找数据。cassandra执行这个查询的唯一方式是取出所有的行，然后过滤得到key_part_two = 1111的数据。&lt;/p&gt;
-&lt;p&gt;类似于oracle的统计信息直方图倾斜，key_part_two的值分布可能会有两种极端的情况，一种是绝大多数的key_part_two都等于1111。另一种是绝大多数的key_part_two都不等于1111。第一种情况比较适用allow filtering，因为取出的所有行基本已经是最后的需要的结果集，效率还算可以。但是第二种情况因为取出的所有行要过滤掉绝大多数的数据才是最终结果集，所以用allow filtering的性能会非常低下，经常对这个字段查询的话还是对它增加二级索引会更加好一点。&lt;/p&gt;
-&lt;p&gt;cassandra提示allow filtering的本质是它认为当前的查询可能会有很大的性能问题，让你决定是不是强制执行，这就是他的意义。因此当你的CQL语句被cassandra拒绝执行的时候，你需要考虑你的数据模型以及你的目的去做出最优的选择，比如说改变数据模型，增加二级索引或者换一张表查询，而不是立刻就不假思索的根据提示加上allow filtering。&lt;/p&gt;
-&lt;p&gt;参考文章：
-&lt;a href=&quot;http://blog.websudos.com/2014/08/a-series-on-cassandra-part-2-indexes-and-keys/&quot;&gt;A series on Cassandra – Part 2: Indexes and keys&lt;/a&gt;&lt;/p&gt;
-</description>
+            <description>上篇在讲到cassandra查询语句之坑的时候，有提到一个叫allow filtering的东东，但是令人费解的是，这货有时候出现有时候又不用出现。那到底这是怎么用的呢</description>
         </item>
         
         <item>
             <title>Cassandra partition key, composite key 和 clustering key 的区别</title>
-            <link>Homepage link/articles/cassandra-key.html?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</link>
+            <link>Homepage link/articles/cassandra-key.html?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss</link>
             <guid>Homepage link/articles/cassandra-key.html</guid>
             <author>zxdy@vip.qq.com Ario</author>
             <pubDate>Thu, 12 Mar 2015 00:00:00 +0800</pubDate>
-            <description>&lt;p&gt;在Cassandra中，primary key是一个非常重要的概念。关系型数据库中表可以没有primary key（主键），但是Cassandra中建表时必须指定primary key，它不仅决定了表的结构，而且还对数据查询方式的差异有巨大影响。partition key, composite key 和 clustering key共同组成了Cassandra的primary key。&lt;/p&gt;
-&lt;p&gt;为了说明它们的不同，我们先来看三张表。&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-sql&quot;&gt;create table table1 (
-pri_key text PRIMARY KEY,
-data text
-);
-
-create table table2 (
-  key_part_one text,
-  key_part_two int,
-  data text,
-  PRIMARY KEY(key_part_one, key_part_two)
-);
-
-create table table3 (
-  key_part_one text,
-  key_part_two int,
-  key_clust_one text,
-  key_clust_two int,
-  key_clust_three uuid,
-  data text,
-  PRIMARY KEY((key_part_one,key_part_two), key_clust_one, key_clust_two, key_clust_three)
-);
-&lt;/pre&gt;
-&lt;h2 id=&quot;格式区别&quot;&gt;格式区别&lt;/h2&gt;
-&lt;p&gt;&lt;strong&gt;table1&lt;/strong&gt;是初级版，primary key最简单的定义方式就是这样。此时pri_key就是partition key，clustering key。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;table2&lt;/strong&gt;是table1的升级版，格式为（key1，key2，key3，...）。key_part_one, key_part_two共同组成了primary key，这种方式即所谓的composite key（组合键）。其中key_part_one是partition key，key_part_two共同组成了primary是clustering key。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;table2&lt;/strong&gt;是高级版。这个primary key的组成最为复杂，格式为（（key1，key2），key3，key4，...）。其中key_part_one,key_part_two 共同组成了partition key。而外边的key_clust_one，key_clust_two, key_clust_three都是clustering key。&lt;/p&gt;
-&lt;h2 id=&quot;实际的用途&quot;&gt;实际的用途&lt;/h2&gt;
-&lt;p&gt;Partition Key ：决定了数据在Cassandra各个节点的是如何分区的。&lt;/p&gt;
-&lt;p&gt;Clustering Key ： 用于在各个分区内的排序。&lt;/p&gt;
-&lt;p&gt;Primary Key ： 主键，决定数据行的唯一性&lt;/p&gt;
-&lt;p&gt;Composite Key ：只是一个多字段组合的概念&lt;/p&gt;
-&lt;p&gt;跟关系型数据库一样，分区都是为了解决大数据量查询的效率问题，所不同的是Cassandra的分区分布在各个节点上。注意同一个分区的数据是在同一个物理节点上的，这就造成一个问题，假如分区内的数据量过大的话，会造成Cassandra读取负载的不均衡，可以用类似于table3的建表方式，多个字段共同组成一个partition key减小单个分区的大小，使各个分区能够更均匀地分布在节点上，从而实现负载均衡。&lt;/p&gt;
-&lt;h2 id=&quot;cassandra-查询之坑&quot;&gt;cassandra 查询之坑&lt;/h2&gt;
-&lt;p&gt;在实际的使用过程中,cassandra的数据查询有很多不同于关系型数据库的地方，如果你总是用关系型数据库的思维去考虑cassandra的问题的话，往往会掉进坑里。cassandra的CQL写法并没有像你想象中的随心所欲，因为究其本质，它的数据集是以key-value的形式存放，所以在查询时会有很多限制。&lt;/p&gt;
-&lt;p&gt;让我们来看下上面三个表的查询语法会有哪些坑。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;table1&lt;/strong&gt; PRIMARY KEY(pri_key)&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-SQL&quot;&gt;select * from table1 where pri_key=&#39;111&#39;; --good
-select * from table1 where data=&#39;111&#39;; --error
-select * from table1 where pri_key=&#39;111&#39; and data=&#39;111&#39;; --error
-&lt;/pre&gt;
-&lt;p&gt;&lt;strong&gt;table2&lt;/strong&gt; PRIMARY KEY(key_part_one, key_part_two)&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-SQL&quot;&gt;
-select * from table2 where key_part_one=&#39;111&#39;; --good
-select * from table2 where key_part_two=111; --need allow filtering
-select * from table2 where key_part_one=&#39;111&#39; and key_part_two=111; --good
-&lt;/pre&gt;
-&lt;p&gt;&lt;strong&gt;table3&lt;/strong&gt; PRIMARY KEY((key_part_one,key_part_two), key_clust_one, key_clust_two, key_clust_three)&lt;/p&gt;
-&lt;pre class=&quot;prettyprint linenums lang-SQL&quot;&gt;select * from table3 where key_part_one=&#39;111&#39;; --error
-select * from table3 where key_part_two=111; --error
-select * from table3 where key_part_one=&#39;111&#39; and key_part_two=111; --good
-select * from table3 where key_part_one=&#39;111&#39; and key_part_two=111 and key_clust_one=&#39;111&#39;; --good
-select * from table3 where key_part_one=&#39;111&#39; and key_part_two=111 and key_clust_two=&#39;111&#39;; --error
-select * from table3 where key_clust_one=&#39;111&#39;; --need allow filtering
-&lt;/pre&gt;
-&lt;blockquote&gt;
-&lt;p&gt;总结：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;cassandra的查询必须在主键列上，或者查询的字段有二级索引。&lt;/li&gt;
-&lt;li&gt;对于（A，B）形式的主键，假如查询条件不带分区键A，则查询语句需要开启allow filtering。&lt;/li&gt;
-&lt;li&gt;对于（（A，B）,C,D）形式的主键，可以认为是第2点的变种。A，B必须同时出现在查询条件中,且C,D不可以跳跃，像where A and B and D的查询是非法的。&lt;/li&gt;
-&lt;li&gt;以上查询不考虑范围查询的情况。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;所以因为第三点的关系，parition key字段过多会对以后的查询造成很大困扰，在建表的时候首先一定要考虑好数据模型，以免后期掉坑。此外假如与spark集成的话，可以在一定程度上规避掉上面非法查询的问题，通过sparksql可以近似实现关系型数据库sql的查询，而不用考虑查询中一定要带上所有partition key字段。&lt;/p&gt;
-</description>
+            <description>在Cassandra中，primary key是一个非常重要的概念。关系型数据库中表可以没有primary key（主键），但是Cassandra中建表时必须指定primary key，它不仅决定了表的结构，而且还对数据查询方式的差异有巨大影响。partition key, composite key 和 clustering key共同组成了Cassandra的primary key。</description>
         </item>
         
         <item>
             <title>oracle性能优化-CPU篇(下)</title>
-            <link>Homepage link/articles/oracle-tunning-cpu-2.html?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</link>
+            <link>Homepage link/articles/oracle-tunning-cpu-2.html?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss</link>
             <guid>Homepage link/articles/oracle-tunning-cpu-2.html</guid>
             <author>zxdy@vip.qq.com Ario</author>
             <pubDate>Tue, 10 Mar 2015 00:00:00 +0800</pubDate>
-            <description>&lt;p&gt;接上篇 &lt;a href=&quot;http://zxdy.github.io/articles/oracle-tunning-cpu-1.html&quot;&gt;oracle性能优化-CPU篇(上)&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;如何有效利用好CPU，主要在于如何写好SQL语句， 并优化数据库内部处理。&lt;/p&gt;
-&lt;h2 id=&quot;1-sql语句重用&quot;&gt;1. sql语句重用&lt;/h2&gt;
-&lt;h3 id=&quot;11-硬解析与软解析&quot;&gt;1.1 硬解析与软解析&lt;/h3&gt;
-&lt;p&gt;相信用过oracle的人，特别是用oracle做后端数据库开发的程序猿都听说过硬解析和软解析。&lt;/p&gt;
-&lt;p&gt;当一个sql语句提交后，oracle会首先检查一下共享缓冲池（shared pool）里有没有与之&lt;strong&gt;完全相同&lt;/strong&gt;的语句，如果有的话只须执行软分析即可，否则就得进行硬分析。&lt;/p&gt;
-&lt;p&gt;硬解析之所以坑爹的原因是，它需要经解析,制定执行路径,优化访问计划等许多的步骤。不但耗费大量的cpu，更重要的是会占据重要的们闩（latch）资源，严重的影响系统的规模的扩大（即限制了系统的并发行），而且引起的问题不能通过增加内存条和cpu的数量来解决。&lt;/p&gt;
-&lt;p&gt;看一眼AWR报表，检查是不是有很多硬解析。下图的硬解析数和 time model statistics的hard parse elapsed time对应，可知该系统是否 是 解析敏感&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;http://zxdy-blog.qiniudn.com/hard_prase.png&quot; alt=&quot;hard parse&quot;&gt;&lt;/p&gt;
-&lt;p&gt;有时候当我们在oracle上对某些sql进行测试时，会发现第一次执行的sql比较慢，再次执行往往都比较快，这不仅仅是因为所需要的数据块已经读取到buffer cache中了，还因为再次执行的sql沿用的是上次执行的执行计划，并没有重新做解析。&lt;/p&gt;
-&lt;p&gt;因此假如我们需要测试相同sql不同的执行计划时，最好刷新一下当前session的shared pool。注意最好不要全局刷新，特别是在生产环境，这样会导致所有的sql都进行重新解析，可能会严重影响性能。&lt;/p&gt;
-&lt;h3 id=&quot;12-绑定变量&quot;&gt;1.2 绑定变量&lt;/h3&gt;
-&lt;p&gt;绑定变量的实质就是用于替代sql语句中的常量的替代变量，它能够使得每次提交的sql语句都完全一样。还记得前面说的&quot;oracle会首先检查一下共享缓冲池（shared pool）里有没有与之&lt;strong&gt;完全相同&lt;/strong&gt;的语句&quot;没有？
-类似这样：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;http://zxdy-blog.qiniudn.com/bind_var.png&quot; alt=&quot;bind var&quot;&gt;&lt;/p&gt;
-&lt;p&gt;一般来说，在实际的开发场景，只要使用比较成熟的数据持久层框架例如mybatis等，基本都可以避免这种因为没有用绑定变量而产生的性能问题。&lt;/p&gt;
-&lt;h3 id=&quot;13-索引优化&quot;&gt;1.3 索引优化&lt;/h3&gt;
-&lt;p&gt;索引优化这是大坑。。有空新开一篇再写吧&lt;/p&gt;
-&lt;h2 id=&quot;2-表连接&quot;&gt;2. 表连接&lt;/h2&gt;
-&lt;p&gt;在CBO（hash join只有在CBO才可能被使用到）模式下，优化器计算代价时，首先会考虑hash join。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;hash join的主要资源消耗在于CPU和内存（在内存中创建临时的hash表，并hash计算， Mem访问速度是Disk的万倍以上。）&lt;/li&gt;
-&lt;li&gt;Nested Loop资源消耗在磁盘IO和CPU。&lt;/li&gt;
-&lt;li&gt;sort merge的资源消耗主要在于磁盘IO（扫描表或索引）&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;相对来说，比较常见的还是hash join以及nested loop。&lt;/p&gt;
-&lt;p&gt;表连接科普参见 &lt;a href=&quot;http://blog.csdn.net/tianlesoftware/article/details/5826546&quot;&gt;多表连接的三种方式&lt;/a&gt;&lt;/p&gt;
-&lt;h3 id=&quot;22-hash-join&quot;&gt;2.2 hash join&lt;/h3&gt;
-&lt;p&gt; Hash join的工作方式是将一个表（通常是小一点的那个表）做hash运算，将列数据存储到hash列表中，从另一个表中抽取记录，做hash运算，到hash 列表中找到相应的值，做匹配。&lt;/p&gt;
-&lt;h3 id=&quot;22-nested-loop&quot;&gt;2.2 nested loop&lt;/h3&gt;
-&lt;p&gt;Nested loops 工作方式是从一张表中读取数据，访问另一张表（通常是索引）来做匹配，nested loops适用的场合是当一个关联表比较小的时候，效率会更高。&lt;/p&gt;
-&lt;h3 id=&quot;22-sort-merge&quot;&gt;2.2 sort merge&lt;/h3&gt;
-&lt;p&gt;Merge Join 是先将关联表的关联列各自做排序，然后从各自的排序表中抽取数据，到另一个排序表中做匹配，因为merge join需要做更多的排序，所以消耗的资源更多。 通常来讲，能够使用merge join的地方，hash join都可以发挥更好的性能。&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;总的来说，小表和大表连接用nested loop，大表和大表连接用hash join，关联列已经排序好的表连接推荐用sort merge（用的不多就是了）。
-但凡事总有例外，具体的执行效果还是要根据具体情况看，有时候CBO推荐的执行计划未必是最好的， 此时你可以尝试使用hint或者修改sql语句来改变表连接。&lt;/p&gt;
-&lt;/blockquote&gt;
-</description>
+            <description>从sql语句重用以及表连接优化oracle的cpu使用</description>
         </item>
         
         <item>
             <title>oracle性能优化-CPU篇(上)</title>
-            <link>Homepage link/articles/oracle-tunning-cpu-1.html?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</link>
+            <link>Homepage link/articles/oracle-tunning-cpu-1.html?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss</link>
             <guid>Homepage link/articles/oracle-tunning-cpu-1.html</guid>
             <author>zxdy@vip.qq.com Ario</author>
             <pubDate>Wed, 04 Mar 2015 00:00:00 +0800</pubDate>
-            <description>&lt;p&gt;在任何一样计算机软件产品中，当我们需要考虑其性能的时候，往往都会从CPU，IO，Network这三个方面考虑。CPU代表着处理问题的能力，IO代表着存储的吞吐能力，Network代表着数据传输的能力。oracle当然也不例外。&lt;/p&gt;
-&lt;p&gt;下图反映的是一个应用程序总体的响应时间的分布情况。用户在前端发出数据的请求之后，经过网络层，到达数据库服务器。数据库服务器接收请求，然后对SQL进行语法语义分析，然后生成执行计划，接着执行sql，取得数据最后再次经过网络层返回到前端展现给用户。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;http://zxdy-blog.qiniudn.com/bottle-neck-of-oracle.png&quot; alt=&quot;bottle-neck-of-oracle&quot;&gt;&lt;/p&gt;
-&lt;p&gt;很显然 &lt;strong&gt;oracle的处理时间=cpu处理时间+[资源等待时间+Disk IO 等待时间]&lt;/strong&gt;。&lt;/p&gt;
-&lt;p&gt;根据以上公式，我们可以发现只要能有效地利用cpu资源和降低等待时间就可以提高数据库的性能，使它处理得更快。&lt;/p&gt;
-&lt;p&gt;这篇文章主要关注oracle sql在cpu上的性能优化。个人感觉相比等待上的优化简单一些，等待很多时候涉及到并发，资源争用，数据块等知识，优化也更加复杂不好下手。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;那么问题来了：&lt;/strong&gt;&lt;/p&gt;
-&lt;h2 id=&quot;1-首先，怎么查看cpu信息&quot;&gt;1. 首先，怎么查看CPU信息&lt;/h2&gt;
-&lt;p&gt;CPU的多少在很大程度上（质量也是很重要滴）决定了数据库性能的好坏。越多的CPU，可以并发的数目就越多。&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;用系统命令查看。这里我默认认为oracle是安装在linux服务器上，当然装在windows上的不是没有，只是略奇葩了。&lt;/p&gt;
-&lt;p&gt;  refer to  &lt;a href=&quot;http://zxdy.github.io/articles/linux-info-check.html&quot;&gt;查看cpu信息&lt;/a&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;sql查询NUM_CPUS字段。v$osstat这张表包含了很多有用的信息
-附上&lt;a href=&quot;http://docs.oracle.com/cd/E11882_01/server.112/e40402/dynviews_2085.htm#REFRN30321&quot;&gt;官方文档&lt;/a&gt;解释&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;pre class=&quot;prettyprint linenums lang-sql&quot;&gt;SELECT * FROM v$osstat;
-&lt;/pre&gt;
-&lt;ul&gt;
-&lt;li&gt;awr报告。在awr中会有cpu相关的各种报告，包括硬件信息以及更重要的性能信息。关于cpu的性能分析我会在后面展开。下面这张图展现了当前实例使用的cpu硬件信息。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;img src=&quot;http://zxdy-blog.qiniudn.com/awr_cpu.png&quot; alt=&quot;awr cpu&quot;&gt;&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;CPUs: 逻辑cpu数
-Cores: cpu核数
-Sockets: 物理cpu数&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;h2 id=&quot;2-怎么看cpu的性能&quot;&gt;2. 怎么看CPU的性能&lt;/h2&gt;
-&lt;p&gt;上面的CPU硬件信息只是帮助我们有个初步的概念，如果说你的数据库性能很差，CPU又很烂，很烂还没几个，那你真的该先换CPU了。。&lt;/p&gt;
-&lt;p&gt;换完CPU，我们先来了解下下面这两个概念：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;host cpu&lt;/li&gt;
-&lt;li&gt;instance cpu&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;在AWR报告中会有这样两个不同的分类，像是这样&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;http://zxdy-blog.qiniudn.com/awr_cpu.png&quot; alt=&quot;host cpu&quot;&gt;&lt;/p&gt;
-&lt;p&gt;还有这样&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;http://zxdy-blog.qiniudn.com/instance_cpu.png&quot; alt=&quot;instance cpu&quot;&gt;&lt;/p&gt;
-&lt;p&gt;它们其实是分别代表了服务器cpu的负载和oracle实例的负载情况。&lt;/p&gt;
-&lt;p&gt;对于host cpu：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&quot;Load Average&quot; begin/end值代表CPU的大致运行队列大小。上图中快照开始
-到结束，平均 CPU负载减少了。&lt;/li&gt;
-&lt;li&gt;%User+%System=&gt; 总的CPU使用率，在这里是5.7%。&lt;/li&gt;
-&lt;li&gt;Busy Time=Elapsed Time * NUM_CPUS * CPU utilization&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;对于instance cpu:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;%Total CPU,该实例所使用的CPU占总CPU的比例 -&gt; % of total CPU for
-Instance&lt;/li&gt;
-&lt;li&gt;%Busy CPU，该实例所使用的Cpu占总的被使用CPU的比例 -&gt; % of busy CPU for Instance。例如共4个逻辑CPU，其中3个被完全使用， 3个中的1 个完全被该实例使用，则%Total CPU= 1/4 =25%，而%Busy CPU= 1/3= 33%&lt;/li&gt;
-&lt;li&gt;当CPU高时一般看%Busy CPU可以确定CPU到底是否是本实例消耗的，还是
-主机上其他程序。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;身为一个开发我还要时不时看awr报告也是蛮拼的。一般来讲，awr更多的是展现数据库整体上的性能分析，你可能在以上的host cpu以及instance cpu上发现cpu的负载很高，但这又有什么用呢？是不是觉得没法继续了呢？当然不是，awr还提供了更多的详细的报告帮助我们定位哪些sql的cpu占用比较厉害：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;AWR SQL ordered by Elapsed Time：&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;&lt;img src=&quot;http://zxdy-blog.qiniudn.com/sql_order_by_elapsed_time.png&quot; alt=&quot;AWR SQL ordered by Elapsed Time&quot;&gt;&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;%CPU - CPU Time as a percentage of Elapsed Time -&gt; 这个语句耗费的DB TIME里CPU TIME占多少比例 -&gt; 这个语句是否是CPU敏感的&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;2.AWR SQL ordered by CPU Time：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;http://zxdy-blog.qiniudn.com/sql_order_by_cpu_time.png&quot; alt=&quot;AWR SQL order by cpu time&quot;&gt;&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;第一列CPU TIME统计这个sql总共在快照时间内总共花费的cpu时间，在这个值比较高的情况下，如果相应的%CPU值也很高， 说明这个sql在cpu上的负载很高，需要考虑优化。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;&lt;strong&gt;如果发现有比较突出的sql，很可能就是瓶颈所在，可以继续跑个@?/rdbms/admin/awrsqrpt.sql看看&lt;/strong&gt;&lt;/p&gt;
-</description>
+            <description>在任何一样计算机软件产品中，当我们需要考虑其性能的时候，往往都会从CPU，IO，Network这三个方面考虑。CPU代表着处理问题的能力，IO代表着存储的吞吐能力，Network代表着数据传输的能力。oracle当然也不例外。</description>
         </item>
         
         <item>
             <title>oracle性能优化-执行计划篇</title>
-            <link>Homepage link/articles/oracle-tunning-sqlplan.html?utm_source=rss&amp;utm_medium=rss&amp;utm_campaign=rss</link>
+            <link>Homepage link/articles/oracle-tunning-sqlplan.html?utm_source=rss&amp;amp;utm_medium=rss&amp;amp;utm_campaign=rss</link>
             <guid>Homepage link/articles/oracle-tunning-sqlplan.html</guid>
             <author>zxdy@vip.qq.com Ario</author>
             <pubDate>Mon, 09 Feb 2015 00:00:00 +0800</pubDate>
-            <description>&lt;h1 id=&quot;执行计划？&quot;&gt;执行计划？&lt;/h1&gt;
-&lt;p&gt;执行计划是sql在数据库中最终的执行路径，包括索引的扫描，数据的读取，过滤，连接，排序等等一系列过程。就像平常在生活中你为了完成一个任务，需要经过很多步骤，如果没有很好的统筹规划，任务时间会不断延长。所以sql的效率跟它的执行计划息息相关，同一个sql可能会有很多不一样的执行计划，基于CBO的oracle会在其中挑选出它认为最快的执行计划进行执行。下面这个流程图展现了优化器选择执行计划过程：&lt;/p&gt;
-&lt;p&gt; &lt;img src=&quot;http://zxdy-blog.qiniudn.com/sql%20plan.png&quot; alt=&quot;优化器选择执行计划过程&quot;&gt;&lt;/p&gt;
-&lt;p&gt; 从上面的流程图可以知道一个高效良好的执行计划需要考虑的因素有&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;绑定变量。//还记得CPU优化篇的sql重用吗&lt;/li&gt;
-&lt;li&gt;统计信息。oracle默认会在每天的晚上以及周末触发自动收集数据改变量在10%以上的表的统计信息。如果统计信息过于陈旧，DBA或者开发也可以手动提交收集统计信息任务。&lt;/li&gt;
-&lt;li&gt;hint。hint会强制指定执行计划的路径，比如select /*+ use_hash*/ ,不管优化器怎么认为表连接应该使用nested loop更加效率，都会强制使用hash连接&lt;/li&gt;
-&lt;li&gt;sql profile。&lt;a href=&quot;https://docs.oracle.com/database/121/TGSQL/tgsql_profiles.htm#TGSQL599&quot;&gt;定义&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;sql plan。&lt;a href=&quot;https://docs.oracle.com/database/121/TGSQL/tgsql_spm.htm#TGSQL617&quot;&gt;sql profile vs plan baseline&lt;/a&gt;&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h1 id=&quot;怎么查看执行计划&quot;&gt;怎么查看执行计划&lt;/h1&gt;
-&lt;h2 id=&quot;1-explain-plan-for-sql&quot;&gt;1. Explain Plan For SQL&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;不实际执行SQL诧句，生成的计划未必是真实执行的计划 &lt;/li&gt;
-&lt;li&gt;必须要有plan_table&lt;/li&gt;
-&lt;/ul&gt;
-&lt;pre class=&quot;prettyprint linenums lang-SQL&quot;&gt;EXPLAIN PLAN FOR
-  SELECT object_id FROM dba_objects;
-SELECT PLAN_TABLE_OUTPUT FROM TABLE(DBMS_XPLAN.DISPLAY());
-&lt;/pre&gt;
-&lt;h2 id=&quot;2-sqlplus-autotrace&quot;&gt;2. SQLPLUS AUTOTRACE&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;除set autotrace traceonly explain外均实际执行SQL，但仍未必是真实计划&lt;/li&gt;
-&lt;li&gt;必须要有plan_table&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&quot;3-其他第三方工具&quot;&gt;3. 其他第三方工具&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;sqldeveloper&lt;/li&gt;
-&lt;li&gt;toad（收费，比sqldeveloper强大，细节丰富）&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&quot;4-最靠谱的方法&quot;&gt;4. 最靠谱的方法&lt;/h2&gt;
-&lt;p&gt;为什么上文说未必是真实的计划呢？这里的指的是实际生产环境使用的执行计划和你手动用上文的方法查看某个sql的执行计划是有可能有差异的。所以最靠谱的办法是在生产环境找到已经执行过的sql或者是正在执行的sql的sql id，然后根据这个id去查看他的执行计划&lt;/p&gt;
-&lt;h3 id=&quot;查询历史sql和sql-id&quot;&gt;查询历史sql和sql id&lt;/h3&gt;
-&lt;pre class=&quot;prettyprint linenums lang-SQL&quot;&gt;select sql_id,sql_text from v$SQL Where
-sql_text not like &#39;%like%&#39;
-and sql_text like &#39;%$SQL%&#39;;
---或者
-select b.SQL_TEXT,b.FIRST_LOAD_TIME,b.SQL_FULLTEXT
-from v$sqlarea b
-where b.FIRST_LOAD_TIME between &#39;2014-10-15/09:24:47&#39; and
-&#39;2014-10-15/09:24:47&#39; order by b.FIRST_LOAD_TIME
-&lt;/pre&gt;
-&lt;h3 id=&quot;查询正在执行的sql和sql-id&quot;&gt;查询正在执行的sql和sql id&lt;/h3&gt;
-&lt;pre class=&quot;prettyprint linenums lang-SQL&quot;&gt;select a.username, a.sid,b.SQL_TEXT, b.SQL_FULLTEXT,b.sql_id
-from v$session a, v$sqlarea b 
-where a.sql_address = b.address ;
-&lt;/pre&gt;
-&lt;blockquote&gt;
-&lt;p&gt;note:&lt;/p&gt;
-&lt;p&gt;V\$SQL, V\$SQLAREA, V\$SQLTEXT三个视图的区别:&lt;/p&gt;
-&lt;p&gt;V\$SQL：CHILD CURSOR DETAILS FOR V\$SQLAREA&lt;/p&gt;
-&lt;p&gt;V\$SQLAREA：SHARED POOL DETAILS FOR STATEMENTS/ANONYMOUS BLOCKS&lt;/p&gt;
-&lt;p&gt;V\$SQLTEXT：SQL TEXT OF STATEMENTS IN THE SHARED POOL&lt;/p&gt;
-&lt;p&gt;V\$SQL的每一行表示的是每一个SQL语句的一个版本，而V\$SQLAREA存放的是相同语句不同版本一个GROUP BY汇总。&lt;/p&gt;
-&lt;p&gt;V\$SQL及V\$SQLAREA存放着统计信息在调优时使用居多，但其SQL是不全的，如果想获得完整的SQL需使用V\$SQLTEXT。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;h3 id=&quot;精确查询详细执行计划&quot;&gt;精确查询详细执行计划&lt;/h3&gt;
-&lt;pre class=&quot;prettyprint linenums lang-SQL&quot;&gt;alter session set STATISTICS_LEVEL = ALL; --不设置无法获得A-ROWS等信息,A-Rows 是实际执行时返回的行数
-select * from table(dbms_xplan.display_cursor(&#39;sql_id&#39;,null,&#39;ADVANCED ALLSTATS LAST PEEKED_BINDS&#39;));
-&lt;/pre&gt;
-&lt;h1 id=&quot;执行计划的执行顺序&quot;&gt;执行计划的执行顺序&lt;/h1&gt;
-&lt;p&gt;toad看这个最方便，可以直接显示执行顺序。如图中的12345678就是：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;http://zxdy-blog.qiniudn.com/sqlplan_toad.png&quot; alt=&quot;sql plan by toad&quot;&gt;&lt;/p&gt;
-&lt;p&gt;但是如果没有toad的话，通常显示的结果会是这样，要注意的是这里的id并不是顺序：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&quot;http://zxdy-blog.qiniudn.com/sqlplan_sqldeveloper.png&quot; alt=&quot;sql plan&quot;&gt;&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;note:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Id 分配给执行计划中每一个步骤的一个数字 每个步骤（执行计划中的行，戒树中的节点）代表行源 (row source)。&lt;/li&gt;
-&lt;li&gt;Operation 该步骤实施的内部操作名 id=0的operation一般是 SELECT/INSERT/UPDATE/DELETE Statement&lt;/li&gt;
-&lt;li&gt;Name 该步骤操作的表戒者索引名&lt;/li&gt;
-&lt;li&gt;Rows CBO基亍统计信息估计该操作将返回的行数&lt;/li&gt;
-&lt;li&gt;Bytes CBO基亍统计信息估计该操作将返回的字节数&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;如果你学过二叉树的后序遍历的话，其实也很简单。首先我们先将这个图根据缩进转化成一个树。然后对这个树进行一下后续遍历，这个遍历的顺序（4 -&gt; 6 -&gt; 5-&gt; 3 -&gt; 7 -&gt; 2 -&gt; 8 -&gt; 1 -&gt; 0）就是执行顺序。&lt;/p&gt;
-&lt;p&gt; &lt;img src=&quot;http://zxdy-blog.qiniudn.com/tree.png&quot; alt=&quot;执行计划树&quot;&gt;&lt;/p&gt;
-&lt;h1 id=&quot;如何通过执行计划优化sql&quot;&gt;如何通过执行计划优化sql&lt;/h1&gt;
-&lt;ul&gt;
-&lt;li&gt;在计划中，驱动表具有最强的过滤性。&lt;/li&gt;
-&lt;li&gt;每个步骤的联接顺序都可保证返回给下一步的行数最少（即，联接顺序应使系统转到尚未使用的最强过滤器）。&lt;/li&gt;
-&lt;li&gt;就返回的行数而言，相应的联接方法是适合的。例如，返回的行很多时，使用索引的嵌套循环联接可能不是最佳方法。&lt;/li&gt;
-&lt;li&gt;高效地使用视图。查看 SELECT 列表，确定访问的视图是否必需。&lt;/li&gt;
-&lt;li&gt;是否存在预料之外的笛卡尔积（即使对于小表，也是如此）。&lt;/li&gt;
-&lt;li&gt;高效地访问每个表：考虑 SQL 语句中的谓词和表的行数。查找可疑活动，例如对行数很多的表执行全表扫描（在 WHERE 子句中有谓词）。而对于小表，或根据返回的行数利用更好的联接方法（例如 hash_join）时，全表扫描也许更有效。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;参考：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;a href=&quot;http://t.askmaclean.com/thread-3237-1-1.html&quot;&gt;Maclean Liu的Oracle性能优化讲座 真正读懂Oracle SQL执行计划&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;http://blog.itpub.net/22664653/viewspace-701711/&quot;&gt;如何清除某条SQL在库缓存中的执行计划：dbms_shared_pool.purge &lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;http://files.cnblogs.com/files/kerrycode/ORACLE_11g_ARCHITECTURE.pdf&quot;&gt;oracle 11g 架构图&lt;/a&gt;&lt;/li&gt;
-&lt;/ol&gt;
-</description>
+            <description>执行计划是sql在数据库中最终的执行路径，包括索引的扫描，数据的读取，过滤，连接，排序等等一系列过程。就像平常在生活中你为了完成一个任务，需要经过很多步骤，如果没有很好的统筹规划，任务时间会不断延长。所以sql的效率跟它的执行计划息息相关...</description>
         </item>
         
     </channel>

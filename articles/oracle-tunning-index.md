@@ -86,5 +86,5 @@ alter index f_regs_idx1 nomonitoring usage;
 ][2]
 
 
-  [1]: http://zxdy-blog.qiniudn.com/B-TREE.png
+  [1]: http://7x2wf2.com1.z0.glb.clouddn.com/B-TREE.png
   [2]: http://zxdy.github.io/articles/speed-up-create-index.html

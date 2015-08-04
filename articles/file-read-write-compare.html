@@ -59,7 +59,7 @@
         </div>
         <div id="article-content">
             <p>之前做到一个大日志文件（size &gt; 1G）解析的项目，在此记录下对于大文本解析方式的效率比较。不同方式的性能差别很大，那个项目的日志解析时间能从原来的超过36小时优化到只需要2分钟，awk功不可没。</p>
-<h2 id="bash-比较">bash 比较</h2>
+<h2 id="bash-">bash 比较</h2>
 <p>bash脚本中对于文本的读取主要有以下四种，尽管 AWK 具有完全属于其本身的语法，但在此我也把它归在一起：</p>
 <pre class="prettyprint linenums lang-bash">#方法一
 func1(){
@@ -153,7 +153,7 @@ func4 $source $dest
 <p>cost: 0sec</p>
 </blockquote>
 <p>从以上结果可以看出，awk的效率远超其他方法</p>
-<h2 id="python-比较">python 比较</h2>
+<h2 id="python-">python 比较</h2>
 <p>python 有三种读取文件的方法：</p>
 <ul>
 <li>read() 会将所有内容读入到一个字符串中</li>
@@ -161,7 +161,7 @@ func4 $source $dest
 <li>readlines() 将所有内容按行读取，返回一个列表，列表中每个元素是一个字符串，一个字符串是一行内容</li>
 </ul>
 <p>所以从效率上讲， read() 和readlines()会比readline()高，但是同时对内存的要求也比较高，需要能一次性将文件内容放入内存中。但是如果这个文件很大的话，就会影响到程序运行的速度，甚至会导致程序挂掉，此时分行读取或是设置buff_size会是个更好的选择</p>
-<pre class="prettyprint linenums lang-python">#!/usr/bin/env python
+<pre><code class="prettyprint linenums lang-python">#!/usr/bin/env python
 import time
 import os
 def func1(source,dest):
@@ -182,7 +182,7 @@ if __name__ == &#39;__main__&#39;:
     t2=Timer(&quot;func2(&#39;log&#39;,&#39;log1&#39;)&quot;,&quot;from __main__ import func2&quot;)
     print &quot;read once: &quot;+str(t1.timeit(1))
     print &quot;read line: &quot;+str(t2.timeit(1))
-</pre>
+</code></pre>
 <p>40M文件5次处理时间：</p>
 <blockquote>
 <p>read once: 0.308089971542</p>

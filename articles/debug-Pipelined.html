@@ -55,7 +55,7 @@
         </div>
         <div id="article-content">
             <p>在sql developer中，如果直接对pipelined语句进行断点debug会报错，那么怎样可以解决这个问题呢？可以用procedure包住这个函数，再进行单步调试。下面是演示的demo。  </p>
-<h2 id="准备pipelined">准备pipelined</h2>
+<h2 id="-pipelined">准备pipelined</h2>
 <pre class="prettyprint linenums lang-pl/sql">CREATE TYPE t_tf_row AS OBJECT (
   id           NUMBER,
   description  VARCHAR2(50)
@@ -75,8 +75,8 @@ BEGIN
 END;
 /
 </pre>
-<h2 id="然后用procedure包住这个get_tab_ptf函数">然后用procedure包住这个get_tab_ptf函数</h2>
-<pre class="prettyprint linenums lang-pl/sql">CREATE OR REPLACE
+<h2 id="-procedure-get_tab_ptf-">然后用procedure包住这个get_tab_ptf函数</h2>
+<pre><code class="prettyprint linenums lang-pl/sql">CREATE OR REPLACE
 PROCEDURE test_pipeline
 IS
 BEGIN
@@ -85,8 +85,8 @@ BEGIN
     dbms_output.put_line(&#39;get one row!&#39;);
   END LOOP;
 END;
-</pre>
-<h2 id="断点位置">断点位置</h2>
+</code></pre>
+<h2 id="-">断点位置</h2>
 <p>最后将断点打在test_pipeline的for循环上，对这个procedure进行单步调试就可以跳转到函数get_tab_ptf内部了。</p>
 
         </div>

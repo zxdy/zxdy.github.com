@@ -58,14 +58,14 @@
         <div id="article-content">
             <p>今天openvpn貌似有点抽风， 不好使了。。。sigh。。
 听说shadowsocks挺好用，就尝试了一下，确实还挺方便。记录一下搭建过程，基本上照官方的user manual来就ok了</p>
-<h2 id="1-安装">1. 安装</h2>
+<h2 id="1-">1. 安装</h2>
 <pre class="prettyprint linenums lang-bash">apt-get install python-pip python-dev build-essential
 python --version #安装之前检查一下vps的python版本号，需要2.6或2.7以上
 pip install shadowsocks #安装
 </pre>
-<h2 id="2-配置文件">2. 配置文件</h2>
-<p>新建一个名为<code>config.json的配置文件</p>
-<pre class="prettyprint linenums lang-bash">{
+<h2 id="2-">2. 配置文件</h2>
+<p>新建一个名为<code>config.json</code>的配置文件</p>
+<pre><code class="prettyprint linenums lang-bash">{
           &quot;server&quot;:&quot;vps的ip&quot;,
           &quot;server_port&quot;:8388,
           &quot;local_port&quot;:1080,
@@ -73,18 +73,18 @@ pip install shadowsocks #安装
           &quot;timeout&quot;:600,
           &quot;method&quot;:&quot;table&quot; #加密方式，默认table，推荐aes-256-cfb
 }
-</pre>
+</code></pre>
 <p><em>如果想用除table以外的加密方式，需要额外安装M2Crypto</em></p>
-<pre class="prettyprint linenums lang-bash">apt-get install python-m2crypto
+<pre><code class="prettyprint linenums lang-bash">apt-get install python-m2crypto
 #或者
 pip install M2Crypto
-</pre>
-<h2 id="3进入-code-configjson-code-所在目录，运行shadowsocks">3.进入<code>config.json所在目录，运行shadowsocks</h2>
-<pre class="prettyprint linenums lang-bash">nohup ssserver &gt; shadowsocks_log &amp;
-</pre>
-<h2 id="4客户端">4.客户端</h2>
+</code></pre>
+<h2 id="3-config-json-shadowsocks">3.进入<code>config.json</code>所在目录，运行shadowsocks</h2>
+<pre><code class="prettyprint linenums lang-bash">nohup ssserver &gt; shadowsocks_log &amp;
+</code></pre>
+<h2 id="4-">4.客户端</h2>
 <p>下载<a href="http://sourceforge.net/projects/shadowsocksgui/files/dist/">shadowsocks-gui</a>，填入相应的vps ip地址，端口，密码信息后保存  </p>
-<h2 id="5-浏览器代理">5. 浏览器代理</h2>
+<h2 id="5-">5. 浏览器代理</h2>
 <p>新建socket5代理，地址填127.0.0.1，端口1080保存就可以使用了</p>
 
         </div>

@@ -54,8 +54,8 @@
         
         </div>
         <div id="article-content">
-            <h2 id="1-hostname：查看主机名">1. hostname：查看主机名</h2>
-<h2 id="2-uname-a-查看所有信息">2. uname -a  查看所有信息</h2>
+            <h2 id="1-hostname-">1. hostname：查看主机名</h2>
+<h2 id="2-uname-a-">2. uname -a  查看所有信息</h2>
 <pre>-v/-r :查看内核版本
 -n  相当于查看主机名
 -s  查看内核名称
@@ -65,28 +65,28 @@
 (2) cat /proc/version
 (3) cat /etc/issue
 (4) cat /etc/*release*
-</pre><h2 id="3-查看cpu信息：">3. 查看cpu信息：</h2>
+</pre><h2 id="3-cpu-">3. 查看cpu信息：</h2>
 <p>3.1 物理CPU个数：</p>
-<pre>cat /proc/cpuinfo | grep &quot;physical id&quot; | sort -u | wc -l
-</pre><p>3.2 逻辑CPU个数</p>
-<pre>cat /proc/cpuinfo | grep &quot;processor&quot; | wc -l
-</pre><p>3.3 CPU核数</p>
-<pre>cat /proc/cpuinfo| grep &quot;cpu cores&quot;| uniq
-</pre><p>3.4 判断CPU是否64位</p>
-<pre>检查cpuinfo中的flags区段，看是否有lm标识。
-</pre><h2 id="5-查看内存">5. 查看内存</h2>
+<pre><code>cat /proc/cpuinfo | grep &quot;physical id&quot; | sort -u | wc -l
+</code></pre><p>3.2 逻辑CPU个数</p>
+<pre><code>cat /proc/cpuinfo | grep &quot;processor&quot; | wc -l
+</code></pre><p>3.3 CPU核数</p>
+<pre><code>cat /proc/cpuinfo| grep &quot;cpu cores&quot;| uniq
+</code></pre><p>3.4 判断CPU是否64位</p>
+<pre><code>检查cpuinfo中的flags区段，看是否有lm标识。
+</code></pre><p>##5. 查看内存</p>
 <p>grep MemTotal /proc/meminfo 
 free</p>
-<h2 id="6-查看交换分区大小">6. 查看交换分区大小</h2>
+<p>##6. 查看交换分区大小</p>
 <p>grep SwapTotal /proc/meminfo </p>
-<h2 id="7-查看进程信息">7. 查看进程信息</h2>
+<p>##7. 查看进程信息</p>
 <p>ps -ef<br>ps -aux</p>
-<h2 id="8-显示档案系统的最大空间及使用情况">8. 显示档案系统的最大空间及使用情况</h2>
+<p>##8. 显示档案系统的最大空间及使用情况</p>
 <p>df -h|-H
 -ih </p>
-<h2 id="9-查看文件和目录占用空间">9. 查看文件和目录占用空间</h2>
+<p>##9. 查看文件和目录占用空间</p>
 <p>du -a  显示全部目录和次目录下每个档案所占的空间
-du -s  显示各档案大小的总和</p>
+du -s  显示各档案大小的总和 </p>
 
         </div>
         <!-- 多说评论框 start -->

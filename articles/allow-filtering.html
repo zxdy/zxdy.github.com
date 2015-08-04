@@ -64,12 +64,12 @@
 </pre>
 <p>此时我们有了一个主键（key_part_one, key_part_two），一个分区键:key_part_one，一个clustering key：key_part_two。</p>
 <p>如果你执行下面一个查询：</p>
-<pre class="prettyprint linenums lang-sql">SELECT * FROM table2;
-</pre>
+<pre><code class="prettyprint linenums lang-sql">SELECT * FROM table2;
+</code></pre>
 <p>Cassandra会返回所有table2表中的数据（假如table2表的数据量非常大，这种查询会导致rpc timeout，可以在Cassandra配置文件中适当加大timeout的时间来解决这一问题，但是个人感觉治标不治本。目前发现用spark+Cassandra的方式可以比较好的处理大数据量的存储以及分析，有时间我会写一篇spark+Cassandra的集成攻略）。</p>
 <p>按照关系型数据库的习惯，你可能还会做如下的查询：</p>
-<pre class="prettyprint linenums lang-sql">SELECT * FROM table2 WHERE key_part_two = 1111;
-</pre>
+<pre><code class="prettyprint linenums lang-sql">SELECT * FROM table2 WHERE key_part_two = 1111;
+</code></pre>
 <p>然后cassandra就提示你要不要allow filtering一下：</p>
 <blockquote>
 <p>Bad Request: Cannot execute this query as it might involve data filtering and thus may have unpredictable performance. If you want to execute this query despite the performance unpredictability, use ALLOW FILTERING.</p>

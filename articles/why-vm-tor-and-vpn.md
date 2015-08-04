@@ -22,4 +22,4 @@ tor在全世界有很多的中继节点，就是图中的2部分。当你启动t
 这世上没有绝对的安全，丝绸之路创始人用tor如此high，还不是进去了。
 
 
-  [1]: http://zxdy-blog.qiniudn.com/tor.jpg
+  [1]: http://7x2wf2.com1.z0.glb.clouddn.com/tor.jpg

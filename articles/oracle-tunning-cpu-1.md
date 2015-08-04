@@ -85,11 +85,11 @@ Instance
 **如果发现有比较突出的sql，很可能就是瓶颈所在，可以继续跑个@?/rdbms/admin/awrsqrpt.sql看看**
 
 
-  [1]: http://zxdy-blog.qiniudn.com/bottle-neck-of-oracle.png
+  [1]: http://7x2wf2.com1.z0.glb.clouddn.com/bottle-neck-of-oracle.png
   [2]: http://zxdy.github.io/articles/linux-info-check.html
   [3]: http://docs.oracle.com/cd/E11882_01/server.112/e40402/dynviews_2085.htm#REFRN30321
-  [4]: http://zxdy-blog.qiniudn.com/awr_cpu.png
-  [5]: http://zxdy-blog.qiniudn.com/awr_cpu.png
-  [6]: http://zxdy-blog.qiniudn.com/instance_cpu.png
-  [7]: http://zxdy-blog.qiniudn.com/sql_order_by_elapsed_time.png
-  [8]: http://zxdy-blog.qiniudn.com/sql_order_by_cpu_time.png
+  [4]: http://7x2wf2.com1.z0.glb.clouddn.com/awr_cpu.png
+  [5]: http://7x2wf2.com1.z0.glb.clouddn.com/awr_cpu.png
+  [6]: http://7x2wf2.com1.z0.glb.clouddn.com/instance_cpu.png
+  [7]: http://7x2wf2.com1.z0.glb.clouddn.com/sql_order_by_elapsed_time.png
+  [8]: http://7x2wf2.com1.z0.glb.clouddn.com/sql_order_by_cpu_time.png
