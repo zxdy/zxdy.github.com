@@ -73,7 +73,7 @@
   END FUNC;
 </pre>
 <p>显示的结果如下，并没有显示真正异常的代码行号</p>
-<pre><code class="prettyprint linenums lang-text">Connecting to the database dev74.
+<pre class="prettyprint linenums lang-text">Connecting to the database dev74.
 ORA-06503: PL/SQL: Function returned without value
 ORA-06512: at &quot;TLSPID.FUNC&quot;, line 16
 ORA-06512: at line 5
@@ -81,9 +81,9 @@ ORA-06512: at line 5
 ######exception:
 Process exited.
 Disconnecting from the database dev74.
-</code></pre>
+</pre>
 <p>但是只要在exception代码块中加上第16行的代码</p>
-<pre><code class="prettyprint linenums lang-pl/sql">CREATE OR REPLACE
+<pre class="prettyprint linenums lang-pl/sql">CREATE OR REPLACE
   FUNCTION FUNC
     RETURN NUMBER
   AS
@@ -100,9 +100,9 @@ Disconnecting from the database dev74.
     dbms_output.put_line(&#39;######exception:&#39;);
     dbms_output.put_line(dbms_utility.format_error_backtrace());
   END FUNC;
-</code></pre>
+</pre>
 <p>运行后结果如下，可以看到第7行显示了出错的地方。实际使用的时候注意出错的行号应该是报错的下一行。比如下面显示第10行报错，但实际应该是第11行出错。</p>
-<pre><code class="prettyprint linenums lang-text">Connecting to the database dev74.
+<pre class="prettyprint linenums lang-text">Connecting to the database dev74.
 ORA-06503: PL/SQL: Function returned without value
 ORA-06512: at &quot;TLSPID.FUNC&quot;, line 16
 ORA-06512: at line 5
@@ -111,7 +111,7 @@ ORA-06512: at line 5
 ORA-06512: at &quot;TLSPID.FUNC&quot;, line 10
 Process exited.
 Disconnecting from the database dev74.
-</code></pre>
+</pre>
 
         </div>
         <!-- 多说评论框 start -->

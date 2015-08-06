@@ -58,7 +58,7 @@
 而存储过程中的dbms_output内容却没有办法显示？这样只能跑去sql developer 单独调试存储过程，而不能直接在eclipse
 进行集成测试，出了问题也不好定位。  </p>
 <p>所以在此分享一个解决方案： <a href="http://asktom.oracle.com/pls/asktom/f?p=100:11:0::::P11_QUESTION_ID:45027262935845">原文链接</a> 。05年的一个方法，不知现在有没有更好的：）  </p>
-<h2 id="-demo">存储过程demo</h2>
+<h2 id="存储过程demo">存储过程demo</h2>
 <pre class="prettyprint linenums lang-pl/sql">create or replace
 PROCEDURE test_java_dbmsOutPut
 IS
@@ -67,8 +67,8 @@ BEGIN
 END;
 /
 </pre>
-<h2 id="-dbms_output-">用来输出dbms_output 的类</h2>
-<pre><code class="prettyprint linenums lang-java">import java.sql.*;
+<h2 id="用来输出dbms_output-的类">用来输出dbms_output 的类</h2>
+<pre class="prettyprint linenums lang-java">import java.sql.*;
 class DbmsOutput 
  {
     /*
@@ -169,9 +169,9 @@ class DbmsOutput
         show_stmt.close();
     }
 }
-</code></pre>
-<h2 id="-">测试代码</h2>
-<pre><code class="prettyprint linenums lang-java">
+</pre>
+<h2 id="测试代码">测试代码</h2>
+<pre class="prettyprint linenums lang-java">
 import java.sql.*;
 public class Test{
     public static void main(String args[])
@@ -189,8 +189,8 @@ public class Test{
         conn.close();
     }   
 }
-</code></pre>
-<h2 id="-">输出的结果</h2>
+</pre>
+<h2 id="输出的结果">输出的结果</h2>
 <p>运行测试代码之后，就可以看见在java 控制台输出了: <strong>im in store procedure</strong></p>
 <blockquote>
 <p>这样就可以让java为我们输出DBMS_OUTPUT，就像SQL*PLUS一样。你需要做的仅仅是在java运行存储过程之后，调用DbmsOutput.show() ，就能显示这个存储过程内的DBMS_OUTPUT，是不是很方便？再也不用在eclipse和sql develper之间两头调试了</p>

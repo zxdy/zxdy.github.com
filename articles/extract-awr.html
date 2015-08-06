@@ -54,7 +54,7 @@
         
         </div>
         <div id="article-content">
-            <h1 id="1-awr-">1．AWR的启用</h1>
+            <h1 id="1．awr的启用">1．AWR的启用</h1>
 <p>在默认情况下，Oracle启用数据库统计收集这项功能（即启用AWR）。是否启用AWR由初始化参数STATISTICS_LEVEL控制</p>
 <pre class="prettyprint linenums lang-sql">SQL&gt; SHOW PARAMETER STATISTICS_LEVEL 
 NAME                                 TYPE        VALUE
@@ -72,32 +72,32 @@ statistics_level                     string      TYPICAL
 <li><p>ALL : 所有可能的统计都被捕捉. 并且有操作系统的一些信息.这个级别的捕捉应该在很少的情况下,比如你要更多的sql诊断信息的时候才使用.</p>
 </li>
 </ul>
-<h1 id="2-awr-">2. 导出AWR报告</h1>
+<h1 id="2-导出awr报告">2. 导出AWR报告</h1>
 <ul>
 <li>AWR比对报告</li>
 </ul>
-<pre><code class="prettyprint linenums lang-sql">@$ORACLE_HOME/rdbms/admin/awrddrpt.sql
-</code></pre>
+<pre class="prettyprint linenums lang-sql">@$ORACLE_HOME/rdbms/admin/awrddrpt.sql
+</pre>
 <ul>
 <li>RAC全局AWR</li>
 </ul>
-<pre><code class="prettyprint linenums lang-sql">@$ORACLE_HOME/rdbms/admin/awrgrpt.sql
-</code></pre>
+<pre class="prettyprint linenums lang-sql">@$ORACLE_HOME/rdbms/admin/awrgrpt.sql
+</pre>
 <ul>
 <li>本实例的AWR报告，运行脚本awrrpt.sql。</li>
 </ul>
-<pre><code class="prettyprint linenums lang-sql">@$ORACLE_HOME/rdbms/admin/awrrpt.sql
-</code></pre>
+<pre class="prettyprint linenums lang-sql">@$ORACLE_HOME/rdbms/admin/awrrpt.sql
+</pre>
 <ul>
 <li>产生某个实例（RAC）的AWR报告，运行脚本awrrpti.sql。</li>
 </ul>
-<pre><code class="prettyprint linenums lang-sql">@$ORACLE_HOME/rdbms/admin/awrrpti.sql
-</code></pre>
+<pre class="prettyprint linenums lang-sql">@$ORACLE_HOME/rdbms/admin/awrrpti.sql
+</pre>
 <ul>
 <li>产生某条SQL语句的AWR报告，运行脚本awrsqrpt.sql。</li>
 </ul>
-<pre><code class="prettyprint linenums lang-sql">@$ORACLE_HOME/rdbms/admin/awrsqrpt.sql
-</code></pre>
+<pre class="prettyprint linenums lang-sql">@$ORACLE_HOME/rdbms/admin/awrsqrpt.sql
+</pre>
 
         </div>
         <!-- 多说评论框 start -->

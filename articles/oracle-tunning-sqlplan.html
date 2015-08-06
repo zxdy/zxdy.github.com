@@ -56,7 +56,7 @@
         
         </div>
         <div id="article-content">
-            <h1 id="-">执行计划？</h1>
+            <h1 id="执行计划？">执行计划？</h1>
 <p>执行计划是sql在数据库中最终的执行路径，包括索引的扫描，数据的读取，过滤，连接，排序等等一系列过程。就像平常在生活中你为了完成一个任务，需要经过很多步骤，如果没有很好的统筹规划，任务时间会不断延长。所以sql的效率跟它的执行计划息息相关，同一个sql可能会有很多不一样的执行计划，基于CBO的oracle会在其中挑选出它认为最快的执行计划进行执行。下面这个流程图展现了优化器选择执行计划过程：</p>
 <p> <img src="http://7x2wf2.com1.z0.glb.clouddn.com/sql%20plan.png" alt="优化器选择执行计划过程"></p>
 <p> 从上面的流程图可以知道一个高效良好的执行计划需要考虑的因素有</p>
@@ -67,7 +67,7 @@
 <li>sql profile。<a href="https://docs.oracle.com/database/121/TGSQL/tgsql_profiles.htm#TGSQL599">定义</a></li>
 <li>sql plan。<a href="https://docs.oracle.com/database/121/TGSQL/tgsql_spm.htm#TGSQL617">sql profile vs plan baseline</a></li>
 </ol>
-<h1 id="-">怎么查看执行计划</h1>
+<h1 id="怎么查看执行计划">怎么查看执行计划</h1>
 <h2 id="1-explain-plan-for-sql">1. Explain Plan For SQL</h2>
 <ul>
 <li>不实际执行SQL诧句，生成的计划未必是真实执行的计划 </li>
@@ -82,15 +82,15 @@ SELECT PLAN_TABLE_OUTPUT FROM TABLE(DBMS_XPLAN.DISPLAY());
 <li>除set autotrace traceonly explain外均实际执行SQL，但仍未必是真实计划</li>
 <li>必须要有plan_table</li>
 </ul>
-<h2 id="3-">3. 其他第三方工具</h2>
+<h2 id="3-其他第三方工具">3. 其他第三方工具</h2>
 <ul>
 <li>sqldeveloper</li>
 <li>toad（收费，比sqldeveloper强大，细节丰富）</li>
 </ul>
-<h2 id="4-">4. 最靠谱的方法</h2>
+<h2 id="4-最靠谱的方法">4. 最靠谱的方法</h2>
 <p>为什么上文说未必是真实的计划呢？这里的指的是实际生产环境使用的执行计划和你手动用上文的方法查看某个sql的执行计划是有可能有差异的。所以最靠谱的办法是在生产环境找到已经执行过的sql或者是正在执行的sql的sql id，然后根据这个id去查看他的执行计划</p>
-<h3 id="-sql-sql-id">查询历史sql和sql id</h3>
-<pre><code class="prettyprint linenums lang-SQL">select sql_id,sql_text from v$SQL Where
+<h3 id="查询历史sql和sql-id">查询历史sql和sql id</h3>
+<pre class="prettyprint linenums lang-SQL">select sql_id,sql_text from v$SQL Where
 sql_text not like &#39;%like%&#39;
 and sql_text like &#39;%$SQL%&#39;;
 --或者
@@ -98,12 +98,12 @@ select b.SQL_TEXT,b.FIRST_LOAD_TIME,b.SQL_FULLTEXT
 from v$sqlarea b
 where b.FIRST_LOAD_TIME between &#39;2014-10-15/09:24:47&#39; and
 &#39;2014-10-15/09:24:47&#39; order by b.FIRST_LOAD_TIME
-</code></pre>
-<h3 id="-sql-sql-id">查询正在执行的sql和sql id</h3>
-<pre><code class="prettyprint linenums lang-SQL">select a.username, a.sid,b.SQL_TEXT, b.SQL_FULLTEXT,b.sql_id
+</pre>
+<h3 id="查询正在执行的sql和sql-id">查询正在执行的sql和sql id</h3>
+<pre class="prettyprint linenums lang-SQL">select a.username, a.sid,b.SQL_TEXT, b.SQL_FULLTEXT,b.sql_id
 from v$session a, v$sqlarea b 
 where a.sql_address = b.address ;
-</code></pre>
+</pre>
 <blockquote>
 <p>note:</p>
 <p>V\$SQL, V\$SQLAREA, V\$SQLTEXT三个视图的区别:</p>
@@ -113,11 +113,11 @@ where a.sql_address = b.address ;
 <p>V\$SQL的每一行表示的是每一个SQL语句的一个版本，而V\$SQLAREA存放的是相同语句不同版本一个GROUP BY汇总。</p>
 <p>V\$SQL及V\$SQLAREA存放着统计信息在调优时使用居多，但其SQL是不全的，如果想获得完整的SQL需使用V\$SQLTEXT。</p>
 </blockquote>
-<h3 id="-">精确查询详细执行计划</h3>
-<pre><code class="prettyprint linenums lang-SQL">alter session set STATISTICS_LEVEL = ALL; --不设置无法获得A-ROWS等信息,A-Rows 是实际执行时返回的行数
+<h3 id="精确查询详细执行计划">精确查询详细执行计划</h3>
+<pre class="prettyprint linenums lang-SQL">alter session set STATISTICS_LEVEL = ALL; --不设置无法获得A-ROWS等信息,A-Rows 是实际执行时返回的行数
 select * from table(dbms_xplan.display_cursor(&#39;sql_id&#39;,null,&#39;ADVANCED ALLSTATS LAST PEEKED_BINDS&#39;));
-</code></pre>
-<h1 id="-">执行计划的执行顺序</h1>
+</pre>
+<h1 id="执行计划的执行顺序">执行计划的执行顺序</h1>
 <p>toad看这个最方便，可以直接显示执行顺序。如图中的12345678就是：</p>
 <p><img src="http://7x2wf2.com1.z0.glb.clouddn.com/sqlplan_toad.png" alt="sql plan by toad"></p>
 <p>但是如果没有toad的话，通常显示的结果会是这样，要注意的是这里的id并不是顺序：</p>
@@ -134,7 +134,7 @@ select * from table(dbms_xplan.display_cursor(&#39;sql_id&#39;,null,&#39;ADVANCE
 </blockquote>
 <p>如果你学过二叉树的后序遍历的话，其实也很简单。首先我们先将这个图根据缩进转化成一个树。然后对这个树进行一下后续遍历，这个遍历的顺序（4 -&gt; 6 -&gt; 5-&gt; 3 -&gt; 7 -&gt; 2 -&gt; 8 -&gt; 1 -&gt; 0）就是执行顺序。</p>
 <p> <img src="http://7x2wf2.com1.z0.glb.clouddn.com/tree.png" alt="执行计划树"></p>
-<h1 id="-sql">如何通过执行计划优化sql</h1>
+<h1 id="如何通过执行计划优化sql">如何通过执行计划优化sql</h1>
 <ul>
 <li>在计划中，驱动表具有最强的过滤性。</li>
 <li>每个步骤的联接顺序都可保证返回给下一步的行数最少（即，联接顺序应使系统转到尚未使用的最强过滤器）。</li>
