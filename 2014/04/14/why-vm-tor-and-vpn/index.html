@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.1.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.1.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.1.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.1.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.1.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.1.0',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="为啥要使用虚拟机使用虚拟机主要有俩原因。第一个是为了好收拾，清理痕迹什么的。特别是MAC地址，系统指纹信息等等，这些一旦被收集到都可以作为呈堂证供。用虚拟机，干了坏事把快照恢复一下就好，省的清理cookie什么乱七八糟的，如果是干了特别坏的事那就把虚拟机删了，干净清透没问题～ 第二个原因是为了做网络隔离。直接连接网络很有可能会暴露你的公网ip地址。很显然在你的主机电脑上装了很多软件。。这些软件不说">
+<meta name="keywords" content="信息安全">
+<meta property="og:type" content="article">
+<meta property="og:title" content="为什么虚拟机+tor+vpn">
+<meta property="og:url" content="http://yoursite.com/2014/04/14/why-vm-tor-and-vpn/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="为啥要使用虚拟机使用虚拟机主要有俩原因。第一个是为了好收拾，清理痕迹什么的。特别是MAC地址，系统指纹信息等等，这些一旦被收集到都可以作为呈堂证供。用虚拟机，干了坏事把快照恢复一下就好，省的清理cookie什么乱七八糟的，如果是干了特别坏的事那就把虚拟机删了，干净清透没问题～ 第二个原因是为了做网络隔离。直接连接网络很有可能会暴露你的公网ip地址。很显然在你的主机电脑上装了很多软件。。这些软件不说">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://7x2wf2.com1.z0.glb.clouddn.com/tor.jpg">
+<meta property="og:updated_time" content="2019-04-09T06:33:06.210Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="为什么虚拟机+tor+vpn">
+<meta name="twitter:description" content="为啥要使用虚拟机使用虚拟机主要有俩原因。第一个是为了好收拾，清理痕迹什么的。特别是MAC地址，系统指纹信息等等，这些一旦被收集到都可以作为呈堂证供。用虚拟机，干了坏事把快照恢复一下就好，省的清理cookie什么乱七八糟的，如果是干了特别坏的事那就把虚拟机删了，干净清透没问题～ 第二个原因是为了做网络隔离。直接连接网络很有可能会暴露你的公网ip地址。很显然在你的主机电脑上装了很多软件。。这些软件不说">
+<meta name="twitter:image" content="http://7x2wf2.com1.z0.glb.clouddn.com/tor.jpg">
+
+
+
+
+
+  
+  
+  <link rel="canonical" href="http://yoursite.com/2014/04/14/why-vm-tor-and-vpn/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>为什么虚拟机+tor+vpn | Hexo</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Hexo</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Tags</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2014/04/14/why-vm-tor-and-vpn/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Ario">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">为什么虚拟机+tor+vpn
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2014-04-14 00:00:00" itemprop="dateCreated datePublished" datetime="2014-04-14T00:00:00+08:00">2014-04-14</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-04-09 14:33:06" itemprop="dateModified" datetime="2019-04-09T14:33:06+08:00">2019-04-09</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="为啥要使用虚拟机"><a href="#为啥要使用虚拟机" class="headerlink" title="为啥要使用虚拟机"></a>为啥要使用虚拟机</h2><p>使用虚拟机主要有俩原因。<br>第一个是为了好收拾，清理痕迹什么的。特别是MAC地址，系统指纹信息等等，这些一旦被收集到都可以作为呈堂证供。用虚拟机，干了坏事把快照恢复一下就好，省的清理cookie什么乱七八糟的，如果是干了特别坏的事那就把虚拟机删了，干净清透没问题～</p>
+<p>第二个原因是为了做网络隔离。直接连接网络很有可能会暴露你的公网ip地址。很显然在你的主机电脑上装了很多软件。。这些软件不说到底有没有后门，但是记录你的操作记录，或者某些隐私信息妥妥的，有些甚至可以直接绕过代理访问自己的服务器，一旦追查起来，都是很容易取证的。所以套一层虚拟机，搭一个干净的环境可以保护隐私不外泄。还有种双层虚拟机的，虚拟机A用作攻击机，虚拟机B用作网关，B必须是双网卡，一个host-only，一个NAT，然后A的所有信息先通过B中转到host再到公网。好吧，个人感觉这种真的是非常的蛋疼疼疼。。不过确实比单虚拟机更加安全。</p>
+<p>##再说tor<br>这个具体干嘛的找谷歌吧，总的来说是一款专门设计用于隐匿上网身份的工具。为什么说它可以用来隐匿呢？咱们来看图<br><img src="http://7x2wf2.com1.z0.glb.clouddn.com/tor.jpg" alt="tor工作图"></p>
+<p>tor在全世界有很多的中继节点，就是图中的2部分。当你启动tor用来上网的时候，首先经过1进入中继节点，TOR 客户端会随机挑选三个节点用于中转，并且每过几分钟会重新选择。中继节点分入口节点，中间节点，出口节点，然后再经过3到服务器。在这三步中，1和2都是经过加密的，只有在出口节点能看到你的真实访问信息。如果你访问的是https协议的网站，那就相对安全，因为https是加密的。如果访问的是http协议的网站，那么风险就比较大，因为出口节点说不定是蜜罐，在嗅探你的出口明文信息。但是由于1，2部分中间也都是加密传输，即便出口节点知道有人访问了某网站干了点啥，它也无法定位到来源的ip，除非所有节点都是蜜罐，或者有传说中NSA那样牛逼的破解密钥的能力一路追上来锁定你。</p>
+<p>##还有vpn<br>所以为啥还要用vpn啊？用tor感觉已经很安全了啊，即便是侧漏了好像也找不到自己也？</p>
+<p>感谢国家。。感谢GFW。。tor这种看上去一点都不像是五好青年用的东西必须肯定是分分钟在GFW的黑名单上啊。。。当你很嗨皮的启动tor想要体验一把“偷偷的上网，打枪地不要”时候，你会发现拓麻一个中继节点都连接不上啊～所以先整个VPN把自己翻出墙吧，然后才能连上tor。</p>
+<p>##最后</p>
+<p>警察蜀黍说，莫伸手，伸手必被抓。<br>这世上没有绝对的安全，丝绸之路创始人用tor如此high，还不是进去了。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/信息安全/" rel="tag"># 信息安全</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2013/12/18/debug-Pipelined/" rel="next" title="sql developer怎样调试Pipelined">
+                <i class="fa fa-chevron-left"></i> sql developer怎样调试Pipelined
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2014/04/23/web-log-analyze/" rel="prev" title="Web 日志分析">
+                Web 日志分析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Ario</p>
+              <div class="site-description motion-element" itemprop="description"></div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">21</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">9</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#为啥要使用虚拟机"><span class="nav-number">1.</span> <span class="nav-text">为啥要使用虚拟机</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ario</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.1.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/utils.js?v=7.1.0"></script>
+
+  <script src="/js/motion.js?v=7.1.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/affix.js?v=7.1.0"></script>
+
+  <script src="/js/schemes/pisces.js?v=7.1.0"></script>
+
+
+
+
+  
+  <script src="/js/scrollspy.js?v=7.1.0"></script>
+<script src="/js/post-details.js?v=7.1.0"></script>
+
+
+
+  
+
+
+  <script src="/js/next-boot.js?v=7.1.0"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

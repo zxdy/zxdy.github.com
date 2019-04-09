@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.1.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.1.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.1.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.1.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.1.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.1.0',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="执行计划？执行计划是sql在数据库中最终的执行路径，包括索引的扫描，数据的读取，过滤，连接，排序等等一系列过程。就像平常在生活中你为了完成一个任务，需要经过很多步骤，如果没有很好的统筹规划，任务时间会不断延长。所以sql的效率跟它的执行计划息息相关，同一个sql可能会有很多不一样的执行计划，基于CBO的oracle会在其中挑选出它认为最快的执行计划进行执行。下面这个流程图展现了优化器选择执行计划过">
+<meta name="keywords" content="Oracle,优化">
+<meta property="og:type" content="article">
+<meta property="og:title" content="oracle性能优化-执行计划篇">
+<meta property="og:url" content="http://yoursite.com/2015/02/09/oracle-tunning-sqlplan/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="执行计划？执行计划是sql在数据库中最终的执行路径，包括索引的扫描，数据的读取，过滤，连接，排序等等一系列过程。就像平常在生活中你为了完成一个任务，需要经过很多步骤，如果没有很好的统筹规划，任务时间会不断延长。所以sql的效率跟它的执行计划息息相关，同一个sql可能会有很多不一样的执行计划，基于CBO的oracle会在其中挑选出它认为最快的执行计划进行执行。下面这个流程图展现了优化器选择执行计划过">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://7x2wf2.com1.z0.glb.clouddn.com/sql%20plan.png">
+<meta property="og:image" content="http://7x2wf2.com1.z0.glb.clouddn.com/sqlplan_toad.png">
+<meta property="og:image" content="http://7x2wf2.com1.z0.glb.clouddn.com/sqlplan_sqldeveloper.png">
+<meta property="og:image" content="http://7x2wf2.com1.z0.glb.clouddn.com/tree.png">
+<meta property="og:updated_time" content="2019-04-09T06:35:16.100Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="oracle性能优化-执行计划篇">
+<meta name="twitter:description" content="执行计划？执行计划是sql在数据库中最终的执行路径，包括索引的扫描，数据的读取，过滤，连接，排序等等一系列过程。就像平常在生活中你为了完成一个任务，需要经过很多步骤，如果没有很好的统筹规划，任务时间会不断延长。所以sql的效率跟它的执行计划息息相关，同一个sql可能会有很多不一样的执行计划，基于CBO的oracle会在其中挑选出它认为最快的执行计划进行执行。下面这个流程图展现了优化器选择执行计划过">
+<meta name="twitter:image" content="http://7x2wf2.com1.z0.glb.clouddn.com/sql%20plan.png">
+
+
+
+
+
+  
+  
+  <link rel="canonical" href="http://yoursite.com/2015/02/09/oracle-tunning-sqlplan/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>oracle性能优化-执行计划篇 | Hexo</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Hexo</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Tags</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2015/02/09/oracle-tunning-sqlplan/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Ario">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">oracle性能优化-执行计划篇
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2015-02-09 00:00:00" itemprop="dateCreated datePublished" datetime="2015-02-09T00:00:00+08:00">2015-02-09</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-04-09 14:35:16" itemprop="dateModified" datetime="2019-04-09T14:35:16+08:00">2019-04-09</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="执行计划？"><a href="#执行计划？" class="headerlink" title="执行计划？"></a>执行计划？</h1><p>执行计划是sql在数据库中最终的执行路径，包括索引的扫描，数据的读取，过滤，连接，排序等等一系列过程。就像平常在生活中你为了完成一个任务，需要经过很多步骤，如果没有很好的统筹规划，任务时间会不断延长。所以sql的效率跟它的执行计划息息相关，同一个sql可能会有很多不一样的执行计划，基于CBO的oracle会在其中挑选出它认为最快的执行计划进行执行。下面这个流程图展现了优化器选择执行计划过程：</p>
+<p> <img src="http://7x2wf2.com1.z0.glb.clouddn.com/sql%20plan.png" alt="优化器选择执行计划过程"></p>
+<p> 从上面的流程图可以知道一个高效良好的执行计划需要考虑的因素有</p>
+<ol>
+<li>绑定变量。//还记得CPU优化篇的sql重用吗</li>
+<li>统计信息。oracle默认会在每天的晚上以及周末触发自动收集数据改变量在10%以上的表的统计信息。如果统计信息过于陈旧，DBA或者开发也可以手动提交收集统计信息任务。</li>
+<li>hint。hint会强制指定执行计划的路径，比如select /*+ use_hash*/ ,不管优化器怎么认为表连接应该使用nested loop更加效率，都会强制使用hash连接</li>
+<li>sql profile。<a href="https://docs.oracle.com/database/121/TGSQL/tgsql_profiles.htm#TGSQL599" target="_blank" rel="noopener">定义</a></li>
+<li>sql plan。<a href="https://docs.oracle.com/database/121/TGSQL/tgsql_spm.htm#TGSQL617" target="_blank" rel="noopener">sql profile vs plan baseline</a></li>
+</ol>
+<h1 id="怎么查看执行计划"><a href="#怎么查看执行计划" class="headerlink" title="怎么查看执行计划"></a>怎么查看执行计划</h1><h2 id="1-Explain-Plan-For-SQL"><a href="#1-Explain-Plan-For-SQL" class="headerlink" title="1. Explain Plan For SQL"></a>1. Explain Plan For SQL</h2><ul>
+<li>不实际执行SQL诧句，生成的计划未必是真实执行的计划 </li>
+<li>必须要有plan_table</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">EXPLAIN</span> PLAN <span class="keyword">FOR</span></span><br><span class="line">  <span class="keyword">SELECT</span> object_id <span class="keyword">FROM</span> dba_objects;</span><br><span class="line"><span class="keyword">SELECT</span> PLAN_TABLE_OUTPUT <span class="keyword">FROM</span> <span class="keyword">TABLE</span>(DBMS_XPLAN.DISPLAY());</span><br></pre></td></tr></table></figure>
+<h2 id="2-SQLPLUS-AUTOTRACE"><a href="#2-SQLPLUS-AUTOTRACE" class="headerlink" title="2. SQLPLUS AUTOTRACE"></a>2. SQLPLUS AUTOTRACE</h2><ul>
+<li>除set autotrace traceonly explain外均实际执行SQL，但仍未必是真实计划</li>
+<li>必须要有plan_table</li>
+</ul>
+<h2 id="3-其他第三方工具"><a href="#3-其他第三方工具" class="headerlink" title="3. 其他第三方工具"></a>3. 其他第三方工具</h2><ul>
+<li>sqldeveloper</li>
+<li>toad（收费，比sqldeveloper强大，细节丰富）</li>
+</ul>
+<h2 id="4-最靠谱的方法"><a href="#4-最靠谱的方法" class="headerlink" title="4. 最靠谱的方法"></a>4. 最靠谱的方法</h2><p>为什么上文说未必是真实的计划呢？这里的指的是实际生产环境使用的执行计划和你手动用上文的方法查看某个sql的执行计划是有可能有差异的。所以最靠谱的办法是在生产环境找到已经执行过的sql或者是正在执行的sql的sql id，然后根据这个id去查看他的执行计划</p>
+<h3 id="查询历史sql和sql-id"><a href="#查询历史sql和sql-id" class="headerlink" title="查询历史sql和sql id"></a>查询历史sql和sql id</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> sql_id,sql_text <span class="keyword">from</span> v$<span class="keyword">SQL</span> <span class="keyword">Where</span></span><br><span class="line">sql_text <span class="keyword">not</span> <span class="keyword">like</span> <span class="string">'%like%'</span></span><br><span class="line"><span class="keyword">and</span> sql_text <span class="keyword">like</span> <span class="string">'%$SQL%'</span>;</span><br><span class="line"><span class="comment">--或者</span></span><br><span class="line"><span class="keyword">select</span> b.SQL_TEXT,b.FIRST_LOAD_TIME,b.SQL_FULLTEXT</span><br><span class="line"><span class="keyword">from</span> v$sqlarea b</span><br><span class="line"><span class="keyword">where</span> b.FIRST_LOAD_TIME <span class="keyword">between</span> <span class="string">'2014-10-15/09:24:47'</span> <span class="keyword">and</span></span><br><span class="line"><span class="string">'2014-10-15/09:24:47'</span> <span class="keyword">order</span> <span class="keyword">by</span> b.FIRST_LOAD_TIME</span><br></pre></td></tr></table></figure>
+<h3 id="查询正在执行的sql和sql-id"><a href="#查询正在执行的sql和sql-id" class="headerlink" title="查询正在执行的sql和sql id"></a>查询正在执行的sql和sql id</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> a.username, a.sid,b.SQL_TEXT, b.SQL_FULLTEXT,b.sql_id</span><br><span class="line"><span class="keyword">from</span> v$<span class="keyword">session</span> a, v$sqlarea b </span><br><span class="line"><span class="keyword">where</span> a.sql_address = b.address ;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>note:</p>
+</blockquote>
+<blockquote>
+<p>V\$SQL, V\$SQLAREA, V\$SQLTEXT三个视图的区别:</p>
+</blockquote>
+<blockquote>
+<p>V\$SQL：CHILD CURSOR DETAILS FOR V\$SQLAREA</p>
+</blockquote>
+<blockquote>
+<p>V\$SQLAREA：SHARED POOL DETAILS FOR STATEMENTS/ANONYMOUS BLOCKS</p>
+</blockquote>
+<blockquote>
+<p>V\$SQLTEXT：SQL TEXT OF STATEMENTS IN THE SHARED POOL</p>
+</blockquote>
+<blockquote>
+<p>V\$SQL的每一行表示的是每一个SQL语句的一个版本，而V\$SQLAREA存放的是相同语句不同版本一个GROUP BY汇总。</p>
+</blockquote>
+<blockquote>
+<p>V\$SQL及V\$SQLAREA存放着统计信息在调优时使用居多，但其SQL是不全的，如果想获得完整的SQL需使用V\$SQLTEXT。</p>
+</blockquote>
+<h3 id="精确查询详细执行计划"><a href="#精确查询详细执行计划" class="headerlink" title="精确查询详细执行计划"></a>精确查询详细执行计划</h3><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">alter</span> <span class="keyword">session</span> <span class="keyword">set</span> STATISTICS_LEVEL = <span class="keyword">ALL</span>; <span class="comment">--不设置无法获得A-ROWS等信息,A-Rows 是实际执行时返回的行数</span></span><br><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> <span class="keyword">table</span>(dbms_xplan.display_cursor(<span class="string">'sql_id'</span>,<span class="literal">null</span>,<span class="string">'ADVANCED ALLSTATS LAST PEEKED_BINDS'</span>));</span><br></pre></td></tr></table></figure>
+<h1 id="执行计划的执行顺序"><a href="#执行计划的执行顺序" class="headerlink" title="执行计划的执行顺序"></a>执行计划的执行顺序</h1><p>toad看这个最方便，可以直接显示执行顺序。如图中的12345678就是：</p>
+<p><img src="http://7x2wf2.com1.z0.glb.clouddn.com/sqlplan_toad.png" alt="sql plan by toad"></p>
+<p>但是如果没有toad的话，通常显示的结果会是这样，要注意的是这里的id并不是顺序：</p>
+<p><img src="http://7x2wf2.com1.z0.glb.clouddn.com/sqlplan_sqldeveloper.png" alt="sql plan"></p>
+<blockquote>
+<p>note:</p>
+<ul>
+<li>Id 分配给执行计划中每一个步骤的一个数字 每个步骤（执行计划中的行，戒树中的节点）代表行源 (row source)。</li>
+<li>Operation 该步骤实施的内部操作名 id=0的operation一般是 SELECT/INSERT/UPDATE/DELETE Statement</li>
+<li>Name 该步骤操作的表戒者索引名</li>
+<li>Rows CBO基亍统计信息估计该操作将返回的行数</li>
+<li>Bytes CBO基亍统计信息估计该操作将返回的字节数</li>
+</ul>
+</blockquote>
+<p>如果你学过二叉树的后序遍历的话，其实也很简单。首先我们先将这个图根据缩进转化成一个树。然后对这个树进行一下后续遍历，这个遍历的顺序（4 -&gt; 6 -&gt; 5-&gt; 3 -&gt; 7 -&gt; 2 -&gt; 8 -&gt; 1 -&gt; 0）就是执行顺序。</p>
+<p> <img src="http://7x2wf2.com1.z0.glb.clouddn.com/tree.png" alt="执行计划树"></p>
+<h1 id="如何通过执行计划优化sql"><a href="#如何通过执行计划优化sql" class="headerlink" title="如何通过执行计划优化sql"></a>如何通过执行计划优化sql</h1><ul>
+<li>在计划中，驱动表具有最强的过滤性。</li>
+<li>每个步骤的联接顺序都可保证返回给下一步的行数最少（即，联接顺序应使系统转到尚未使用的最强过滤器）。</li>
+<li>就返回的行数而言，相应的联接方法是适合的。例如，返回的行很多时，使用索引的嵌套循环联接可能不是最佳方法。</li>
+<li>高效地使用视图。查看 SELECT 列表，确定访问的视图是否必需。</li>
+<li>是否存在预料之外的笛卡尔积（即使对于小表，也是如此）。</li>
+<li>高效地访问每个表：考虑 SQL 语句中的谓词和表的行数。查找可疑活动，例如对行数很多的表执行全表扫描（在 WHERE 子句中有谓词）。而对于小表，或根据返回的行数利用更好的联接方法（例如 hash_join）时，全表扫描也许更有效。</li>
+</ul>
+<p>参考：</p>
+<ol>
+<li><a href="http://t.askmaclean.com/thread-3237-1-1.html" target="_blank" rel="noopener">Maclean Liu的Oracle性能优化讲座 真正读懂Oracle SQL执行计划</a></li>
+<li><a href="http://blog.itpub.net/22664653/viewspace-701711/" target="_blank" rel="noopener">如何清除某条SQL在库缓存中的执行计划：dbms_shared_pool.purge </a></li>
+<li><a href="http://files.cnblogs.com/files/kerrycode/ORACLE_11g_ARCHITECTURE.pdf" target="_blank" rel="noopener">oracle 11g 架构图</a></li>
+</ol>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Oracle/" rel="tag"># Oracle</a>
+          
+            <a href="/tags/优化/" rel="tag"># 优化</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/01/15/file-read-write-compare/" rel="next" title="大文件读写效率比较">
+                <i class="fa fa-chevron-left"></i> 大文件读写效率比较
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/03/04/oracle-tunning-cpu-1/" rel="prev" title="oracle性能优化-CPU篇(上)">
+                oracle性能优化-CPU篇(上) <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Ario</p>
+              <div class="site-description motion-element" itemprop="description"></div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">21</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">9</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#执行计划？"><span class="nav-number">1.</span> <span class="nav-text">执行计划？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#怎么查看执行计划"><span class="nav-number">2.</span> <span class="nav-text">怎么查看执行计划</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Explain-Plan-For-SQL"><span class="nav-number">2.1.</span> <span class="nav-text">1. Explain Plan For SQL</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-SQLPLUS-AUTOTRACE"><span class="nav-number">2.2.</span> <span class="nav-text">2. SQLPLUS AUTOTRACE</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-其他第三方工具"><span class="nav-number">2.3.</span> <span class="nav-text">3. 其他第三方工具</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-最靠谱的方法"><span class="nav-number">2.4.</span> <span class="nav-text">4. 最靠谱的方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#查询历史sql和sql-id"><span class="nav-number">2.4.1.</span> <span class="nav-text">查询历史sql和sql id</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#查询正在执行的sql和sql-id"><span class="nav-number">2.4.2.</span> <span class="nav-text">查询正在执行的sql和sql id</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#精确查询详细执行计划"><span class="nav-number">2.4.3.</span> <span class="nav-text">精确查询详细执行计划</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#执行计划的执行顺序"><span class="nav-number">3.</span> <span class="nav-text">执行计划的执行顺序</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#如何通过执行计划优化sql"><span class="nav-number">4.</span> <span class="nav-text">如何通过执行计划优化sql</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ario</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.1.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/utils.js?v=7.1.0"></script>
+
+  <script src="/js/motion.js?v=7.1.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/affix.js?v=7.1.0"></script>
+
+  <script src="/js/schemes/pisces.js?v=7.1.0"></script>
+
+
+
+
+  
+  <script src="/js/scrollspy.js?v=7.1.0"></script>
+<script src="/js/post-details.js?v=7.1.0"></script>
+
+
+
+  
+
+
+  <script src="/js/next-boot.js?v=7.1.0"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

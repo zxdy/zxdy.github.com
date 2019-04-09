@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.1.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.1.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.1.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.1.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.1.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.1.0',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="本文主要通过一个具体的spark application来讲述spark job执行过程中关于stage划分，stage提交，task运行的流程。主要也是因为上篇的源码阅读只有纯粹的理论，所以希望能通过这篇实战将理论讲的更清楚一点。  RDDRDD，全称为Resilient Distributed Datasets，是一个容错的、并行的数据结构，可以让用户显式地将数据存储到磁盘和内存中，并能控制数">
+<meta name="keywords" content="spark">
+<meta property="og:type" content="article">
+<meta property="og:title" content="spark job物理执行图实战">
+<meta property="og:url" content="http://yoursite.com/2015/04/28/spark-job-real-play/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="本文主要通过一个具体的spark application来讲述spark job执行过程中关于stage划分，stage提交，task运行的流程。主要也是因为上篇的源码阅读只有纯粹的理论，所以希望能通过这篇实战将理论讲的更清楚一点。  RDDRDD，全称为Resilient Distributed Datasets，是一个容错的、并行的数据结构，可以让用户显式地将数据存储到磁盘和内存中，并能控制数">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://7x2wf2.com1.z0.glb.clouddn.com/RDD.png">
+<meta property="og:image" content="http://7x2wf2.com1.z0.glb.clouddn.com/simple_stage.png">
+<meta property="og:image" content="http://7x2wf2.com1.z0.glb.clouddn.com/complex_stage.png">
+<meta property="og:updated_time" content="2019-04-09T07:23:07.368Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="spark job物理执行图实战">
+<meta name="twitter:description" content="本文主要通过一个具体的spark application来讲述spark job执行过程中关于stage划分，stage提交，task运行的流程。主要也是因为上篇的源码阅读只有纯粹的理论，所以希望能通过这篇实战将理论讲的更清楚一点。  RDDRDD，全称为Resilient Distributed Datasets，是一个容错的、并行的数据结构，可以让用户显式地将数据存储到磁盘和内存中，并能控制数">
+<meta name="twitter:image" content="http://7x2wf2.com1.z0.glb.clouddn.com/RDD.png">
+
+
+
+
+
+  
+  
+  <link rel="canonical" href="http://yoursite.com/2015/04/28/spark-job-real-play/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>spark job物理执行图实战 | Hexo</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Hexo</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Tags</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2015/04/28/spark-job-real-play/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Ario">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">spark job物理执行图实战
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2015-04-28 00:00:00" itemprop="dateCreated datePublished" datetime="2015-04-28T00:00:00+08:00">2015-04-28</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-04-09 15:23:07" itemprop="dateModified" datetime="2019-04-09T15:23:07+08:00">2019-04-09</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本文主要通过一个具体的spark application来讲述spark job执行过程中关于stage划分，stage提交，task运行的流程。主要也是因为上篇的源码阅读只有纯粹的理论，所以希望能通过这篇实战将理论讲的更清楚一点。</p>
+<!-- toc -->
+<h2 id="RDD"><a href="#RDD" class="headerlink" title="RDD"></a>RDD</h2><p>RDD，全称为Resilient Distributed Datasets，是一个容错的、并行的数据结构，可以让用户显式地将数据存储到磁盘和内存中，并能控制数据的分区。同时，RDD还提供了一组丰富的操作来操作这些数据。在这些操作中，诸如map、flatMap、filter等转换操作，很好地契合了Scala的集合操作。除此之外，RDD还提供了诸如join、groupBy、reduceByKey等更为方便的操作（注意，reduceByKey是action，而非transformation），以支持常见的数据运算。</p>
+<p>RDD作为数据结构，本质上是一个只读的分区记录集合。一个RDD可以包含多个分区（partition），每个分区就是一个dataset片段。RDD可以相互依赖。</p>
+<p>如图是一个比较简单的RDD数据流转图，P1,P2 代表各个RDD内的分区。</p>
+<p><img src="http://7x2wf2.com1.z0.glb.clouddn.com/RDD.png" alt="RDD"></p>
+<p>总结：</p>
+<ul>
+<li>它是不变的数据结构存储</li>
+<li>它是支持跨集群的分布式数据结构</li>
+<li>可以根据数据记录的key对结构进行分区</li>
+<li>提供了粗粒度的操作，且这些操作都支持分区</li>
+<li>它将数据存储在内存中，从而提供了低延迟性</li>
+</ul>
+<h3 id="Partition"><a href="#Partition" class="headerlink" title="Partition"></a>Partition</h3><ul>
+<li><p>什么是partition</p>
+<p>每个 partition 就是一个RDD的dataset片段，他支持比RDD更细粒度的操作</p>
+</li>
+<li><p>RDD 中有几个partition</p>
+<ul>
+<li><p>初始由并行度决定。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">scala&gt; val data1=Array(<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>,<span class="number">6</span>)</span><br><span class="line">data1: Array[Int] = Array(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>)</span><br><span class="line"></span><br><span class="line">scala&gt; val rangePairs1 = sc.parallelize(data1, <span class="number">3</span>)</span><br><span class="line">rangePairs1: org.apache.spark.rdd.RDD[Int] = ParallelCollectionRDD[<span class="number">0</span>] at parallelize at &lt;console&gt;:<span class="number">23</span></span><br><span class="line">scala&gt; rangePairs1.partitions.size</span><br><span class="line">res2: Int = <span class="number">3</span>   <span class="comment">//设置并行度为3之后，RDD rangePairs1 的partition个数也为3</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>修改partition个数。</p>
+<p>下面使用了两种修改partition数量的操作repartition和partitionBy。<br>从DebugString来看，partitionBy的操作代价要小于repartition，但是repartition的适用性比partitionBy广，具体怎么用根据实际情况来吧。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">    <span class="number">1</span>.repartition---</span><br><span class="line">    scala&gt; val hashPairs1 = rangePairs1.repartition(<span class="number">6</span>)</span><br><span class="line">    hashPairs1: org.apache.spark.rdd.RDD[Int] = MapPartitionsRDD[<span class="number">4</span>] at repartition at &lt;console&gt;:<span class="number">25</span></span><br><span class="line">    </span><br><span class="line">    scala&gt; hashPairs1.partitions.size</span><br><span class="line">    res0: Int = <span class="number">6</span></span><br><span class="line">    </span><br><span class="line">    scala&gt; println(hashPairs1.toDebugString)</span><br><span class="line">(<span class="number">6</span>) MapPartitionsRDD[<span class="number">21</span>] at repartition at &lt;console&gt;:<span class="number">25</span> []</span><br><span class="line"> |  CoalescedRDD[<span class="number">20</span>] at repartition at &lt;console&gt;:<span class="number">25</span> []</span><br><span class="line"> |  ShuffledRDD[<span class="number">19</span>] at repartition at &lt;console&gt;:<span class="number">25</span> []</span><br><span class="line"> +-(<span class="number">3</span>) MapPartitionsRDD[<span class="number">18</span>] at repartition at &lt;console&gt;:<span class="number">25</span> []</span><br><span class="line">    |  ParallelCollectionRDD[<span class="number">17</span>] at parallelize at &lt;console&gt;:<span class="number">23</span> []</span><br><span class="line"></span><br><span class="line">    <span class="number">2</span>.partitionBy----</span><br><span class="line">    scala&gt;  val hashPairs1 = rangePairs1.partitionBy(<span class="keyword">new</span> HashPartitioner(<span class="number">6</span>))</span><br><span class="line">    hashPairs1: org.apache.spark.rdd.RDD[(Int, Char)] = ShuffledRDD[<span class="number">1</span>] at partitionBy at &lt;console&gt;:<span class="number">28</span></span><br><span class="line">    </span><br><span class="line">    scala&gt; hashPairs1.partitions.size</span><br><span class="line">    res0: Int = <span class="number">6</span></span><br><span class="line">    </span><br><span class="line">    scala&gt; println(hashPairs1.toDebugString)</span><br><span class="line">(<span class="number">6</span>) ShuffledRDD[<span class="number">4</span>] at partitionBy at &lt;console&gt;:<span class="number">32</span> []</span><br><span class="line"> +-(<span class="number">3</span>) MapPartitionsRDD[<span class="number">3</span>] at map at &lt;console&gt;:<span class="number">30</span> []</span><br><span class="line">    |  ParallelCollectionRDD[<span class="number">2</span>] at parallelize at &lt;console&gt;:<span class="number">26</span> []</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>partition 与 task 关系<br>spark 的每一个stage都包含了一个或多个task，task的数量取决于每个stage中最后一个RDD的partition数量。</p>
+</li>
+</ul>
+<h3 id="Dependency"><a href="#Dependency" class="headerlink" title="Dependency"></a>Dependency</h3><p>RDD 本身的依赖关系由 transformation() 生成的每一个 RDD 本身语义决定，每个RDD的getDependencies()定义RDD之间的数据依赖关系。</p>
+<p>RDD 中 partition 依赖关系分为 NarrowDependency（窄依赖） 和 ShuffleDependency（宽依赖）</p>
+<p><strong>窄依赖</strong> 指父RDD的每一个分区最多被一个子RDD的分区所用，表现为</p>
+<ul>
+<li><p>一个父RDD的分区对应于一个子RDD的分区</p>
+</li>
+<li><p>两个父RDD的分区对应于一个子RDD 的分区。</p>
+</li>
+</ul>
+<p><strong>宽依赖</strong> 指子RDD的每个分区都要依赖于父RDD的所有分区，</p>
+<h2 id="Stage"><a href="#Stage" class="headerlink" title="Stage"></a>Stage</h2><p>DAGScheduler对Stage的划分是spark任务调度的核心，在上篇 <a href="http://zxdy.github.io/articles/spark-job-logic.html" target="_blank" rel="noopener">spark 源码阅读–job提交与执行过程</a> 提到spark划分stage的总体思想是从最后的finallRDD出发反向递归访问逻辑执行图，每遇到宽依赖就断开，把之前沿途的窄依赖都加入同一个stage。于是对于本文开始的那个RDD数据流转图可以进行如下的划分。</p>
+<p><img src="http://7x2wf2.com1.z0.glb.clouddn.com/simple_stage.png" alt="simpe_stage"></p>
+<h2 id="实战"><a href="#实战" class="headerlink" title="实战"></a>实战</h2><p>讲了这么多理论知识，下面准备结合一个具体的例子来验证一下spark job提交之后的各个过程。</p>
+<p>首先构造一个稍复杂的spark job。代码如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.apache.log4j.&#123;Level, Logger&#125;</span><br><span class="line"><span class="keyword">import</span> org.apache.spark._</span><br><span class="line"></span><br><span class="line">object complexJob &#123;</span><br><span class="line">  <span class="function">def <span class="title">main</span><span class="params">(args: Array[String])</span> </span>&#123;</span><br><span class="line">    <span class="comment">//开启debug日志</span></span><br><span class="line">    Logger.getLogger(<span class="string">"org"</span>).setLevel(Level.DEBUG)</span><br><span class="line">    Logger.getLogger(<span class="string">"akka"</span>).setLevel(Level.DEBUG)</span><br><span class="line">    val sc = <span class="keyword">new</span> SparkContext(<span class="string">"local[3]"</span>, <span class="string">"ComplexJob test"</span>)</span><br><span class="line"></span><br><span class="line">    val data1 = Array[Int](<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">4</span>, <span class="number">3</span>, <span class="number">2</span>, <span class="number">1</span>)</span><br><span class="line">    val data2 = Array[Char](<span class="string">'a'</span>, <span class="string">'b'</span>, <span class="string">'c'</span>, <span class="string">'d'</span>, <span class="string">'e'</span>, <span class="string">'f'</span>, <span class="string">'g'</span>, <span class="string">'h'</span>, <span class="string">'i'</span>)</span><br><span class="line"></span><br><span class="line">    val dataRdd1 = sc.parallelize(data1, <span class="number">3</span>)</span><br><span class="line">    val dataRdd2 = sc.parallelize(data2, <span class="number">3</span>)</span><br><span class="line"></span><br><span class="line">    val dataRdd3 = dataRdd1.zip(dataRdd2)</span><br><span class="line">    val dataRdd4 = dataRdd3.groupByKey()</span><br><span class="line">    val dataRdd5 = dataRdd4.map(i =&gt; (i._1 + <span class="number">1</span>, i._2))</span><br><span class="line"></span><br><span class="line">    val data3 = Array[(Int, String)]((<span class="number">1</span>, <span class="string">"A"</span>), (<span class="number">2</span>, <span class="string">"B"</span>),</span><br><span class="line">      (<span class="number">3</span>, <span class="string">"C"</span>), (<span class="number">4</span>, <span class="string">"D"</span>))</span><br><span class="line">    val dataRdd6 = sc.parallelize(data3, <span class="number">2</span>)</span><br><span class="line">    val dataRdd7 = dataRdd6.map(x =&gt; (x._1, x._2.charAt(<span class="number">0</span>)))</span><br><span class="line"></span><br><span class="line">    val data4 = Array[(Int, Char)]((<span class="number">1</span>, <span class="string">'X'</span>), (<span class="number">2</span>, <span class="string">'Y'</span>))</span><br><span class="line">    val dataRdd8 = sc.parallelize(data4, <span class="number">2</span>)</span><br><span class="line"></span><br><span class="line">    val dataRdd9 = dataRdd7.union(dataRdd8)</span><br><span class="line"></span><br><span class="line">    val result = dataRdd5.join(dataRdd9)</span><br><span class="line">    result.foreach(println)</span><br><span class="line">    println(result.toDebugString)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>执行后打印DebugString如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">(4) MapPartitionsRDD[11] at join at complexJob.scala:31 []</span><br><span class="line"> |  MapPartitionsRDD[10] at join at complexJob.scala:31 []</span><br><span class="line"> |  CoGroupedRDD[9] at join at complexJob.scala:31 []</span><br><span class="line"> +-(3) MapPartitionsRDD[4] at map at complexJob.scala:19 []</span><br><span class="line"> |  |  ShuffledRDD[3] at groupByKey at complexJob.scala:18 []</span><br><span class="line"> |  +-(3) ZippedPartitionsRDD2[2] at zip at complexJob.scala:17 []</span><br><span class="line"> |     |  ParallelCollectionRDD[0] at parallelize at complexJob.scala:14 []</span><br><span class="line"> |     |  ParallelCollectionRDD[1] at parallelize at complexJob.scala:15 []</span><br><span class="line"> +-(4) UnionRDD[8] at union at complexJob.scala:29 []</span><br><span class="line">    |  MapPartitionsRDD[6] at map at complexJob.scala:24 []</span><br><span class="line">    |  ParallelCollectionRDD[5] at parallelize at complexJob.scala:23 []</span><br><span class="line">    |  ParallelCollectionRDD[7] at parallelize at complexJob.scala:27 []</span><br></pre></td></tr></table></figure>
+<p>从上面的DebugString中，已经可以获取很多信息包括</p>
+<ol>
+<li>RDD的转换</li>
+<li>stage的划分：每一个缺口的同级可以分为一个stage</li>
+<li>partition的数量：在RDD前面括号里的数字就代表当前stage最后一个RDD的paritition数量，由此也可知每个stage的task数量</li>
+</ol>
+<p>DebugString有点像oracle的执行计划，虽然我们已经可以根据这个来划分stage，但是并没有太多的细节信息，所以还是想从代码出发，来详细解释一下stage为什么要这么划分，以及stage提交的流程，顺便也可以与DebugString相互验证。</p>
+<h3 id="流程图"><a href="#流程图" class="headerlink" title="流程图"></a>流程图</h3><p>根据代码，最终的流程图如下：</p>
+<p><img src="http://7x2wf2.com1.z0.glb.clouddn.com/complex_stage.png" alt="compex_stage"></p>
+<h3 id="代码解读"><a href="#代码解读" class="headerlink" title="代码解读"></a>代码解读</h3><p>从整体上看，最后的结果result来自dataRdd5.join(dataRdd9)，所以我们可以首先将整个job拆成A,B两条线，分别对应dataRdd5和dataRdd9的处理流程。</p>
+<ul>
+<li>A线:</li>
+</ul>
+<p>A1. 数组data1生成类型为ParallelCollectionRDD的dataRdd1，分区数为3。</p>
+<p>A2. 数组data2生成类型为ParallelCollectionRDD的dataRdd2，分区数为3。</p>
+<p>A3. 将dataRdd1和dataRdd2通过Transformation(zip)生成新的ZipPartitionsRDD(dataRdd3)。zip是一种变形的map，可以将两个数组根据相同的下标map成一个新的数组结构[(key1,value1),(key2,value2)..(keyN,valueN)]。要注意的是两个RDD的partition数必须相等，否则不能zip。</p>
+<p>A4. dataRdd3通过Transformation(groupBykey)生成ShuffledRDD(dataRdd4)。注意此处有shuffle。</p>
+<p>A5. dataRdd4通过Transformation(map)将所有的key值加1后生成新的MapPartitionsRDD(dataRdd5)，分区数为3。</p>
+<p>dataRdd5生成完毕</p>
+<ul>
+<li>B线:</li>
+</ul>
+<p>B1. 数组data3生成类型为ParallelCollectionRDD的dataRdd6，分区数为2。</p>
+<p>B2. dataRdd6通过Transformation(map)生成MapPartitionsRDD(dataRdd7)</p>
+<p>B3. 数组data4生成类型为ParallelCollectionRDD的dataRdd8，分区数为2。</p>
+<p>B4. dataRdd7 与dataRdd8通过Transformation(union)生成新的UnionRDD(dataRdd9)，分区数为4</p>
+<p>dataRdd9生成完毕</p>
+<p>最后得到result=dataRdd5.join(dataRdd9)，分区数为4。注意此处有shuffle。调用join()的时候并不是一次性生成最后的MapPartitionsRDD，而是首先会进行 cogroup()，得到&lt;K, (Iterable[V1], Iterable[V2])&gt;类型的MapPartitionsRDD，然后对 Iterable[V1] 和 Iterable[V2] 做笛卡尔集，最后生成新的MapPartitionsRDD，所以在join后会产生3个RDD。</p>
+<h3 id="stage-划分"><a href="#stage-划分" class="headerlink" title="stage 划分"></a>stage 划分</h3><p>根据DAGScheduler的逻辑，首先从最后的finalRDD(本文为result)开始向前递归访问。</p>
+<p>当到达join时，发现有子RDD(result)的每个分区都要依赖于父RDD(dataRdd5和dataRdd9)的所有分区，所以是shuffleDependency,。于是把join之后的所有RDD划分为一个stage，标记为<strong>stage3</strong>。</p>
+<blockquote>
+<p>注意，假如dataRdd5,dataRdd9的partitioner也是HashPartitioner，且partition数量与result的相同，那么他们之间的依赖就变成了narrowDependency，属于两个(会有多个吗？不,spark只支持两两join)父RDD的分区对应于一个子RDD的分区的情况，这个join()变成了hashjoin()。</p>
+</blockquote>
+<p>继续往前，先看A线部分，当递归访问到A4步骤(groupBykey)时，判断dataRdd3–&gt;dataRdd4之间的依赖为shuffleDependency，于是将dataRdd4和dataRdd5划分为新的stage，标记为<strong>stage1</strong>。</p>
+<p>A线继续往前，到zip又遇到依赖，属于两个父RDD(dataRdd1&amp;dataRdd2)的分区对应于一个子RDD(dataRdd3)的分区的情况，判断为narrowDependency，而dataRdd1和dataRdd2之前已经没有别的RDD存在，于是将dataRdd1，dataRdd2，dataRdd3划分为一个新的stage，标记为<strong>stage0</strong>。</p>
+<p>A线已经结束，现在看B线部分。在B线的递归路径中发现有union()，union()是将两个RDD简单合并在一起，并不改变 partition里面的数据。它是一种RangeDependency，属于narrowDependency的一种。继续往前遍历，发现整个B线中都不存在shuffleDependency，所以可以将整个B线划分为新的stage，标记为<strong>stage2</strong>。</p>
+<p>到此对整个job的stage划分已经结束，总共分为4个stage。</p>
+<h3 id="stage提交"><a href="#stage提交" class="headerlink" title="stage提交"></a>stage提交</h3><p>stage提交的过程，也就是job执行的过程。根据前一篇的spark源代码解读，DAGScheduler首先会调用finalStage = newStage()进行stage划分，这一步已经在上文完成，那么接下来就是DAGScheduler调用submitStage，提交finalStage。</p>
+<ol>
+<li><p>在本文中例子中的finalStage就是最后的stage3，提交stage3之后，递归查找parentStage，发现stage3依赖于stage1和stage2。</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">    15/04/27 19:03:28 INFO DAGScheduler: Registering RDD 2 (zip at complexJob.scala:17)</span><br><span class="line">    15/04/27 19:03:28 INFO DAGScheduler: Registering RDD 4 (map at complexJob.scala:19)</span><br><span class="line">    15/04/27 19:03:28 INFO DAGScheduler: Registering RDD 8 (union at complexJob.scala:29)</span><br><span class="line">    15/04/27 19:03:28 INFO DAGScheduler: Got job 0 (foreach at complexJob.scala:32) with 4 output partitions (allowLocal=false)</span><br><span class="line">    15/04/27 19:03:28 INFO DAGScheduler: Final stage: Stage 3(foreach at complexJob.scala:32)</span><br><span class="line">    15/04/27 19:03:28 INFO DAGScheduler: Parents of final stage: List(Stage 1, Stage 2)</span><br><span class="line">    15/04/27 19:03:28 DEBUG DAGScheduler: submitStage(Stage 3)</span><br><span class="line">15/04/27 19:03:28 DEBUG DAGScheduler: missing: List(Stage 1, Stage 2)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>提交stage1和stage2，将stage3放入waitingStages。</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">15/04/27 19:03:28 DEBUG DAGScheduler: submitStage(Stage 1)</span><br><span class="line">15/04/27 19:03:28 DEBUG DAGScheduler: submitStage(Stage 2)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>stage1 发现parentStage：stage0,提交stage0，将stage1放入waitingStages。</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">15/04/27 19:03:28 DEBUG DAGScheduler: submitStage(Stage 1)</span><br><span class="line">15/04/27 19:03:28 DEBUG DAGScheduler: missing: List(Stage 0)</span><br><span class="line">15/04/27 19:03:28 DEBUG DAGScheduler: submitStage(Stage 0)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>stage0没有找到parentStage,可以立即执行，调用submitMissingTasks，生成类型为ShuffleMapTask的tasks，task的数量与stage0中最后一个Rdd partition数量相等为3。</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">15/04/27 19:03:28 DEBUG DAGScheduler: submitStage(Stage 0)</span><br><span class="line">15/04/27 19:03:28 DEBUG DAGScheduler: missing: List()</span><br><span class="line">15/04/27 19:03:28 INFO DAGScheduler: Submitting Stage 0 (ZippedPartitionsRDD2[2] at zip at complexJob.scala:17), which has no missing parents</span><br><span class="line">15/04/27 19:03:28 DEBUG DAGScheduler: submitMissingTasks(Stage 0)</span><br><span class="line">15/04/27 19:03:28 INFO DAGScheduler: Submitting 3 missing tasks from Stage 0 (ZippedPartitionsRDD2[2] at zip at complexJob.scala:17)</span><br><span class="line">15/04/27 19:03:28 DEBUG DAGScheduler: New pending tasks: Set(ShuffleMapTask(0, 2), ShuffleMapTask(0, 1), ShuffleMapTask(0, 0))</span><br><span class="line">15/04/27 19:03:28 INFO TaskSchedulerImpl: Adding task set 0.0 with 3 tasks</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>stage2没有找到parentStage,可以立即执行，调用submitMissingTasks，生成类型为ShuffleMapTask的tasks，task的数量与stage2中最后一个Rdd partition数量相等为4。</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">    15/04/27 19:03:28 DEBUG DAGScheduler: submitStage(Stage 2)</span><br><span class="line">    15/04/27 19:03:28 DEBUG DAGScheduler: missing: List()</span><br><span class="line">    15/04/27 19:03:28 DEBUG DAGScheduler: submitMissingTasks(Stage 2)</span><br><span class="line">    15/04/27 19:03:28 INFO DAGScheduler: Submitting 4 missing tasks from Stage 2 (UnionRDD[8] at union at complexJob.scala:29)</span><br><span class="line">    15/04/27 19:03:28 DEBUG DAGScheduler: New pending tasks: Set(ShuffleMapTask(2, 0), ShuffleMapTask(2, 3), ShuffleMapTask(2, 2), ShuffleMapTask(2, 1))</span><br><span class="line">15/04/27 19:03:28 INFO TaskSchedulerImpl: Adding task set 2.0 with 4 tasks</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>stage0的task完成后通知dagScheduler，当stage0中所有的task都完成后，将stage0的执行结果注册到mapOutputTrackerMaster给下一个被依赖的stage1使用。然后提交等待中的stage1。</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">  15/04/27 19:03:28 INFO Executor: Running task 0.0 in stage 0.0 (TID 0)</span><br><span class="line">15/04/27 19:03:28 INFO Executor: Running task 1.0 in stage 0.0 (TID 1)</span><br><span class="line">15/04/27 19:03:28 INFO Executor: Running task 2.0 in stage 0.0 (TID 2)</span><br><span class="line">15/04/27 19:03:28 INFO Executor: Finished task 1.0 in stage 0.0 (TID 1). 883 bytes result sent to driver</span><br><span class="line">15/04/27 19:03:28 INFO Executor: Finished task 2.0 in stage 0.0 (TID 2). 883 bytes result sent to driver</span><br><span class="line">15/04/27 19:03:28 INFO Executor: Finished task 0.0 in stage 0.0 (TID 0). 883 bytes result sent to driver</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>stage2的task全部完成后将结果注册到mapOutputTrackerMaster给下一个被依赖的stage3使用。等待stage1的tasks结束</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">15/04/27 19:03:28 INFO Executor: Running task 0.0 in stage 2.0 (TID 3)</span><br><span class="line">15/04/27 19:03:29 INFO Executor: Running task 1.0 in stage 2.0 (TID 4)</span><br><span class="line">15/04/27 19:03:29 INFO Executor: Running task 2.0 in stage 2.0 (TID 5)</span><br><span class="line">15/04/27 19:03:29 INFO Executor: Running task 3.0 in stage 2.0 (TID 6)</span><br><span class="line">15/04/27 19:03:29 INFO Executor: Finished task 1.0 in stage 2.0 (TID 4). 884 bytes result sent to driver</span><br><span class="line">15/04/27 19:03:29 INFO Executor: Finished task 2.0 in stage 2.0 (TID 5). 884 bytes result sent to driver</span><br><span class="line">15/04/27 19:03:29 INFO Executor: Finished task 0.0 in stage 2.0 (TID 3). 884 bytes result sent to driver</span><br><span class="line">15/04/27 19:03:29 INFO Executor: Finished task 3.0 in stage 2.0 (TID 6). 884 bytes result sent to driver</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>stage0结束之后，stage1调用submitMissingTasks，生成类型为ShuffleMapTask的tasks，task的数量与stage1中最后一个Rdd partition数量相等为3。</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">15/04/27 19:03:29 INFO DAGScheduler: Submitting Stage 1 (MapPartitionsRDD[4] at map at complexJob.scala:19), which is now runnable</span><br><span class="line">15/04/27 19:03:29 DEBUG DAGScheduler: submitMissingTasks(Stage 1)</span><br><span class="line">15/04/27 19:03:29 INFO DAGScheduler: Submitting 3 missing tasks from Stage 1 (MapPartitionsRDD[4] at map at complexJob.scala:19)</span><br><span class="line">15/04/27 19:03:29 DEBUG DAGScheduler: New pending tasks: Set(ShuffleMapTask(1, 2), ShuffleMapTask(1, 1), ShuffleMapTask(1, 0))</span><br><span class="line">15/04/27 19:03:29 INFO TaskSchedulerImpl: Adding task set 1.0 with 3 tasks</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>stage1的tasks全部完成后将结果注册到mapOutputTrackerMaster给下一个被依赖的stage3使用。</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">15/04/27 19:03:29 INFO Executor: Running task 1.0 in stage 1.0 (TID 8)</span><br><span class="line">15/04/27 19:03:29 INFO Executor: Running task 0.0 in stage 1.0 (TID 7)</span><br><span class="line">15/04/27 19:03:29 INFO Executor: Running task 2.0 in stage 1.0 (TID 9)</span><br><span class="line">15/04/27 19:03:29 INFO Executor: Finished task 1.0 in stage 1.0 (TID 8). 1100 bytes result sent to driver</span><br><span class="line">15/04/27 19:03:29 INFO Executor: Finished task 2.0 in stage 1.0 (TID 9). 1100 bytes result sent to driver</span><br><span class="line">15/04/27 19:03:29 INFO Executor: Finished task 0.0 in stage 1.0 (TID 7). 1100 bytes result sent to driver</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>stage3的parentStage已经全部结束任务，提交stage3，生成类型为ResultTask的tasks，task的数量与stage3中最后一个Rdd partition数量相等为4。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">    15/04/27 19:03:29 INFO DAGScheduler: Stage 1 (map at complexJob.scala:19) finished in 0.149 s</span><br><span class="line">15/04/27 19:03:29 INFO DAGScheduler: looking for newly runnable stages</span><br><span class="line">15/04/27 19:03:29 INFO DAGScheduler: running: Set()</span><br><span class="line">15/04/27 19:03:29 INFO DAGScheduler: waiting: Set(Stage 3)</span><br><span class="line">15/04/27 19:03:29 INFO DAGScheduler: failed: Set()</span><br><span class="line">15/04/27 19:03:29 INFO DAGScheduler: Missing parents for Stage 3: List()</span><br><span class="line">15/04/27 19:03:29 INFO DAGScheduler: Submitting Stage 3 (MapPartitionsRDD[11] at join at complexJob.scala:31), which is now runnable</span><br><span class="line">15/04/27 19:03:29 DEBUG DAGScheduler: submitMissingTasks(Stage 3)</span><br><span class="line">15/04/27 19:03:29 INFO DAGScheduler: Submitting 4 missing tasks from Stage 3 (MapPartitionsRDD[11] at join at complexJob.scala:31)</span><br><span class="line">15/04/27 19:03:29 DEBUG DAGScheduler: New pending tasks: Set(ResultTask(3, 2), ResultTask(3, 0), ResultTask(3, 1), ResultTask(3, 3))</span><br><span class="line">15/04/27 19:03:29 INFO TaskSchedulerImpl: Adding task set 3.0 with 4 tasks</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>stage3的task的结束时判断此task是不是最后一个task，如果是则job结束。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">--output result on each task finish</span><br><span class="line">15/04/27 19:03:29 INFO Executor: Finished task 1.0 in stage 3.0 (TID 11). 886 bytes result sent to driver</span><br><span class="line">15/04/27 19:03:29 INFO Executor: Finished task 2.0 in stage 3.0 (TID 12). 886 bytes result sent to driver</span><br><span class="line">15/04/27 19:03:29 INFO Executor: Finished task 3.0 in stage 3.0 (TID 13). 886 bytes result sent to driver</span><br><span class="line">15/04/27 19:03:29 INFO Executor: Finished task 0.0 in stage 3.0 (TID 10). 886 bytes result sent to driver</span><br><span class="line">15/04/27 19:03:29 INFO DAGScheduler: Job 0 finished: foreach at complexJob.scala:32, took 1.004075 s</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h3 id="尾声"><a href="#尾声" class="headerlink" title="尾声"></a>尾声</h3><p>本文对于spark job执行过程中关于stage划分，stage提交，task运行的流程已经全部讲解完毕。<br>由于本人才疏学浅以及时间的关系，如有错漏之处，请指出来我会重新修改。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/spark/" rel="tag"># spark</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/04/07/spark-job-logic/" rel="next" title="spark 源码阅读--job提交与执行过程">
+                <i class="fa fa-chevron-left"></i> spark 源码阅读--job提交与执行过程
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/05/06/how-to-save-rdd-to-postgresql/" rel="prev" title="如何保存spark结果到postgreSQL">
+                如何保存spark结果到postgreSQL <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Ario</p>
+              <div class="site-description motion-element" itemprop="description"></div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">21</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">9</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#RDD"><span class="nav-number">1.</span> <span class="nav-text">RDD</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Partition"><span class="nav-number">1.1.</span> <span class="nav-text">Partition</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Dependency"><span class="nav-number">1.2.</span> <span class="nav-text">Dependency</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Stage"><span class="nav-number">2.</span> <span class="nav-text">Stage</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实战"><span class="nav-number">3.</span> <span class="nav-text">实战</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#流程图"><span class="nav-number">3.1.</span> <span class="nav-text">流程图</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#代码解读"><span class="nav-number">3.2.</span> <span class="nav-text">代码解读</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#stage-划分"><span class="nav-number">3.3.</span> <span class="nav-text">stage 划分</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#stage提交"><span class="nav-number">3.4.</span> <span class="nav-text">stage提交</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#尾声"><span class="nav-number">3.5.</span> <span class="nav-text">尾声</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ario</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.1.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/utils.js?v=7.1.0"></script>
+
+  <script src="/js/motion.js?v=7.1.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/affix.js?v=7.1.0"></script>
+
+  <script src="/js/schemes/pisces.js?v=7.1.0"></script>
+
+
+
+
+  
+  <script src="/js/scrollspy.js?v=7.1.0"></script>
+<script src="/js/post-details.js?v=7.1.0"></script>
+
+
+
+  
+
+
+  <script src="/js/next-boot.js?v=7.1.0"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

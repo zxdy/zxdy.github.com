@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.1.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.1.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.1.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.1.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.1.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.1.0',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="接上篇 oracle性能优化-CPU篇(上) 如何有效利用好CPU，主要在于如何写好SQL语句， 并优化数据库内部处理。 1. sql语句重用1.1 硬解析与软解析相信用过oracle的人，特别是用oracle做后端数据库开发的程序猿都听说过硬解析和软解析。 当一个sql语句提交后，oracle会首先检查一下共享缓冲池（shared pool）里有没有与之完全相同的语句，如果有的话只须执行软分析即">
+<meta name="keywords" content="Oracle,优化">
+<meta property="og:type" content="article">
+<meta property="og:title" content="oracle性能优化-CPU篇(下)">
+<meta property="og:url" content="http://yoursite.com/2015/03/10/oracle-tunning-cpu-2/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="接上篇 oracle性能优化-CPU篇(上) 如何有效利用好CPU，主要在于如何写好SQL语句， 并优化数据库内部处理。 1. sql语句重用1.1 硬解析与软解析相信用过oracle的人，特别是用oracle做后端数据库开发的程序猿都听说过硬解析和软解析。 当一个sql语句提交后，oracle会首先检查一下共享缓冲池（shared pool）里有没有与之完全相同的语句，如果有的话只须执行软分析即">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://7x2wf2.com1.z0.glb.clouddn.com/hard_prase.png">
+<meta property="og:image" content="http://7x2wf2.com1.z0.glb.clouddn.com/bind_var.png">
+<meta property="og:updated_time" content="2019-04-09T06:35:44.537Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="oracle性能优化-CPU篇(下)">
+<meta name="twitter:description" content="接上篇 oracle性能优化-CPU篇(上) 如何有效利用好CPU，主要在于如何写好SQL语句， 并优化数据库内部处理。 1. sql语句重用1.1 硬解析与软解析相信用过oracle的人，特别是用oracle做后端数据库开发的程序猿都听说过硬解析和软解析。 当一个sql语句提交后，oracle会首先检查一下共享缓冲池（shared pool）里有没有与之完全相同的语句，如果有的话只须执行软分析即">
+<meta name="twitter:image" content="http://7x2wf2.com1.z0.glb.clouddn.com/hard_prase.png">
+
+
+
+
+
+  
+  
+  <link rel="canonical" href="http://yoursite.com/2015/03/10/oracle-tunning-cpu-2/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>oracle性能优化-CPU篇(下) | Hexo</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Hexo</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Tags</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2015/03/10/oracle-tunning-cpu-2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Ario">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">oracle性能优化-CPU篇(下)
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2015-03-10 00:00:00" itemprop="dateCreated datePublished" datetime="2015-03-10T00:00:00+08:00">2015-03-10</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-04-09 14:35:44" itemprop="dateModified" datetime="2019-04-09T14:35:44+08:00">2019-04-09</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>接上篇 <a href="http://zxdy.github.io/articles/oracle-tunning-cpu-1.html" target="_blank" rel="noopener">oracle性能优化-CPU篇(上)</a></p>
+<p>如何有效利用好CPU，主要在于如何写好SQL语句， 并优化数据库内部处理。</p>
+<h2 id="1-sql语句重用"><a href="#1-sql语句重用" class="headerlink" title="1. sql语句重用"></a>1. sql语句重用</h2><h3 id="1-1-硬解析与软解析"><a href="#1-1-硬解析与软解析" class="headerlink" title="1.1 硬解析与软解析"></a>1.1 硬解析与软解析</h3><p>相信用过oracle的人，特别是用oracle做后端数据库开发的程序猿都听说过硬解析和软解析。</p>
+<p>当一个sql语句提交后，oracle会首先检查一下共享缓冲池（shared pool）里有没有与之<strong>完全相同</strong>的语句，如果有的话只须执行软分析即可，否则就得进行硬分析。</p>
+<p>硬解析之所以坑爹的原因是，它需要经解析,制定执行路径,优化访问计划等许多的步骤。不但耗费大量的cpu，更重要的是会占据重要的们闩（latch）资源，严重的影响系统的规模的扩大（即限制了系统的并发行），而且引起的问题不能通过增加内存条和cpu的数量来解决。</p>
+<p>看一眼AWR报表，检查是不是有很多硬解析。下图的硬解析数和 time model statistics的hard parse elapsed time对应，可知该系统是否 是 解析敏感</p>
+<p><img src="http://7x2wf2.com1.z0.glb.clouddn.com/hard_prase.png" alt="hard parse"></p>
+<p>有时候当我们在oracle上对某些sql进行测试时，会发现第一次执行的sql比较慢，再次执行往往都比较快，这不仅仅是因为所需要的数据块已经读取到buffer cache中了，还因为再次执行的sql沿用的是上次执行的执行计划，并没有重新做解析。</p>
+<p>因此假如我们需要测试相同sql不同的执行计划时，最好刷新一下当前session的shared pool。注意最好不要全局刷新，特别是在生产环境，这样会导致所有的sql都进行重新解析，可能会严重影响性能。</p>
+<h3 id="1-2-绑定变量"><a href="#1-2-绑定变量" class="headerlink" title="1.2 绑定变量"></a>1.2 绑定变量</h3><p>绑定变量的实质就是用于替代sql语句中的常量的替代变量，它能够使得每次提交的sql语句都完全一样。还记得前面说的”oracle会首先检查一下共享缓冲池（shared pool）里有没有与之<strong>完全相同</strong>的语句”没有？<br>类似这样：</p>
+<p><img src="http://7x2wf2.com1.z0.glb.clouddn.com/bind_var.png" alt="bind var"></p>
+<p>一般来说，在实际的开发场景，只要使用比较成熟的数据持久层框架例如mybatis等，基本都可以避免这种因为没有用绑定变量而产生的性能问题。</p>
+<h3 id="1-3-索引优化"><a href="#1-3-索引优化" class="headerlink" title="1.3 索引优化"></a>1.3 索引优化</h3><p>索引优化这是大坑。。有空新开一篇再写吧</p>
+<h2 id="2-表连接"><a href="#2-表连接" class="headerlink" title="2. 表连接"></a>2. 表连接</h2><p>在CBO（hash join只有在CBO才可能被使用到）模式下，优化器计算代价时，首先会考虑hash join。</p>
+<ul>
+<li>hash join的主要资源消耗在于CPU和内存（在内存中创建临时的hash表，并hash计算， Mem访问速度是Disk的万倍以上。）</li>
+<li>Nested Loop资源消耗在磁盘IO和CPU。</li>
+<li>sort merge的资源消耗主要在于磁盘IO（扫描表或索引）</li>
+</ul>
+<p>相对来说，比较常见的还是hash join以及nested loop。</p>
+<p>表连接科普参见 <a href="http://blog.csdn.net/tianlesoftware/article/details/5826546" target="_blank" rel="noopener">多表连接的三种方式</a></p>
+<h3 id="2-2-hash-join"><a href="#2-2-hash-join" class="headerlink" title="2.2 hash join"></a>2.2 hash join</h3><p> Hash join的工作方式是将一个表（通常是小一点的那个表）做hash运算，将列数据存储到hash列表中，从另一个表中抽取记录，做hash运算，到hash 列表中找到相应的值，做匹配。</p>
+<h3 id="2-2-nested-loop"><a href="#2-2-nested-loop" class="headerlink" title="2.2 nested loop"></a>2.2 nested loop</h3><p>Nested loops 工作方式是从一张表中读取数据，访问另一张表（通常是索引）来做匹配，nested loops适用的场合是当一个关联表比较小的时候，效率会更高。</p>
+<h3 id="2-2-sort-merge"><a href="#2-2-sort-merge" class="headerlink" title="2.2 sort merge"></a>2.2 sort merge</h3><p>Merge Join 是先将关联表的关联列各自做排序，然后从各自的排序表中抽取数据，到另一个排序表中做匹配，因为merge join需要做更多的排序，所以消耗的资源更多。 通常来讲，能够使用merge join的地方，hash join都可以发挥更好的性能。</p>
+<blockquote>
+<p>总的来说，小表和大表连接用nested loop，大表和大表连接用hash join，关联列已经排序好的表连接推荐用sort merge（用的不多就是了）。<br>但凡事总有例外，具体的执行效果还是要根据具体情况看，有时候CBO推荐的执行计划未必是最好的， 此时你可以尝试使用hint或者修改sql语句来改变表连接。</p>
+</blockquote>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Oracle/" rel="tag"># Oracle</a>
+          
+            <a href="/tags/优化/" rel="tag"># 优化</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/03/04/oracle-tunning-cpu-1/" rel="next" title="oracle性能优化-CPU篇(上)">
+                <i class="fa fa-chevron-left"></i> oracle性能优化-CPU篇(上)
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/03/12/cassandra-key/" rel="prev" title="Cassandra partition key, composite key 和 clustering key 的区别">
+                Cassandra partition key, composite key 和 clustering key 的区别 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Ario</p>
+              <div class="site-description motion-element" itemprop="description"></div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">21</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">9</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-sql语句重用"><span class="nav-number">1.</span> <span class="nav-text">1. sql语句重用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-硬解析与软解析"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 硬解析与软解析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-绑定变量"><span class="nav-number">1.2.</span> <span class="nav-text">1.2 绑定变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-索引优化"><span class="nav-number">1.3.</span> <span class="nav-text">1.3 索引优化</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-表连接"><span class="nav-number">2.</span> <span class="nav-text">2. 表连接</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-hash-join"><span class="nav-number">2.1.</span> <span class="nav-text">2.2 hash join</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-nested-loop"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 nested loop</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-sort-merge"><span class="nav-number">2.3.</span> <span class="nav-text">2.2 sort merge</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ario</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.1.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/utils.js?v=7.1.0"></script>
+
+  <script src="/js/motion.js?v=7.1.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/affix.js?v=7.1.0"></script>
+
+  <script src="/js/schemes/pisces.js?v=7.1.0"></script>
+
+
+
+
+  
+  <script src="/js/scrollspy.js?v=7.1.0"></script>
+<script src="/js/post-details.js?v=7.1.0"></script>
+
+
+
+  
+
+
+  <script src="/js/next-boot.js?v=7.1.0"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

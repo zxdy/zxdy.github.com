@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.1.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.1.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.1.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.1.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.1.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '7.1.0',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="索引是每种数据库都避不开的一个话题。很多人不管是DBA还是开发，对于索引的印象就是：sql慢？加个索引吧。但是为什么加了索引sql就能变快呢？加了索引是不是一定就会变快？怎么加索引效率会最高？ 从B-tree索引讲起索引就像是一本字典的查询页，你可以通过字母或者是偏旁快速定位需要查询的字。类似通过字母查询的是聚集索引（表中行的物理顺序与键值的逻辑索引顺序相同），反之通过偏旁的是非聚集索引（表中行的">
+<meta name="keywords" content="Oracle,优化">
+<meta property="og:type" content="article">
+<meta property="og:title" content="oracle性能优化-索引篇">
+<meta property="og:url" content="http://yoursite.com/2014/12/19/oracle-tunning-index/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="索引是每种数据库都避不开的一个话题。很多人不管是DBA还是开发，对于索引的印象就是：sql慢？加个索引吧。但是为什么加了索引sql就能变快呢？加了索引是不是一定就会变快？怎么加索引效率会最高？ 从B-tree索引讲起索引就像是一本字典的查询页，你可以通过字母或者是偏旁快速定位需要查询的字。类似通过字母查询的是聚集索引（表中行的物理顺序与键值的逻辑索引顺序相同），反之通过偏旁的是非聚集索引（表中行的">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://7x2wf2.com1.z0.glb.clouddn.com/B-TREE.png">
+<meta property="og:updated_time" content="2019-04-09T06:34:31.140Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="oracle性能优化-索引篇">
+<meta name="twitter:description" content="索引是每种数据库都避不开的一个话题。很多人不管是DBA还是开发，对于索引的印象就是：sql慢？加个索引吧。但是为什么加了索引sql就能变快呢？加了索引是不是一定就会变快？怎么加索引效率会最高？ 从B-tree索引讲起索引就像是一本字典的查询页，你可以通过字母或者是偏旁快速定位需要查询的字。类似通过字母查询的是聚集索引（表中行的物理顺序与键值的逻辑索引顺序相同），反之通过偏旁的是非聚集索引（表中行的">
+<meta name="twitter:image" content="http://7x2wf2.com1.z0.glb.clouddn.com/B-TREE.png">
+
+
+
+
+
+  
+  
+  <link rel="canonical" href="http://yoursite.com/2014/12/19/oracle-tunning-index/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>oracle性能优化-索引篇 | Hexo</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Hexo</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Tags</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2014/12/19/oracle-tunning-index/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Ario">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">oracle性能优化-索引篇
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2014-12-19 00:00:00" itemprop="dateCreated datePublished" datetime="2014-12-19T00:00:00+08:00">2014-12-19</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-04-09 14:34:31" itemprop="dateModified" datetime="2019-04-09T14:34:31+08:00">2019-04-09</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>索引是每种数据库都避不开的一个话题。很多人不管是DBA还是开发，对于索引的印象就是：sql慢？加个索引吧。但是为什么加了索引sql就能变快呢？加了索引是不是一定就会变快？怎么加索引效率会最高？</p>
+<h2 id="从B-tree索引讲起"><a href="#从B-tree索引讲起" class="headerlink" title="从B-tree索引讲起"></a>从B-tree索引讲起</h2><p>索引就像是一本字典的查询页，你可以通过字母或者是偏旁快速定位需要查询的字。类似通过字母查询的是聚集索引（表中行的物理顺序与键值的逻辑索引顺序相同），反之通过偏旁的是非聚集索引（表中行的物理顺序与键值的逻辑索引顺序不相同）。扯远了，这里要讲的是b-tree索引。</p>
+<p>oracle默认建的索引就是b-tree索引，他的工作方式如下：</p>
+<p><img src="http://7x2wf2.com1.z0.glb.clouddn.com/B-TREE.png" alt="b-tree"></p>
+<ol>
+<li><p>很显然索引也是需要占用空间的，只是没有普通数据那么大而已。索引的大小跟数据量以及索引列的多少成正比。</p>
+</li>
+<li><p>一般来说，还是推荐将索引使用的空间与数据的tablespace分开来，索引建在索引专用的tablespace中，方便维护，同时也有助于查询效率提高。oracle的数据查询说到底就是数据块的读取，查询索引的时候，也是在读取数据块，索引数据块越集中，查询的速度越快，如果索引的数据块跟普通数据块一起放在同一个tablespace中，肯定相对比较分散，影响查询效率。</p>
+</li>
+<li><p>b-tree索引顾名思义就是一棵树。当我们要查询字段值为”ACER”的时候，oracle首先会读取索引的根节点，如图中的20号数据块。这个数据块中维护着子节点的信息，通过它可以往下找到子节点30号数据块，这个节点维护着下一个节点信息，在此表示所有首字母A-F的索引信息都是它的子节点。然后找到叶子节点39号数据块。这个数据块中包含索引字段值首字母是A-F的所有值以及相对应的rowid。</p>
+</li>
+<li><p>到此，假如你的sql只是需要查到索引的字段值得话，整个过程就到此结束了。但是如果还要对应的其他字段值，则还需通过上一步得到rowid去数据存储的tablespace中找到相应数据块。</p>
+</li>
+<li><p>发现什么没有？其实oracle的sql查数据最快的方法是直接用rowid查询啊，连索引扫描的时间都省掉了。  </p>
+</li>
+</ol>
+<h2 id="如何挑选索引列"><a href="#如何挑选索引列" class="headerlink" title="如何挑选索引列"></a>如何挑选索引列</h2><ol>
+<li>定义一个主键列，oracle会自动为它建一个unique index</li>
+<li>外键列通常是需要建索引的</li>
+<li>在经常用到的列上建索引，特别是在where谓词中经常出现的</li>
+</ol>
+<p>你大概会说上面三点基本就是废话。。</p>
+<p>好吧，我们说点不是废话的：索引扫描的三种情形</p>
+<h3 id="1-sql所有需要的数据都在索引上"><a href="#1-sql所有需要的数据都在索引上" class="headerlink" title="1. sql所有需要的数据都在索引上"></a>1. sql所有需要的数据都在索引上</h3><p>又分为两种情况：</p>
+<ul>
+<li><p><strong>index range scan.</strong><br>在上图中，假如只要查询”ACER”,那么oracle只需读取3个block，同时在第三个block中挑出是”ACER”的值就可以了,此时用的就是range scan。</p>
+</li>
+<li><p><strong>index fast full scan.</strong><br>还是上图，假如需要查询被索引的所有值或是大部分值，oralce优化器会认得此时用 index fast full scan最快，就是不挑了，把索引上的值都扫一遍</p>
+</li>
+</ul>
+<h3 id="2-sql需要的数据不都在索引上"><a href="#2-sql需要的数据不都在索引上" class="headerlink" title="2. sql需要的数据不都在索引上"></a>2. sql需要的数据不都在索引上</h3><p>这个情况是最普遍的，即<em>从B-tree索引讲起</em>的第4点情况，反映在执行计划中就是 TABLE ACCESS BY INDEX ROWID</p>
+<h3 id="3-不想走索引，就是这么任性"><a href="#3-不想走索引，就是这么任性" class="headerlink" title="3. 不想走索引，就是这么任性"></a>3. 不想走索引，就是这么任性</h3><p>有时候即使表上有各种索引，oracle优化器还是会认为不走索引反而更快，比如全表扫描（TABLE ACCESS FULL）。</p>
+<p>索引不是越多越好，也不是一个复合索引覆盖的列越多越好，需要综合考虑性能。建了索引之后也要查看一下执行计划，是不是确实用到了索引，<br>同时要看下sql的buffer read和physical read跟原先比如何。</p>
+<h2 id="bitmap索引稍及"><a href="#bitmap索引稍及" class="headerlink" title="bitmap索引稍及"></a>bitmap索引稍及</h2><p>我并没有用过bitmap索引，经验不多，所以就只能稍微介绍下。</p>
+<p>bitmap索引即所谓的位图索引，它和b-tree索引最大的区别是适用于只有几个固定值的列，如性别、婚姻状况等，如果列的取值非常多则适用于b-tree索引。</p>
+<p>另外位图索引适合静态数据，而不适合索引频繁更新的列。因为它所造成的行锁比较广，非常坑爹。举个例子，某张表上的性别列上是位图索引，有次将其中某一个人的性别从男改成女时，会将表上所有女性记录加锁，直到commit。可以想象假如更新频繁的话，会出现严重的锁等待事件</p>
+<h2 id="监控索引使用情况"><a href="#监控索引使用情况" class="headerlink" title="监控索引使用情况"></a>监控索引使用情况</h2><p>在一个很大的数据库中，可能会有成百上千个索引分布在各个表上。随着时间的过去，可能其中很多索引都已经用不到了。虽然索引可以帮助加快数据查询的速度，但是相应也是有代价的。当表的数据有插入，更新，删除的变化时，表上的索引也需要更新，他会占用cpu和磁盘的资源，索引越多，占用的资源越多。所以对于这些已经没有在被使用的索引，可以删掉，节约资源。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">--对单独某个索引启用监控</span></span><br><span class="line"><span class="keyword">alter</span> <span class="keyword">index</span> f_regs_idx1 <span class="keyword">monitoring</span> <span class="keyword">usage</span>; </span><br><span class="line"><span class="comment">--查看索引使用情况（对于在不同schema下的索引需要登录到相应的用户上去查看）</span></span><br><span class="line"><span class="keyword">select</span> index_name, table_name, <span class="keyword">monitoring</span>, used <span class="keyword">from</span> v$object_usage; </span><br><span class="line"></span><br><span class="line"><span class="comment">--批量启用监控</span></span><br><span class="line"><span class="keyword">set</span> pagesize <span class="number">0</span> <span class="keyword">head</span> <span class="keyword">off</span> linesize <span class="number">132</span> </span><br><span class="line">spool enable_mon.sql </span><br><span class="line"><span class="keyword">select</span>   </span><br><span class="line"><span class="string">'alter index '</span> || index_name || <span class="string">' monitoring usage;'</span> </span><br><span class="line"><span class="keyword">from</span> user_indexes; </span><br><span class="line">spool off; </span><br><span class="line"></span><br><span class="line"><span class="comment">--禁用监控 </span></span><br><span class="line"><span class="keyword">alter</span> <span class="keyword">index</span> f_regs_idx1 <span class="keyword">nomonitoring</span> <span class="keyword">usage</span>;</span><br></pre></td></tr></table></figure>
+<h2 id="怎样加快建索引的速度"><a href="#怎样加快建索引的速度" class="headerlink" title="怎样加快建索引的速度"></a>怎样加快建索引的速度</h2><p>参见 <a href="http://zxdy.github.io/articles/speed-up-create-index.html" target="_blank" rel="noopener">oracle 如何加快建立索引的速度
+</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Oracle/" rel="tag"># Oracle</a>
+          
+            <a href="/tags/优化/" rel="tag"># 优化</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2014/09/19/speed-up-create-index/" rel="next" title="oracle 如何加快建立索引的速度">
+                <i class="fa fa-chevron-left"></i> oracle 如何加快建立索引的速度
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/01/13/python-timeit/" rel="prev" title="python的两种计时方法">
+                python的两种计时方法 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Ario</p>
+              <div class="site-description motion-element" itemprop="description"></div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">21</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">9</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#从B-tree索引讲起"><span class="nav-number">1.</span> <span class="nav-text">从B-tree索引讲起</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#如何挑选索引列"><span class="nav-number">2.</span> <span class="nav-text">如何挑选索引列</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-sql所有需要的数据都在索引上"><span class="nav-number">2.1.</span> <span class="nav-text">1. sql所有需要的数据都在索引上</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-sql需要的数据不都在索引上"><span class="nav-number">2.2.</span> <span class="nav-text">2. sql需要的数据不都在索引上</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-不想走索引，就是这么任性"><span class="nav-number">2.3.</span> <span class="nav-text">3. 不想走索引，就是这么任性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#bitmap索引稍及"><span class="nav-number">3.</span> <span class="nav-text">bitmap索引稍及</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#监控索引使用情况"><span class="nav-number">4.</span> <span class="nav-text">监控索引使用情况</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#怎样加快建索引的速度"><span class="nav-number">5.</span> <span class="nav-text">怎样加快建索引的速度</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ario</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> v7.1.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/utils.js?v=7.1.0"></script>
+
+  <script src="/js/motion.js?v=7.1.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/affix.js?v=7.1.0"></script>
+
+  <script src="/js/schemes/pisces.js?v=7.1.0"></script>
+
+
+
+
+  
+  <script src="/js/scrollspy.js?v=7.1.0"></script>
+<script src="/js/post-details.js?v=7.1.0"></script>
+
+
+
+  
+
+
+  <script src="/js/next-boot.js?v=7.1.0"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
