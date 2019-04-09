@@ -1736,164 +1736,6 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2013/12/18/debug-Pipelined/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Ario">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Hexo">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/2013/12/18/debug-Pipelined/" class="post-title-link" itemprop="url">sql developer怎样调试Pipelined</a>
-              
-            
-          </h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-
-              
-                
-              
-
-              <time title="Created: 2013-12-18 00:00:00" itemprop="dateCreated datePublished" datetime="2013-12-18T00:00:00+08:00">2013-12-18</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">Edited on</span>
-                
-                <time title="Modified: 2019-04-09 14:32:05" itemprop="dateModified" datetime="2019-04-09T14:32:05+08:00">2019-04-09</time>
-              
-            
-          </span>
-
-          
-
-          
-            
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>在sql developer中，如果直接对pipelined语句进行断点debug会报错，那么怎样可以解决这个问题呢？可以用procedure包住这个函数，再进行单步调试。下面是演示的demo。  </p>
-<h2 id="准备pipelined"><a href="#准备pipelined" class="headerlink" title="准备pipelined"></a>准备pipelined</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">CREATE TYPE t_tf_row AS OBJECT (</span><br><span class="line">  id           NUMBER,</span><br><span class="line">  description  VARCHAR2(50)</span><br><span class="line">);</span><br><span class="line">/</span><br><span class="line"></span><br><span class="line">CREATE TYPE t_tf_tab IS TABLE OF t_tf_row;</span><br><span class="line">/</span><br><span class="line"></span><br><span class="line">CREATE OR REPLACE FUNCTION get_tab_ptf (p_rows IN NUMBER) RETURN t_tf_tab PIPELINED AS</span><br><span class="line">BEGIN</span><br><span class="line">  FOR i IN 1 .. p_rows LOOP</span><br><span class="line">    PIPE ROW(t_tf_row(i, &apos;Description for &apos; || i));   </span><br><span class="line">  END LOOP;</span><br><span class="line"></span><br><span class="line">  RETURN;</span><br><span class="line">END;</span><br><span class="line">/</span><br></pre></td></tr></table></figure>
-<h2 id="然后用procedure包住这个get-tab-ptf函数"><a href="#然后用procedure包住这个get-tab-ptf函数" class="headerlink" title="然后用procedure包住这个get_tab_ptf函数"></a>然后用procedure包住这个get_tab_ptf函数</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">CREATE OR REPLACE</span><br><span class="line">PROCEDURE test_pipeline</span><br><span class="line">IS</span><br><span class="line">BEGIN</span><br><span class="line">  FOR cur_rec IN (SELECT *  FROM  TABLE(get_tab_ptf(10)))</span><br><span class="line">  LOOP</span><br><span class="line">    dbms_output.put_line(&apos;get one row!&apos;);</span><br><span class="line">  END LOOP;</span><br><span class="line">END;</span><br></pre></td></tr></table></figure>
-<h2 id="断点位置"><a href="#断点位置" class="headerlink" title="断点位置"></a>断点位置</h2><p>最后将断点打在test_pipeline的for循环上，对这个procedure进行单步调试就可以跳转到函数get_tab_ptf内部了。</p>
-
-          
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2013/12/18/locate-exception-line/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2000,6 +1842,164 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">CREATE OR REPLACE</span><br><span class="line">  FUNCTION FUNC</span><br><span class="line">    RETURN NUMBER</span><br><span class="line">  AS</span><br><span class="line">    v_in NUMBER;</span><br><span class="line">    v_out NUMBER;</span><br><span class="line"></span><br><span class="line">  BEGIN</span><br><span class="line">    v_in :=12;</span><br><span class="line">    dbms_output.put_line(v_in);</span><br><span class="line">    v_out:=v_in/0;</span><br><span class="line">    RETURN v_out;</span><br><span class="line">  EXCEPTION</span><br><span class="line">  WHEN OTHERS THEN</span><br><span class="line">    dbms_output.put_line(&apos;######exception:&apos;);</span><br><span class="line">    dbms_output.put_line(dbms_utility.format_error_backtrace());</span><br><span class="line">  END FUNC;</span><br></pre></td></tr></table></figure>
 <p>运行后结果如下，可以看到第7行显示了出错的地方。实际使用的时候注意出错的行号应该是报错的下一行。比如下面显示第10行报错，但实际应该是第11行出错。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Connecting to the database dev74.</span><br><span class="line">ORA-06503: PL/SQL: Function returned without value</span><br><span class="line">ORA-06512: at &quot;TLSPID.FUNC&quot;, line 16</span><br><span class="line">ORA-06512: at line 5</span><br><span class="line">12</span><br><span class="line">######exception:</span><br><span class="line">ORA-06512: at &quot;TLSPID.FUNC&quot;, line 10</span><br><span class="line">Process exited.</span><br><span class="line">Disconnecting from the database dev74.</span><br></pre></td></tr></table></figure>
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2013/12/18/debug-Pipelined/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Ario">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2013/12/18/debug-Pipelined/" class="post-title-link" itemprop="url">sql developer怎样调试Pipelined</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2013-12-18 00:00:00" itemprop="dateCreated datePublished" datetime="2013-12-18T00:00:00+08:00">2013-12-18</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2019-04-09 14:32:05" itemprop="dateModified" datetime="2019-04-09T14:32:05+08:00">2019-04-09</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>在sql developer中，如果直接对pipelined语句进行断点debug会报错，那么怎样可以解决这个问题呢？可以用procedure包住这个函数，再进行单步调试。下面是演示的demo。  </p>
+<h2 id="准备pipelined"><a href="#准备pipelined" class="headerlink" title="准备pipelined"></a>准备pipelined</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">CREATE TYPE t_tf_row AS OBJECT (</span><br><span class="line">  id           NUMBER,</span><br><span class="line">  description  VARCHAR2(50)</span><br><span class="line">);</span><br><span class="line">/</span><br><span class="line"></span><br><span class="line">CREATE TYPE t_tf_tab IS TABLE OF t_tf_row;</span><br><span class="line">/</span><br><span class="line"></span><br><span class="line">CREATE OR REPLACE FUNCTION get_tab_ptf (p_rows IN NUMBER) RETURN t_tf_tab PIPELINED AS</span><br><span class="line">BEGIN</span><br><span class="line">  FOR i IN 1 .. p_rows LOOP</span><br><span class="line">    PIPE ROW(t_tf_row(i, &apos;Description for &apos; || i));   </span><br><span class="line">  END LOOP;</span><br><span class="line"></span><br><span class="line">  RETURN;</span><br><span class="line">END;</span><br><span class="line">/</span><br></pre></td></tr></table></figure>
+<h2 id="然后用procedure包住这个get-tab-ptf函数"><a href="#然后用procedure包住这个get-tab-ptf函数" class="headerlink" title="然后用procedure包住这个get_tab_ptf函数"></a>然后用procedure包住这个get_tab_ptf函数</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">CREATE OR REPLACE</span><br><span class="line">PROCEDURE test_pipeline</span><br><span class="line">IS</span><br><span class="line">BEGIN</span><br><span class="line">  FOR cur_rec IN (SELECT *  FROM  TABLE(get_tab_ptf(10)))</span><br><span class="line">  LOOP</span><br><span class="line">    dbms_output.put_line(&apos;get one row!&apos;);</span><br><span class="line">  END LOOP;</span><br><span class="line">END;</span><br></pre></td></tr></table></figure>
+<h2 id="断点位置"><a href="#断点位置" class="headerlink" title="断点位置"></a>断点位置</h2><p>最后将断点打在test_pipeline的for循环上，对这个procedure进行单步调试就可以跳转到函数get_tab_ptf内部了。</p>
+
           
         
       
