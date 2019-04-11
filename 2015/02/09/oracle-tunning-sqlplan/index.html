@@ -104,15 +104,15 @@
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="执行计划是sql在数据库中最终的执行路径，包括索引的扫描，数据的读取，过滤，连接，排序等等一系列过程。就像平常在生活中你为了完成一个任务，需要经过很多步骤，如果没有很好的统筹规划，任务时间会不断延长。所以sql的效率跟它的执行计划息息相关，同一个sql可能会有很多不一样的执行计划，基于CBO的oracle会在其中挑选出它认为最快的执行计划进行执行。下面这个流程图展现了优化器选择执行计划过程：">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://yoursite.com/uploads/sql%20plan.png">
+<meta property="og:image" content="http://yoursite.com/uploads/sql-plan.png">
 <meta property="og:image" content="http://yoursite.com/uploads/sqlplan_toad.png">
 <meta property="og:image" content="http://yoursite.com/uploads/sqlplan_sqldeveloper.png">
 <meta property="og:image" content="http://yoursite.com/uploads/tree.png">
-<meta property="og:updated_time" content="2019-04-11T06:39:34.890Z">
+<meta property="og:updated_time" content="2019-04-11T06:46:12.449Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="oracle性能优化-执行计划篇">
 <meta name="twitter:description" content="执行计划是sql在数据库中最终的执行路径，包括索引的扫描，数据的读取，过滤，连接，排序等等一系列过程。就像平常在生活中你为了完成一个任务，需要经过很多步骤，如果没有很好的统筹规划，任务时间会不断延长。所以sql的效率跟它的执行计划息息相关，同一个sql可能会有很多不一样的执行计划，基于CBO的oracle会在其中挑选出它认为最快的执行计划进行执行。下面这个流程图展现了优化器选择执行计划过程：">
-<meta name="twitter:image" content="http://yoursite.com/uploads/sql%20plan.png">
+<meta name="twitter:image" content="http://yoursite.com/uploads/sql-plan.png">
 
 
 
@@ -372,7 +372,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2019-04-11 14:39:34" itemprop="dateModified" datetime="2019-04-11T14:39:34+08:00">2019-04-11</time>
+                <time title="Modified: 2019-04-11 14:46:12" itemprop="dateModified" datetime="2019-04-11T14:46:12+08:00">2019-04-11</time>
               
             
           </span>
@@ -409,7 +409,7 @@
 
       
         <h1 id="执行计划？"><a href="#执行计划？" class="headerlink" title="执行计划？"></a>执行计划？</h1><p>执行计划是sql在数据库中最终的执行路径，包括索引的扫描，数据的读取，过滤，连接，排序等等一系列过程。就像平常在生活中你为了完成一个任务，需要经过很多步骤，如果没有很好的统筹规划，任务时间会不断延长。所以sql的效率跟它的执行计划息息相关，同一个sql可能会有很多不一样的执行计划，基于CBO的oracle会在其中挑选出它认为最快的执行计划进行执行。下面这个流程图展现了优化器选择执行计划过程：</p>
-<p> <img src="/uploads/sql%20plan.png" alt="优化器选择执行计划过程"></p>
+<p> <img src="/uploads/sql-plan.png" alt="优化器选择执行计划过程"></p>
 <p> 从上面的流程图可以知道一个高效良好的执行计划需要考虑的因素有</p>
 <ol>
 <li>绑定变量。//还记得CPU优化篇的sql重用吗</li>
