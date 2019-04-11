@@ -96,22 +96,22 @@
 
 
 
-  <meta name="description" content="本文主要通过一个具体的spark application来讲述spark job执行过程中关于stage划分，stage提交，task运行的流程。主要也是因为上篇的源码阅读只有纯粹的理论，所以希望能通过这篇实战将理论讲的更清楚一点。  RDDRDD，全称为Resilient Distributed Datasets，是一个容错的、并行的数据结构，可以让用户显式地将数据存储到磁盘和内存中，并能控制数">
+  <meta name="description" content="本文主要通过一个具体的spark application来讲述spark job执行过程中关于stage划分，stage提交，task运行的流程。主要也是因为上篇的源码阅读只有纯粹的理论，所以希望能通过这篇实战将理论讲的更清楚一点。">
 <meta name="keywords" content="spark">
 <meta property="og:type" content="article">
 <meta property="og:title" content="spark job物理执行图实战">
 <meta property="og:url" content="http://yoursite.com/2015/04/28/spark-job-real-play/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="本文主要通过一个具体的spark application来讲述spark job执行过程中关于stage划分，stage提交，task运行的流程。主要也是因为上篇的源码阅读只有纯粹的理论，所以希望能通过这篇实战将理论讲的更清楚一点。  RDDRDD，全称为Resilient Distributed Datasets，是一个容错的、并行的数据结构，可以让用户显式地将数据存储到磁盘和内存中，并能控制数">
+<meta property="og:description" content="本文主要通过一个具体的spark application来讲述spark job执行过程中关于stage划分，stage提交，task运行的流程。主要也是因为上篇的源码阅读只有纯粹的理论，所以希望能通过这篇实战将理论讲的更清楚一点。">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://7x2wf2.com1.z0.glb.clouddn.com/RDD.png">
-<meta property="og:image" content="http://7x2wf2.com1.z0.glb.clouddn.com/simple_stage.png">
-<meta property="og:image" content="http://7x2wf2.com1.z0.glb.clouddn.com/complex_stage.png">
-<meta property="og:updated_time" content="2019-04-09T07:23:07.368Z">
+<meta property="og:image" content="http://yoursite.com/uploads/RDD.png">
+<meta property="og:image" content="http://yoursite.com/uploads/simple_stage.png">
+<meta property="og:image" content="http://yoursite.com/uploads/complex_stage.png">
+<meta property="og:updated_time" content="2019-04-11T06:39:34.909Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="spark job物理执行图实战">
-<meta name="twitter:description" content="本文主要通过一个具体的spark application来讲述spark job执行过程中关于stage划分，stage提交，task运行的流程。主要也是因为上篇的源码阅读只有纯粹的理论，所以希望能通过这篇实战将理论讲的更清楚一点。  RDDRDD，全称为Resilient Distributed Datasets，是一个容错的、并行的数据结构，可以让用户显式地将数据存储到磁盘和内存中，并能控制数">
-<meta name="twitter:image" content="http://7x2wf2.com1.z0.glb.clouddn.com/RDD.png">
+<meta name="twitter:description" content="本文主要通过一个具体的spark application来讲述spark job执行过程中关于stage划分，stage提交，task运行的流程。主要也是因为上篇的源码阅读只有纯粹的理论，所以希望能通过这篇实战将理论讲的更清楚一点。">
+<meta name="twitter:image" content="http://yoursite.com/uploads/RDD.png">
 
 
 
@@ -371,7 +371,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2019-04-09 15:23:07" itemprop="dateModified" datetime="2019-04-09T15:23:07+08:00">2019-04-09</time>
+                <time title="Modified: 2019-04-11 14:39:34" itemprop="dateModified" datetime="2019-04-11T14:39:34+08:00">2019-04-11</time>
               
             
           </span>
@@ -390,6 +390,8 @@
 
           
 
+          
+            <div class="post-description">本文主要通过一个具体的spark application来讲述spark job执行过程中关于stage划分，stage提交，task运行的流程。主要也是因为上篇的源码阅读只有纯粹的理论，所以希望能通过这篇实战将理论讲的更清楚一点。</div>
           
 
         </div>
@@ -410,7 +412,7 @@
 <h2 id="RDD"><a href="#RDD" class="headerlink" title="RDD"></a>RDD</h2><p>RDD，全称为Resilient Distributed Datasets，是一个容错的、并行的数据结构，可以让用户显式地将数据存储到磁盘和内存中，并能控制数据的分区。同时，RDD还提供了一组丰富的操作来操作这些数据。在这些操作中，诸如map、flatMap、filter等转换操作，很好地契合了Scala的集合操作。除此之外，RDD还提供了诸如join、groupBy、reduceByKey等更为方便的操作（注意，reduceByKey是action，而非transformation），以支持常见的数据运算。</p>
 <p>RDD作为数据结构，本质上是一个只读的分区记录集合。一个RDD可以包含多个分区（partition），每个分区就是一个dataset片段。RDD可以相互依赖。</p>
 <p>如图是一个比较简单的RDD数据流转图，P1,P2 代表各个RDD内的分区。</p>
-<p><img src="http://7x2wf2.com1.z0.glb.clouddn.com/RDD.png" alt="RDD"></p>
+<p><img src="/uploads/RDD.png" alt="RDD"></p>
 <p>总结：</p>
 <ul>
 <li>它是不变的数据结构存储</li>
@@ -448,7 +450,7 @@
 </ul>
 <p><strong>宽依赖</strong> 指子RDD的每个分区都要依赖于父RDD的所有分区，</p>
 <h2 id="Stage"><a href="#Stage" class="headerlink" title="Stage"></a>Stage</h2><p>DAGScheduler对Stage的划分是spark任务调度的核心，在上篇 <a href="http://zxdy.github.io/articles/spark-job-logic.html" target="_blank" rel="noopener">spark 源码阅读–job提交与执行过程</a> 提到spark划分stage的总体思想是从最后的finallRDD出发反向递归访问逻辑执行图，每遇到宽依赖就断开，把之前沿途的窄依赖都加入同一个stage。于是对于本文开始的那个RDD数据流转图可以进行如下的划分。</p>
-<p><img src="http://7x2wf2.com1.z0.glb.clouddn.com/simple_stage.png" alt="simpe_stage"></p>
+<p><img src="/uploads/simple_stage.png" alt="simpe_stage"></p>
 <h2 id="实战"><a href="#实战" class="headerlink" title="实战"></a>实战</h2><p>讲了这么多理论知识，下面准备结合一个具体的例子来验证一下spark job提交之后的各个过程。</p>
 <p>首先构造一个稍复杂的spark job。代码如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.apache.log4j.&#123;Level, Logger&#125;</span><br><span class="line"><span class="keyword">import</span> org.apache.spark._</span><br><span class="line"></span><br><span class="line">object complexJob &#123;</span><br><span class="line">  <span class="function">def <span class="title">main</span><span class="params">(args: Array[String])</span> </span>&#123;</span><br><span class="line">    <span class="comment">//开启debug日志</span></span><br><span class="line">    Logger.getLogger(<span class="string">"org"</span>).setLevel(Level.DEBUG)</span><br><span class="line">    Logger.getLogger(<span class="string">"akka"</span>).setLevel(Level.DEBUG)</span><br><span class="line">    val sc = <span class="keyword">new</span> SparkContext(<span class="string">"local[3]"</span>, <span class="string">"ComplexJob test"</span>)</span><br><span class="line"></span><br><span class="line">    val data1 = Array[Int](<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">4</span>, <span class="number">3</span>, <span class="number">2</span>, <span class="number">1</span>)</span><br><span class="line">    val data2 = Array[Char](<span class="string">'a'</span>, <span class="string">'b'</span>, <span class="string">'c'</span>, <span class="string">'d'</span>, <span class="string">'e'</span>, <span class="string">'f'</span>, <span class="string">'g'</span>, <span class="string">'h'</span>, <span class="string">'i'</span>)</span><br><span class="line"></span><br><span class="line">    val dataRdd1 = sc.parallelize(data1, <span class="number">3</span>)</span><br><span class="line">    val dataRdd2 = sc.parallelize(data2, <span class="number">3</span>)</span><br><span class="line"></span><br><span class="line">    val dataRdd3 = dataRdd1.zip(dataRdd2)</span><br><span class="line">    val dataRdd4 = dataRdd3.groupByKey()</span><br><span class="line">    val dataRdd5 = dataRdd4.map(i =&gt; (i._1 + <span class="number">1</span>, i._2))</span><br><span class="line"></span><br><span class="line">    val data3 = Array[(Int, String)]((<span class="number">1</span>, <span class="string">"A"</span>), (<span class="number">2</span>, <span class="string">"B"</span>),</span><br><span class="line">      (<span class="number">3</span>, <span class="string">"C"</span>), (<span class="number">4</span>, <span class="string">"D"</span>))</span><br><span class="line">    val dataRdd6 = sc.parallelize(data3, <span class="number">2</span>)</span><br><span class="line">    val dataRdd7 = dataRdd6.map(x =&gt; (x._1, x._2.charAt(<span class="number">0</span>)))</span><br><span class="line"></span><br><span class="line">    val data4 = Array[(Int, Char)]((<span class="number">1</span>, <span class="string">'X'</span>), (<span class="number">2</span>, <span class="string">'Y'</span>))</span><br><span class="line">    val dataRdd8 = sc.parallelize(data4, <span class="number">2</span>)</span><br><span class="line"></span><br><span class="line">    val dataRdd9 = dataRdd7.union(dataRdd8)</span><br><span class="line"></span><br><span class="line">    val result = dataRdd5.join(dataRdd9)</span><br><span class="line">    result.foreach(println)</span><br><span class="line">    println(result.toDebugString)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>执行后打印DebugString如下：</p>
@@ -461,7 +463,7 @@
 </ol>
 <p>DebugString有点像oracle的执行计划，虽然我们已经可以根据这个来划分stage，但是并没有太多的细节信息，所以还是想从代码出发，来详细解释一下stage为什么要这么划分，以及stage提交的流程，顺便也可以与DebugString相互验证。</p>
 <h3 id="流程图"><a href="#流程图" class="headerlink" title="流程图"></a>流程图</h3><p>根据代码，最终的流程图如下：</p>
-<p><img src="http://7x2wf2.com1.z0.glb.clouddn.com/complex_stage.png" alt="compex_stage"></p>
+<p><img src="/uploads/complex_stage.png" alt="compex_stage"></p>
 <h3 id="代码解读"><a href="#代码解读" class="headerlink" title="代码解读"></a>代码解读</h3><p>从整体上看，最后的结果result来自dataRdd5.join(dataRdd9)，所以我们可以首先将整个job拆成A,B两条线，分别对应dataRdd5和dataRdd9的处理流程。</p>
 <ul>
 <li>A线:</li>

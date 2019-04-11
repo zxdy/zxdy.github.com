@@ -96,25 +96,25 @@
 
 
 
-  <meta name="description" content="在任何一样计算机软件产品中，当我们需要考虑其性能的时候，往往都会从CPU，IO，Network这三个方面考虑。CPU代表着处理问题的能力，IO代表着存储的吞吐能力，Network代表着数据传输的能力。oracle当然也不例外。 下图反映的是一个应用程序总体的响应时间的分布情况。用户在前端发出数据的请求之后，经过网络层，到达数据库服务器。数据库服务器接收请求，然后对SQL进行语法语义分析，然后生成执">
+  <meta name="description" content="在任何一样计算机软件产品中，当我们需要考虑其性能的时候，往往都会从CPU，IO，Network这三个方面考虑。CPU代表着处理问题的能力，IO代表着存储的吞吐能力，Network代表着数据传输的能力。oracle当然也不例外。">
 <meta name="keywords" content="Oracle,优化">
 <meta property="og:type" content="article">
 <meta property="og:title" content="oracle性能优化-CPU篇(上)">
 <meta property="og:url" content="http://yoursite.com/2015/03/04/oracle-tunning-cpu-1/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="在任何一样计算机软件产品中，当我们需要考虑其性能的时候，往往都会从CPU，IO，Network这三个方面考虑。CPU代表着处理问题的能力，IO代表着存储的吞吐能力，Network代表着数据传输的能力。oracle当然也不例外。 下图反映的是一个应用程序总体的响应时间的分布情况。用户在前端发出数据的请求之后，经过网络层，到达数据库服务器。数据库服务器接收请求，然后对SQL进行语法语义分析，然后生成执">
+<meta property="og:description" content="在任何一样计算机软件产品中，当我们需要考虑其性能的时候，往往都会从CPU，IO，Network这三个方面考虑。CPU代表着处理问题的能力，IO代表着存储的吞吐能力，Network代表着数据传输的能力。oracle当然也不例外。">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://7x2wf2.com1.z0.glb.clouddn.com/bottle-neck-of-oracle.png">
-<meta property="og:image" content="http://7x2wf2.com1.z0.glb.clouddn.com/awr_cpu.png">
-<meta property="og:image" content="http://7x2wf2.com1.z0.glb.clouddn.com/awr_cpu.png">
-<meta property="og:image" content="http://7x2wf2.com1.z0.glb.clouddn.com/instance_cpu.png">
-<meta property="og:image" content="http://7x2wf2.com1.z0.glb.clouddn.com/sql_order_by_elapsed_time.png">
-<meta property="og:image" content="http://7x2wf2.com1.z0.glb.clouddn.com/sql_order_by_cpu_time.png">
-<meta property="og:updated_time" content="2019-04-09T06:35:29.640Z">
+<meta property="og:image" content="http://yoursite.com/uploads/bottle-neck-of-oracle.png">
+<meta property="og:image" content="http://yoursite.com/uploads/awr_cpu.png">
+<meta property="og:image" content="http://yoursite.com/uploads/awr_cpu.png">
+<meta property="og:image" content="http://yoursite.com/uploads/instance_cpu.png">
+<meta property="og:image" content="http://yoursite.com/uploads/sql_order_by_elapsed_time.png">
+<meta property="og:image" content="http://yoursite.com/uploads/sql_order_by_cpu_time.png">
+<meta property="og:updated_time" content="2019-04-11T06:39:34.905Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="oracle性能优化-CPU篇(上)">
-<meta name="twitter:description" content="在任何一样计算机软件产品中，当我们需要考虑其性能的时候，往往都会从CPU，IO，Network这三个方面考虑。CPU代表着处理问题的能力，IO代表着存储的吞吐能力，Network代表着数据传输的能力。oracle当然也不例外。 下图反映的是一个应用程序总体的响应时间的分布情况。用户在前端发出数据的请求之后，经过网络层，到达数据库服务器。数据库服务器接收请求，然后对SQL进行语法语义分析，然后生成执">
-<meta name="twitter:image" content="http://7x2wf2.com1.z0.glb.clouddn.com/bottle-neck-of-oracle.png">
+<meta name="twitter:description" content="在任何一样计算机软件产品中，当我们需要考虑其性能的时候，往往都会从CPU，IO，Network这三个方面考虑。CPU代表着处理问题的能力，IO代表着存储的吞吐能力，Network代表着数据传输的能力。oracle当然也不例外。">
+<meta name="twitter:image" content="http://yoursite.com/uploads/bottle-neck-of-oracle.png">
 
 
 
@@ -374,7 +374,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2019-04-09 14:35:29" itemprop="dateModified" datetime="2019-04-09T14:35:29+08:00">2019-04-09</time>
+                <time title="Modified: 2019-04-11 14:39:34" itemprop="dateModified" datetime="2019-04-11T14:39:34+08:00">2019-04-11</time>
               
             
           </span>
@@ -394,6 +394,8 @@
           
 
           
+            <div class="post-description">在任何一样计算机软件产品中，当我们需要考虑其性能的时候，往往都会从CPU，IO，Network这三个方面考虑。CPU代表着处理问题的能力，IO代表着存储的吞吐能力，Network代表着数据传输的能力。oracle当然也不例外。</div>
+          
 
         </div>
       </header>
@@ -410,7 +412,7 @@
       
         <p>在任何一样计算机软件产品中，当我们需要考虑其性能的时候，往往都会从CPU，IO，Network这三个方面考虑。CPU代表着处理问题的能力，IO代表着存储的吞吐能力，Network代表着数据传输的能力。oracle当然也不例外。</p>
 <p>下图反映的是一个应用程序总体的响应时间的分布情况。用户在前端发出数据的请求之后，经过网络层，到达数据库服务器。数据库服务器接收请求，然后对SQL进行语法语义分析，然后生成执行计划，接着执行sql，取得数据最后再次经过网络层返回到前端展现给用户。</p>
-<p><img src="http://7x2wf2.com1.z0.glb.clouddn.com/bottle-neck-of-oracle.png" alt="bottle-neck-of-oracle"></p>
+<p><img src="/uploads/bottle-neck-of-oracle.png" alt="bottle-neck-of-oracle"></p>
 <p>很显然 <strong>oracle的处理时间=cpu处理时间+[资源等待时间+Disk IO 等待时间]</strong>。</p>
 <p>根据以上公式，我们可以发现只要能有效地利用cpu资源和降低等待时间就可以提高数据库的性能，使它处理得更快。</p>
 <p>这篇文章主要关注oracle sql在cpu上的性能优化。个人感觉相比等待上的优化简单一些，等待很多时候涉及到并发，资源争用，数据块等知识，优化也更加复杂不好下手。</p>
@@ -427,7 +429,7 @@
 <ul>
 <li>awr报告。在awr中会有cpu相关的各种报告，包括硬件信息以及更重要的性能信息。关于cpu的性能分析我会在后面展开。下面这张图展现了当前实例使用的cpu硬件信息。</li>
 </ul>
-<p><img src="http://7x2wf2.com1.z0.glb.clouddn.com/awr_cpu.png" alt="awr cpu"></p>
+<p><img src="/uploads/awr_cpu.png" alt="awr cpu"></p>
 <blockquote>
 <p>CPUs: 逻辑cpu数<br>Cores: cpu核数<br>Sockets: 物理cpu数</p>
 </blockquote>
@@ -438,9 +440,9 @@
 <li>instance cpu</li>
 </ul>
 <p>在AWR报告中会有这样两个不同的分类，像是这样</p>
-<p><img src="http://7x2wf2.com1.z0.glb.clouddn.com/awr_cpu.png" alt="host cpu"></p>
+<p><img src="/uploads/awr_cpu.png" alt="host cpu"></p>
 <p>还有这样</p>
-<p><img src="http://7x2wf2.com1.z0.glb.clouddn.com/instance_cpu.png" alt="instance cpu"></p>
+<p><img src="/uploads/instance_cpu.png" alt="instance cpu"></p>
 <p>它们其实是分别代表了服务器cpu的负载和oracle实例的负载情况。</p>
 <p>对于host cpu：</p>
 <ul>
@@ -458,12 +460,12 @@
 <ol>
 <li>AWR SQL ordered by Elapsed Time：</li>
 </ol>
-<p><img src="http://7x2wf2.com1.z0.glb.clouddn.com/sql_order_by_elapsed_time.png" alt="AWR SQL ordered by Elapsed Time"></p>
+<p><img src="/uploads/sql_order_by_elapsed_time.png" alt="AWR SQL ordered by Elapsed Time"></p>
 <blockquote>
 <p>%CPU - CPU Time as a percentage of Elapsed Time -&gt; 这个语句耗费的DB TIME里CPU TIME占多少比例 -&gt; 这个语句是否是CPU敏感的</p>
 </blockquote>
 <p>2.AWR SQL ordered by CPU Time：</p>
-<p><img src="http://7x2wf2.com1.z0.glb.clouddn.com/sql_order_by_cpu_time.png" alt="AWR SQL order by cpu time"></p>
+<p><img src="/uploads/sql_order_by_cpu_time.png" alt="AWR SQL order by cpu time"></p>
 <blockquote>
 <p>第一列CPU TIME统计这个sql总共在快照时间内总共花费的cpu时间，在这个值比较高的情况下，如果相应的%CPU值也很高， 说明这个sql在cpu上的负载很高，需要考虑优化。</p>
 </blockquote>

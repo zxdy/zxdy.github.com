@@ -96,20 +96,20 @@
 
 
 
-  <meta name="description" content="索引是每种数据库都避不开的一个话题。很多人不管是DBA还是开发，对于索引的印象就是：sql慢？加个索引吧。但是为什么加了索引sql就能变快呢？加了索引是不是一定就会变快？怎么加索引效率会最高？ 从B-tree索引讲起索引就像是一本字典的查询页，你可以通过字母或者是偏旁快速定位需要查询的字。类似通过字母查询的是聚集索引（表中行的物理顺序与键值的逻辑索引顺序相同），反之通过偏旁的是非聚集索引（表中行的">
+  <meta name="description" content="索引是每种数据库都避不开的一个话题。很多人不管是DBA还是开发，对于索引的印象就是：sql慢？加个索引吧。但是为什么加了索引sql就能变快呢？加了索引是不是一定就会变快？怎么加索引效率会最高？">
 <meta name="keywords" content="Oracle,优化">
 <meta property="og:type" content="article">
 <meta property="og:title" content="oracle性能优化-索引篇">
 <meta property="og:url" content="http://yoursite.com/2014/12/19/oracle-tunning-index/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="索引是每种数据库都避不开的一个话题。很多人不管是DBA还是开发，对于索引的印象就是：sql慢？加个索引吧。但是为什么加了索引sql就能变快呢？加了索引是不是一定就会变快？怎么加索引效率会最高？ 从B-tree索引讲起索引就像是一本字典的查询页，你可以通过字母或者是偏旁快速定位需要查询的字。类似通过字母查询的是聚集索引（表中行的物理顺序与键值的逻辑索引顺序相同），反之通过偏旁的是非聚集索引（表中行的">
+<meta property="og:description" content="索引是每种数据库都避不开的一个话题。很多人不管是DBA还是开发，对于索引的印象就是：sql慢？加个索引吧。但是为什么加了索引sql就能变快呢？加了索引是不是一定就会变快？怎么加索引效率会最高？">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://7x2wf2.com1.z0.glb.clouddn.com/B-TREE.png">
-<meta property="og:updated_time" content="2019-04-09T06:34:31.140Z">
+<meta property="og:image" content="http://yoursite.com/uploads/B-TREE.png">
+<meta property="og:updated_time" content="2019-04-11T06:39:34.899Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="oracle性能优化-索引篇">
-<meta name="twitter:description" content="索引是每种数据库都避不开的一个话题。很多人不管是DBA还是开发，对于索引的印象就是：sql慢？加个索引吧。但是为什么加了索引sql就能变快呢？加了索引是不是一定就会变快？怎么加索引效率会最高？ 从B-tree索引讲起索引就像是一本字典的查询页，你可以通过字母或者是偏旁快速定位需要查询的字。类似通过字母查询的是聚集索引（表中行的物理顺序与键值的逻辑索引顺序相同），反之通过偏旁的是非聚集索引（表中行的">
-<meta name="twitter:image" content="http://7x2wf2.com1.z0.glb.clouddn.com/B-TREE.png">
+<meta name="twitter:description" content="索引是每种数据库都避不开的一个话题。很多人不管是DBA还是开发，对于索引的印象就是：sql慢？加个索引吧。但是为什么加了索引sql就能变快呢？加了索引是不是一定就会变快？怎么加索引效率会最高？">
+<meta name="twitter:image" content="http://yoursite.com/uploads/B-TREE.png">
 
 
 
@@ -369,7 +369,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2019-04-09 14:34:31" itemprop="dateModified" datetime="2019-04-09T14:34:31+08:00">2019-04-09</time>
+                <time title="Modified: 2019-04-11 14:39:34" itemprop="dateModified" datetime="2019-04-11T14:39:34+08:00">2019-04-11</time>
               
             
           </span>
@@ -389,6 +389,8 @@
           
 
           
+            <div class="post-description">索引是每种数据库都避不开的一个话题。很多人不管是DBA还是开发，对于索引的印象就是：sql慢？加个索引吧。但是为什么加了索引sql就能变快呢？加了索引是不是一定就会变快？怎么加索引效率会最高？</div>
+          
 
         </div>
       </header>
@@ -406,7 +408,7 @@
         <p>索引是每种数据库都避不开的一个话题。很多人不管是DBA还是开发，对于索引的印象就是：sql慢？加个索引吧。但是为什么加了索引sql就能变快呢？加了索引是不是一定就会变快？怎么加索引效率会最高？</p>
 <h2 id="从B-tree索引讲起"><a href="#从B-tree索引讲起" class="headerlink" title="从B-tree索引讲起"></a>从B-tree索引讲起</h2><p>索引就像是一本字典的查询页，你可以通过字母或者是偏旁快速定位需要查询的字。类似通过字母查询的是聚集索引（表中行的物理顺序与键值的逻辑索引顺序相同），反之通过偏旁的是非聚集索引（表中行的物理顺序与键值的逻辑索引顺序不相同）。扯远了，这里要讲的是b-tree索引。</p>
 <p>oracle默认建的索引就是b-tree索引，他的工作方式如下：</p>
-<p><img src="http://7x2wf2.com1.z0.glb.clouddn.com/B-TREE.png" alt="b-tree"></p>
+<p><img src="/uploads/B-TREE.png" alt="b-tree"></p>
 <ol>
 <li><p>很显然索引也是需要占用空间的，只是没有普通数据那么大而已。索引的大小跟数据量以及索引列的多少成正比。</p>
 </li>
